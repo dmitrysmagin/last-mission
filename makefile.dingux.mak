@@ -11,8 +11,8 @@ APP_NAME = last-mission.dge
 
 CC = mipsel-linux-uclibc-gcc
 
-WFLAGS = -Wall -Wextra -march=mips32
-CFLAGS := $(WFLAGS) -O3 -std=c99 -fms-extensions -D__GCC__ -D__cdecl="" -D__DINGUX__
+WFLAGS = -Wall -Wextra -march=mips32 -mtune=r4600 -ffast-math -funroll-loops
+CFLAGS := $(WFLAGS) -O2 -std=c99 -fms-extensions -D__GCC__ -D__cdecl="" -D__DINGUX__
 LFLAGS = -lSDL -Wl,--strip-all
 
 # source files
