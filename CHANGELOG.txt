@@ -1,0 +1,28 @@
+
+Project history:
+
+v0.5, 2 August 2011
+	+  rewrite a bit keypress routines 
+	+  any key to exit demo mode
+	+  make elevators part of the game process, not a cutscene - make final cleanup
+	+  pause mode
+	+  fullscreen toggle for sdl (win32 and *nix)
+	+  rotating "the last mission" logo
+	+  showing big title picture
+v0.6, 18 March 2012
+	+  total recoloring, MSX2 version is taken as an example
+	+  certain floors, ceilings and electric wires kill the flying turet again,
+	    now the game is as hardcore as original
+	+  intro music remix of the original theme
+	+  proper support for Ritmix RZX-50 (turn OFF A320 compatibility mode) and Dingoo A380/A320e (not tested)
+	   the game probes sequentially 480x272, 400x240 and 320x240 resolutions and chooses whatever available  
+	+  fullscreen bilinear or bresenham upscaling from 320x200 to 480x272 or 400x240 (left shoulder turns it on/off)
+	+  frameskip 0/1 (right shoulder)
+v0.?, TO DO:
+	-  make textured backgrounds
+	-  make 10 backgrounds
+	-  incorporate joystick code
+	-  more sound effects	
+	-  recolor intro screen and rotating logo
+	? optimize upscaling in mips asm?
+	? pixel-perfect collision
