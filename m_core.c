@@ -1011,7 +1011,7 @@ void BlowUpEnemy(int i)
 	// special procedures for breakable walls
 	if(Ships[i].i == 6)
 	{
-		#if defined(__DINGUX__) || defined(__DINGOO__)
+		#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 		extern int level_cache_fl;
 		level_cache_fl = 1; // doing some magic...
 		#endif
@@ -1856,7 +1856,7 @@ _random_move_ai:
 			{
 				int a = 0;
 				if(/*screen_bridge == 1 &&*/ player_attached == 1) a = 245;
-				#if defined(__DINGUX__) || defined(__DINGOO__)
+				#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 				{ 
 					extern int level_cache_fl;
 					level_cache_fl = 1;
@@ -2134,7 +2134,7 @@ _random_move_ai:
 						// ugly, maybe change in future
 						if(i->y == 120)
 						{
-							#if defined(__DINGUX__) || defined(__DINGOO__)
+							#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 							extern int level_cache_fl;
 							level_cache_fl = 1; // doing some magic...
 							#endif
@@ -2181,7 +2181,7 @@ _random_move_ai:
 							// seal the floor!
 							for(int i = 0; i <= 5; i++)
 							{
-								#if defined(__DINGUX__) || defined(__DINGOO__)
+								#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 								extern int level_cache_fl;
 								level_cache_fl = 1; // doing some magic...
 								#endif

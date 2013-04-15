@@ -279,7 +279,7 @@ void PutStream(int x, int y, unsigned char *p)
 
 // simple cache, may speed up things TEST IT TEST IT
 
-#if defined(__DINGUX__) || defined(__DINGOO__)
+#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 int level_cache_fl = 0;
 unsigned char level_cache[17*8*SCREEN_WIDTH];
 #endif
@@ -318,21 +318,21 @@ void UnpackLevel()
 					*pd = *ps;
 			}
 	}
-	#if defined(__DINGUX__) || defined(__DINGOO__)
+	#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 	level_cache_fl = 1;
 	#endif
 }
 
 void BlitLevel()
 {
-	#if defined(__DINGUX__) || defined(__DINGOO__)
+	#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 	if(level_cache_fl == 1)
 	{
 	#endif
 		for(int y = 0; y <= 16; y++)
 			for(int x = 0; x <= 39; x++)
 				PutTile(x*8, y*8, (unsigned char *)&Tiles256[ScreenTilesBuffer[y*0x28+x]*64]);
-	#if defined(__DINGUX__) || defined(__DINGOO__)
+	#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 		memcpy(level_cache, pScreenBuffer, 17*8*SCREEN_WIDTH);
 		level_cache_fl = 0;
 	} else memcpy(pScreenBuffer, level_cache, 17*8*SCREEN_WIDTH);
