@@ -17,7 +17,7 @@ LFLAGS = -lSDL -Wl,--strip-all
 # source files
 
 SRC = fmopl.c m_core.c m_aux.c m_snd.c m_demo.c	m_data.c m_snd_data.c m_scr.c
-SRC := $(SRC) m_gfx_sdl.c m_snd_sdl.c
+SRC := $(SRC) m_scr_lines.c m_gfx_sdl.c m_snd_sdl.c
 
 
 INC = $(foreach dir, ., $(wildcard $(dir)/*.h))

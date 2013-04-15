@@ -31,7 +31,7 @@ LD_OPTS   = -nodefaultlibs --script $(LD_SCRIPT) -L$(LIB_PATH) $(LIBS) -o $(APP_
 
 # Find all source files
 
-SRC_C   = fmopl.c m_aux.c m_core.c m_data.c m_demo.c m_gfx_data.c m_gfx_dingoosdl.c m_scr.c m_snd.c m_snd_data.c m_snd_sdl.c
+SRC_C   = fmopl.c m_aux.c m_core.c m_data.c m_demo.c m_gfx_data.c m_gfx_dingoosdl.c m_scr.c m_scr_lines.c m_snd.c m_snd_data.c m_snd_sdl.c
 OBJ_C   = $(patsubst %.c, %.o, $(SRC_C))
 OBJ     = $(OBJ_C)
 

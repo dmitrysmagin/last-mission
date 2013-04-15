@@ -32,8 +32,10 @@ void __cdecl playcallback(void *userdata, unsigned char *stream, int length)
 {
 	static int c, cnt = 0;
 
-	for(c = 0; c <= BUFFSMPL - 1; c++) {
-		if(cnt >= framesmpl) {
+	for(c = 0; c <= BUFFSMPL - 1; c++)
+	{
+		if(cnt >= framesmpl)
+		{
 			cnt = 0;
 			rad_update_frame();
 		}
@@ -43,6 +45,7 @@ void __cdecl playcallback(void *userdata, unsigned char *stream, int length)
 	}
 
 	memcpy(stream, &buf, length);
+
 }
 
 int LM_SND_rad_init()

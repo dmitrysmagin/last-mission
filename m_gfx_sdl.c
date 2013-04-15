@@ -43,7 +43,8 @@ void LM_ResetKeys()
 
 int LM_AnyKey()
 {
-	for(int i = 0; i < 127; i++) {
+	for(int i = 0; i < 127; i++)
+	{
 		if(Keys[i] == 1) return 1;
 	}
 	return 0;
@@ -75,7 +76,8 @@ char LM_PollEvents()
 {
 	SDL_Event event;
 
-	while (SDL_PollEvent(&event) != 0) {
+	while (SDL_PollEvent(&event) != 0)
+	{
 		#ifndef __WIN32__
 		int key_scan = -1;
 		unsigned char key_value = 0;
@@ -85,9 +87,11 @@ char LM_PollEvents()
 
 		// only valid for i386 arch and Windows
 		#ifdef __WIN32__
-		if(event.type == SDL_KEYDOWN ) {
+		if(event.type == SDL_KEYDOWN )
+		{
 			Keys[event.key.keysym.scancode] = 1;
-		} else if(event.type == SDL_KEYUP) {
+		} else if(event.type == SDL_KEYUP)
+		{
 			Keys[event.key.keysym.scancode] = 0;
 		}
 		#endif
@@ -98,8 +102,10 @@ char LM_PollEvents()
 		if(event.type == SDL_KEYUP) key_value = 0;
 
 		// Emulate x86 scancodes
-		if(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-			switch(event.key.keysym.sym) {
+		if(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
+		{
+			switch(event.key.keysym.sym)
+			{
 				case SDLK_UP:
 					key_scan = SC_UP;
 					break;
@@ -153,7 +159,7 @@ char LM_PollEvents()
 		LM_GFX_SetScale(2);
 		return 0;
 	}
-	if(Keys[SC_S] == 1 && fullscr == 0) { Keys[SC_S] = 0; _toggle ^= 1; LM_GFX_SetScale(_toggle + 1); }
+	if(Keys[SC_S] == 1 && fullscr == 0) {Keys[SC_S] = 0; _toggle ^= 1; LM_GFX_SetScale(_toggle + 1);}
 	#endif
 
 	return 0;
@@ -197,9 +203,12 @@ void LM_GFX_Flip(unsigned char *p)
 	SDL_BlitSurface(screen, NULL, hardwareScreen, NULL);
 	SDL_Flip(hardwareScreen);
 #elif defined(__WIN32__) || (__UNIX__)
-	if(scale2x == 2) {
-		for(int y = 0; y <= 199; y++) {
-			for(int x = 0; x <= 319; x++) {
+	if(scale2x == 2)
+	{
+		for(int y = 0; y <= 199; y++)
+		{
+			for(int x = 0; x <= 319; x++)
+			{
 				unsigned char tmp = *(unsigned char *)(p + y*320+x);
 				unsigned char *pDest = (unsigned char *)screen->pixels;
 
@@ -210,7 +219,9 @@ void LM_GFX_Flip(unsigned char *p)
 			}
 		}
 
-	} else {
+	}
+	else
+	{
 		memcpy(screen->pixels + 320*20, p, 320*200);
 	}
 
@@ -223,7 +234,6 @@ void LM_GFX_Flip(unsigned char *p)
 
 void LM_GFX_WaitVSync()
 {
-	// not needed for SDL
 }
 
 void LM_GFX_SetScale(int param)

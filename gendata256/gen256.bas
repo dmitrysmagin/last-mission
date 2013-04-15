@@ -1,4 +1,4 @@
-#define XRES 320
+#define XRES 400
 #define YRES 240
 
 dim shared as ubyte TileBuffer(0 to 256*64-1)
@@ -103,7 +103,7 @@ Sub OutputSprite(x as integer, y as integer, xs as integer, ys as integer, seqnu
 	
 End Sub
 
-dim shared as integer frame_ubound(0 to 45) = { 6, 1, 2, 2, 2, 3, 1, 2, 3, 3, 3, 3, 1, 2, 1, 1, 1, 1, 1, 3, 1, 0, 3, 3, 3, 5, 1, 3, 3, 3, 5, 3, 5, 3, 3, 3, 3, 5, 3, 1, 1, 1, 3, 0, 0, 0}
+dim shared as integer frame_ubound(0 to 56) = { 6, 1, 2, 2, 2, 3, 1, 2, 3, 3, 3, 3, 1, 2, 1, 1, 1, 1, 1, 3, 1, 0, 3, 3, 3, 5, 1, 3, 3, 3, 5, 3, 5, 3, 3, 3, 3, 5, 3, 1, 1, 1, 3, 0, 0, 0, 5, 0, 0, 3, 1, 6, 0, 6, 3, 4, 3}
 dim shared as integer dy = 0, dx = 0
 dim shared as string buffer
 
@@ -138,19 +138,19 @@ print #2, !"};\n"
 ' process fonts
 for y as integer = 8 to 24
 	for x as integer = 0 to 39
-		if (y-8)*40+x > 87 then continue for
+		if (y-8)*40+x > 88 then continue for
 		GetTile x*8, y*8, @TileBuffer((y-8)*40*64+x*64)
 	next
 next
 
 
-Print #2, !"unsigned char Font256[88*64] ALIGN4 = {"
-for i as integer = 0 to 87
+Print #2, !"unsigned char Font256[89*64] ALIGN4 = {"
+for i as integer = 0 to 88
 	for y as integer = 0 to 7
 		buffer = !"\t"
 		for x as integer = 0 to 7	
 			buffer += str(TileBuffer(i*64 + y * 8 + x))
-			if x = 7 andalso y = 7 andalso i = 87 then buffer += " " else buffer += ", "
+			if x = 7 andalso y = 7 andalso i = 88 then buffer += " " else buffer += ", "
 		next
 		print #2, buffer
 		buffer = !""
@@ -272,21 +272,65 @@ OutputSprite 12*16, 11*16, 40, 8, 44, 0
 
 OutputSprite 12*16, 12*16, 72, 12, 45, 0
 
-for i as integer = 0 to 45
+for fr as integer = 0 to frame_ubound(46)
+	OutputSprite 117 + 13*fr, 17, 13, 13, 46, fr
+next
+
+OutputSprite 151, 33, 15, 15, 47, 0
+OutputSprite 167, 33, 15, 15, 48, 0
+
+for fr as integer = 0 to frame_ubound(49)
+	OutputSprite 243, 86 + 19*fr, 26, 19, 49, fr
+next
+
+' Machine gun bullet
+OutputSprite 372, 52, 8, 2, 50, 0
+OutputSprite 372, 55, 8, 2, 50, 1
+
+' Machine gun ship
+for fr as integer = 0 to 6
+	OutputSprite 334, 3*16 + fr*16, 32, 12, 51, fr
+next
+
+' extra HP
+OutputSprite 165, 91, 11, 12, 52, 0
+
+' Rocket ship
+for fr as integer = 0 to 6
+	OutputSprite 303, 3*16 + fr*16, 32, 12, 53, fr
+next
+
+' Rocket
+for fr as integer = 0 to 3
+	OutputSprite 309, 12 + fr*8, 14, 8, 54, fr
+next
+
+' BFG
+for fr as integer = 0 to 4
+	OutputSprite 375, 145 + fr*18, 16, 16, 55, fr
+next
+
+' BFG shot
+for fr as integer = 0 to 3
+	OutputSprite 287 + fr*11, 204, 10, 10, 56, fr
+next
+
+
+for i as integer = 0 to 56
 	print #2, !"unsigned char *pSpriteFrames_" + str(i) + "[] = {"
 	buffer = !"\t "
 	for fr as integer = 0 to frame_ubound(i)
 		buffer += "Sprite_" + str(i) + "_" + str(fr)
-		if fr <> frame_ubound(i) then buffer += ", "
+		if fr <> frame_ubound(i) then buffer += ", " else buffer += ", 0"
 	next
 	print #2, buffer
 	print #2, !"};\r\n"
 next
 
-print #2, !"unsigned char **pSprites256[46] = {"
-for i as integer = 0 to 45
+print #2, !"unsigned char **pSprites256[57] = {"
+for i as integer = 0 to 56
 	buffer = !"\tpSpriteFrames_" + str(i)
-	if i <> 45 then buffer += ", "
+	if i <> 56 then buffer += ", "
 	print #2, buffer
 next
 print #2, !"};\r\n"

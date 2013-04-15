@@ -81,8 +81,10 @@ loc_0_2353:
 
 void rad_adlib_reset()
 {
+
 	for(int r = 0x40; r < 0x56; r++) rad_adlib_write(r, 0x7f);
 	for(int r = 0xB0; r < 0xB9; r++) rad_adlib_write(r, 0);
+
 }
 
 void __interrupt __far _int08_handler()
@@ -90,7 +92,8 @@ void __interrupt __far _int08_handler()
 	rad_update_frame();
 	if(clock_value == (0x1234BE / 0x12)) goto _call_old; // if normal timer
 	clock_ticks += clock_value;
-	if(clock_ticks < 0x10000) {
+	if(clock_ticks < 0x10000)
+	{
 		_asm {
 			mov	al,20h
 			out	20h,al

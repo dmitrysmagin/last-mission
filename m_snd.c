@@ -66,9 +66,11 @@ void rad_load_instrument(int channel, int inst_number)
 	int r = rad_ChannelOffs[channel];
 	unsigned char *p = rad.pInstr[inst_number];
 
-	if(p != 0) {
+	if(p != 0)
+	{
 		rad.Old43[channel] = *(p + 2);
-		for(int i = 0; i <= 3; i++) {
+		for(int i = 0; i <= 3; i++)
+		{
 			rad_adlib_write(r, *(p + 1));
 			rad_adlib_write(r + 3, *p);
 			p += 2;
@@ -104,18 +106,23 @@ void rad_set_freq(int i, unsigned int new_freq)
 void rad_update_notes()
 {
 	// process portamentos
-	for(int i = 0; i <= 8; i++) {
+	for(int i = 0; i <= 8; i++)
+	{
 		if(rad.PortSlide[i] != 0) rad_set_freq(i, rad_get_freq(i) + rad.PortSlide[i]);
 	}
 
 	// process volume slides
-	for(int i = 0; i <= 8; i++) {
+	for(int i = 0; i <= 8; i++)
+	{
 		char v;
-		if(rad.VolSlide[i] > 0) {
+		if(rad.VolSlide[i] > 0)
+		{
 			v = ((rad.Old43[i] & 0x3f) ^ 0x3f) - rad.VolSlide[i];
 			if(v > 63) v = 63;
 			rad_set_volume(i, v);
-		} else {
+		}
+		else
+		{
 			v = ((rad.Old43[i] & 0x3f) ^ 0x3f) - rad.VolSlide[i];
 			if(v < 0) v = 0;
 			rad_set_volume(i, v);
@@ -123,16 +130,24 @@ void rad_update_notes()
 	}
 
 	// process tone slides
-	for(int i = 0; i <= 8; i++) {
-		if(rad.ToneSlide[i] != 0) {
-			if(rad_get_freq(i) > rad.ToneSlideFreq[i]) {
+	for(int i = 0; i <= 8; i++)
+	{
+		if(rad.ToneSlide[i] != 0)
+		{
+			if(rad_get_freq(i) > rad.ToneSlideFreq[i])
+			{
 				if(rad_get_freq(i) - rad.ToneSlideSpeed[i] < rad.ToneSlideFreq[i]) goto _jmp_0;
 				rad_set_freq(i, rad_get_freq(i) - rad.ToneSlideSpeed[i]);
-			} else {
-				if(rad_get_freq(i) < rad.ToneSlideFreq[i]) {
+			}
+			else
+			{
+				if(rad_get_freq(i) < rad.ToneSlideFreq[i])
+				{
 					if(rad_get_freq(i) + rad.ToneSlideSpeed[i] > rad.ToneSlideFreq[i]) goto _jmp_0;
 					rad_set_freq(i, rad_get_freq(i) + rad.ToneSlideSpeed[i]);
-				} else {
+				}
+				else
+				{
 				_jmp_0:
 					rad.ToneSlide[i] = 0;
 					rad_set_freq(i, rad.ToneSlideFreq[i]);
@@ -140,6 +155,7 @@ void rad_update_notes()
 			}
 		}
 	}
+
 }
 
 void rad_playnote(unsigned char channel, unsigned int packed_value)
@@ -154,9 +170,12 @@ void rad_playnote(unsigned char channel, unsigned int packed_value)
 	if(effect != 0) effect_value = (packed_value & 0x7f0000) >> 16;
 
 	// check if doing noteslide
-	if(note != 0) {
-		if(effect == 3) {
+	if(note != 0)
+	{
+		if(effect == 3)
+		{
 			rad.ToneSlideFreq[channel] = octave * (0x2ae - 0x157) + rad_NoteFreq[note - 1] - 0x157;
+
 			rad.ToneSlide[channel] = 1;
 			if(effect_value != 0) rad.ToneSlideSpeed[channel] = effect_value;
 			return;
@@ -164,17 +183,20 @@ void rad_playnote(unsigned char channel, unsigned int packed_value)
 	}
 
 	// play note
-	if(note != 0) {
+	if(note != 0)
+	{
 		// first key off previous note
 		rad.OldA0B0[channel].noteon = 0;
 		rad_adlib_write(0xb0 + channel, rad.OldA0B0[channel].hi_byte);
 
-		if(instrument != 0) {
+		if(instrument != 0)
+		{
 			rad_set_volume(channel, 0);
 			rad_load_instrument(channel, instrument);
 		}
 
-		if(note != 15) {
+		if(note != 15)
+		{
 			rad.OldA0B0[channel].freq = rad_NoteFreq[note-1];
 			rad.OldA0B0[channel].octave = octave;
 			rad.OldA0B0[channel].noteon = 1;
@@ -183,7 +205,8 @@ void rad_playnote(unsigned char channel, unsigned int packed_value)
 		}
 	}
 
-	switch(effect) {
+	switch(effect)
+	{
 		case 1: // portamento up
 			rad.PortSlide[channel] = effect_value;
 			break;
@@ -220,9 +243,9 @@ void rad_next_pattern()
 
 	#ifdef __DINGOO__
 	rad.pPatternPos = rad.pdata + *(unsigned char *)(rad.pPatternList + *(rad.pOrderList + rad.OrderPos) * 2) +
-								 (*(unsigned char *)(rad.pPatternList + *(rad.pOrderList + rad.OrderPos) * 2 + 1) << 8);
+								  (*(unsigned char *)(rad.pPatternList + *(rad.pOrderList + rad.OrderPos) * 2 + 1) << 8);
 	#else
-	// on Dingoo native OS this will hang due to unaligned data read
+	// on Dingoo this will hang due to unaligned data read
 	rad.pPatternPos = rad.pdata + *(unsigned short *)(rad.pPatternList + *(rad.pOrderList + rad.OrderPos) * 2);
 	#endif
 }
@@ -238,15 +261,18 @@ void rad_update_frame()
 
 	if(rad.SpeedCnt > 0) {rad.SpeedCnt -= 1; goto _jmp_update;}
 	// switch off any effects
-	for(int i = 0; i <= 8; i++) {
+	for(int i = 0; i <= 8; i++)
+	{
 		rad.ToneSlide[i] = 0;
 		rad.VolSlide[i] = 0;
 		rad.PortSlide[i] = 0;
 	}
 
-	if(p != 0) {
+	if(p != 0)
+	{
 		//rad.pPatternPos must be set already
-		if((*p & 0x7f) == rad.CurrentLine) {
+		if((*p & 0x7f) == rad.CurrentLine)
+		{
 			if((*p & 0x80) != 0) rad.pPatternPos = 0; // mark the rest of pattern as blank
 			p += 1; // move to first channel
 			do {
@@ -262,19 +288,23 @@ void rad_update_frame()
 				if((*(p + 2) & 0x0f) == 0) p += 3; else p += 4;
 
 				// patternbreak command
-				if((rad.pattern_jmp_f & 0x80) != 0) {
+				if((rad.pattern_jmp_f & 0x80) != 0)
+				{
 					rad.SpeedCnt = rad.Speed - 1;
 					rad.CurrentLine = rad.pattern_jmp_f & 0x7f;
 					rad_next_pattern();
 					p = rad.pPatternPos;
-					while((*p & 0x7f) < (rad.pattern_jmp_f & 0x7f)) {
-						if((*p & 0x80) != 0) {
+					while((*p & 0x7f) < (rad.pattern_jmp_f & 0x7f))
+					{
+						if((*p & 0x80) != 0)
+						{
 							rad.pattern_jmp_f = 0;
 							rad.pPatternPos = p;
 							goto _jmp_update;
 						}
 						p += 1;
-						while((*p & 0x80) == 0) {
+						while((*p & 0x80) == 0)
+						{
 							if((*(p + 2) & 0x0f) == 0) p += 3; else p += 4;
 						}
 					}
@@ -294,6 +324,7 @@ void rad_update_frame()
 
 _jmp_update:
 	rad_update_notes();
+
 }
 
 int LM_SND_rad_play(unsigned char *ptune)
@@ -316,14 +347,16 @@ int LM_SND_rad_play(unsigned char *ptune)
 	rad.Speed = *ptune & 0x3f;
 	if((*ptune & 0x60) == 0) rad_set_timer(50); else rad_set_timer(18);
 
-	if((*ptune & 0x80) != 0) {
+	if((*ptune & 0x80) != 0)
+	{
 		ptune += 1;
 		while(*ptune != 0) ptune +=1;
 	}
 
 	ptune += 1;
 
-	while(*ptune != 0) {
+	while(*ptune != 0)
+	{
 		rad.pInstr[*ptune] = ptune + 1;
 		ptune += 12;
 	}
@@ -356,7 +389,8 @@ int LM_SND_rad_stop()
 {
 	rad_playing = 0;
 
-	for(int i = 0; i < 9; i++) {
+	for(int i = 0; i < 9; i++)
+	{
 		rad_playnote(i, 15);
 		rad_set_volume(i, 0);
 	}
