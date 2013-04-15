@@ -9,11 +9,11 @@ APP_NAME = last-mission.dge
 
 # compiler
 
-CC = mipsel-linux-uclibc-gcc
+CC = mipsel-linux-gcc
 
 WFLAGS = -Wall -Wextra -march=mips32 -mtune=r4600 -ffast-math -funroll-loops
 CFLAGS := $(WFLAGS) -O2 -std=c99 -fms-extensions -D__GCC__ -D__cdecl="" -D__DINGUX__
-LFLAGS = -lSDL -Wl,--strip-all
+LFLAGS = -lm -lSDL -Wl,--strip-all
 
 # source files
 
