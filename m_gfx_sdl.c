@@ -78,26 +78,12 @@ char LM_PollEvents()
 
 	while (SDL_PollEvent(&event) != 0)
 	{
-		#ifndef __WIN32__
 		int key_scan = -1;
 		unsigned char key_value = 0;
-		#endif
 
 		if(event.type == SDL_QUIT) {Keys[SC_ESCAPE] = 1; return 1; }
 
-		// only valid for i386 arch and Windows
-		#ifdef __WIN32__
-		if(event.type == SDL_KEYDOWN )
-		{
-			Keys[event.key.keysym.scancode] = 1;
-		} else if(event.type == SDL_KEYUP)
-		{
-			Keys[event.key.keysym.scancode] = 0;
-		}
-		#endif
-
 		// unix and dingoo sdl don't have scancodes, so remap usual keys
-		#if defined(__UNIX__) || defined(__DINGUX__) || defined(__GP2X__) || defined(__CAANOO__)
 		if(event.type == SDL_KEYDOWN) key_value = 1;
 		if(event.type == SDL_KEYUP) key_value = 0;
 
@@ -147,7 +133,6 @@ char LM_PollEvents()
 			}
 			if(key_scan != -1) Keys[key_scan] = key_value;
 		}
-		#endif
 	}
 
 	// toggle sizes x1 or x2 with scanlines
