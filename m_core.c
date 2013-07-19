@@ -3226,12 +3226,12 @@ void PlayMusic(int music)
 	switch (music)
 	{
 	case MUSIC_STOP:
+	case MUSIC_GAME:
 		LM_SND_rad_stop();
 		break;
 	case MUSIC_INTRO:
 		LM_SND_rad_play(rad_tune);
 		break;
-	case MUSIC_GAME:
 	//case MUSIC_WIN:
 	//case MUSIC_LOSE:
 		// Nothing yet.
