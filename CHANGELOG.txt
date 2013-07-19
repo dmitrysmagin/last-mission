@@ -18,9 +18,13 @@ v0.6, 18 March 2012
 	   the game probes sequentially 480x272, 400x240 and 320x240 resolutions and chooses whatever available  
 	+  fullscreen bilinear or bresenham upscaling from 320x200 to 480x272 or 400x240 (left shoulder turns it on/off)
 	+  frameskip 0/1 (right shoulder)
+v0.7, 2013
+	+ textured backgrounds and outlines
+	+ hit points
+	+ health bonuses
+	+ new ships and docks
+	+ brand new secret level
 v0.?, TO DO:
-	-  make textured backgrounds
-	-  make 10 backgrounds
 	-  incorporate joystick code
 	-  more sound effects	
 	-  recolor intro screen and rotating logo
