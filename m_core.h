@@ -121,8 +121,8 @@
 #define MUSIC_STOP		0
 #define MUSIC_INTRO		1
 #define MUSIC_GAME		2
-#define MUSIC_WIN		3
-#define MUSIC_LOSE		4
+#define MUSIC_WIN		MUSIC_INTRO
+#define MUSIC_LOSE		MUSIC_INTRO
 
 #define MAX_GARAGES 16
 
