@@ -11,12 +11,12 @@
 #include "m_core.h"
 #include "m_aux.h"
 #include "m_gfx.h"
-#include "m_snd.h"
-#include "m_snd_data.h"
 #include "m_data.h"
 #include "m_gfx_data.h"
 #include "m_scr.h"
 #include "m_demo.h"
+
+#include "sound.h"
 
 #if DEBUG
 #define M_INLINE
@@ -60,9 +60,6 @@ void DoGame();
 void CreateExplosion(int index);
 void CreateWallExplosion(int x, int y);
 void RenderGame(int renderStatus);
-void PlaySoundEffect(int);
-void StopSoundEffect(int);
-void PlayMusic(int);
 void InitGaragesForNewGame();
 void SetGarageShipIndex(int garageId, int shipIndex);
 int GarageShipIndex(int garageId);
@@ -78,10 +75,6 @@ void GameLevelUp();
 void MakeScreenShot();
 #else
 #define MakeScreenShot()
-#endif
-
-#ifdef __APPLE__
-#define __TLM_MP3_SOUND__
 #endif
 
 unsigned char *pScreenBuffer = 0;
@@ -3193,53 +3186,6 @@ void SetEasyLevel(int level)
 {
 	easy_level = level;
 }
-
-#ifndef __TLM_MP3_SOUND__
-
-// Default sound and music implementation using LM_SND.
-
-void PlaySoundEffect(int sound)
-{
-	switch (sound)
-	{
-	case SND_LASER_SHOOT:
-		// Not yet implemented.
-		break;
-	case SND_EXPLODE:
-		LM_SND_rad_play_sndfx(rad_sndfx1, 0, SF_NOTE(2, 4));
-		break;
-	case SND_CONTACT:
-		LM_SND_rad_play_sndfx(rad_sndfx2, 1, SF_NOTE(1, 7));
-		break;
-	case SND_MOVE:
-		// Not yet implemented.
-		break;
-	}
-}
-
-void StopSoundEffect(int param)
-{
-}
-
-void PlayMusic(int music)
-{
-	switch (music)
-	{
-	case MUSIC_STOP:
-	case MUSIC_GAME:
-		LM_SND_rad_stop();
-		break;
-	case MUSIC_INTRO:
-		LM_SND_rad_play(rad_tune);
-		break;
-	//case MUSIC_WIN:
-	//case MUSIC_LOSE:
-		// Nothing yet.
-		break;
-	}
-}
-
-#endif
 
 #ifndef __APPLE__
 
