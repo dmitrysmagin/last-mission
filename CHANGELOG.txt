@@ -24,9 +24,10 @@ v0.7, 2013
 	+ health bonuses
 	+ new ships and docks
 	+ brand new secret level
+v0.8, July 2013
+	+  sound effects and music from Mark Braga, SDL_mixer is used for SDL port
 v0.?, TO DO:
 	-  incorporate joystick code
-	-  more sound effects	
 	-  recolor intro screen and rotating logo
 	? optimize upscaling in mips asm?
 	? pixel-perfect collision
