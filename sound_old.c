@@ -14,10 +14,10 @@ void PlaySoundEffect(int sound)
 		// Not yet implemented.
 		break;
 	case SND_EXPLODE:
-		LM_SND_rad_play_sndfx(rad_sndfx1, 0, SF_NOTE(2, 4));
+		rad_play_sndfx(rad_sndfx1, 0, SF_NOTE(2, 4));
 		break;
 	case SND_CONTACT:
-		LM_SND_rad_play_sndfx(rad_sndfx2, 1, SF_NOTE(1, 7));
+		rad_play_sndfx(rad_sndfx2, 1, SF_NOTE(1, 7));
 		break;
 	case SND_MOVE:
 		// Not yet implemented.
@@ -35,10 +35,10 @@ void PlayMusic(int music)
 	{
 	case MUSIC_STOP:
 	case MUSIC_GAME:
-		LM_SND_rad_stop();
+		rad_stop_music();
 		break;
 	case MUSIC_INTRO:
-		LM_SND_rad_play(rad_tune);
+		rad_play_music(rad_tune);
 		break;
 	//case MUSIC_WIN:
 	//case MUSIC_LOSE:

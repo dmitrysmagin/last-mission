@@ -16,7 +16,7 @@ void rad_update_frame();
 void rad_adlib_reset();
 void rad_adlib_write(unsigned char adl_reg,unsigned char adl_data);
 
-int LM_SND_rad_init()
+int LM_SND_Init()
 {
 	rad_adlib_reset();
 	rad_adlib_write(0x01, 0x20);
@@ -28,7 +28,7 @@ int LM_SND_rad_init()
 	return 1;
 }
 
-int LM_SND_rad_deinit()
+int LM_SND_Deinit()
 {
 	_dos_setvect(8, prev_int_08);
 	rad_adlib_reset();

@@ -194,7 +194,7 @@ void CALLBACK playcallback(void *userdata, unsigned char *stream, int length)
 	memcpy(stream, &buf[0], length);
 }
 
-int LM_SND_rad_init()
+int LM_SND_Init()
 {
 	ym = YM3812Init(1, OPL2_INTERNAL_FREQ, FREQHZ);
 	YM3812ResetChip(ym);
@@ -207,9 +207,9 @@ int LM_SND_rad_init()
 	return TRUE;
 }
 
-int LM_SND_rad_deinit()
+int LM_SND_Deinit()
 {	
-	LM_SND_rad_stop();
+	rad_stop_music();
 	WINMM_close();
 	YM3812Shutdown();
 	return TRUE;

@@ -48,7 +48,7 @@ void __cdecl playcallback(void *userdata, unsigned char *stream, int length)
 
 }
 
-int LM_SND_rad_init()
+int LM_SND_Init()
 {
 	ym = YM3812Init(1, OPL2_INTERNAL_FREQ, FREQHZ);
 	YM3812ResetChip(ym);
@@ -67,11 +67,11 @@ int LM_SND_rad_init()
 	return 1;
 }
 
-int LM_SND_rad_deinit()
+int LM_SND_Deinit()
 {
 	if(fSDL_Running == 0) return 0;
 
-	LM_SND_rad_stop();
+	rad_stop_music();
 	SDL_PauseAudio(1);
 	SDL_CloseAudio();
 	return 1;

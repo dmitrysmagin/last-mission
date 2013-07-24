@@ -3209,7 +3209,7 @@ int main(int argc, char *argv[])
 	static int show_fps = 0, max_frameskip = 0;
 
 	if(LM_Init(&pScreenBuffer) == 0) return -1;
-	LM_SND_rad_init();
+	LM_SND_Init();
 
 	next_game_tick = LM_Timer();
 
@@ -3272,7 +3272,7 @@ int main(int argc, char *argv[])
 		if(game_mode == GM_EXIT) break;
 	}
 
-	LM_SND_rad_deinit();
+	LM_SND_Deinit();
 	LM_Deinit();
 
 	return 0;

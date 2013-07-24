@@ -327,10 +327,10 @@ _jmp_update:
 
 }
 
-int LM_SND_rad_play(unsigned char *ptune)
+int rad_play_music(unsigned char *ptune)
 {
 
-	if(rad_playing == 1) LM_SND_rad_stop();
+	if(rad_playing == 1) rad_stop_music();
 
 	#ifdef __DINGOO__
 	#else
@@ -385,7 +385,7 @@ int LM_SND_rad_play(unsigned char *ptune)
 	return 1;
 }
 
-int LM_SND_rad_stop()
+int rad_stop_music()
 {
 	rad_playing = 0;
 
@@ -405,12 +405,12 @@ int LM_SND_rad_stop()
 //
 
 // load effect in hsc .ins format
-void LM_SND_rad_load_sndfx(int channel, unsigned char *p)
+void rad_load_sndfx(int channel, unsigned char *p)
 {
 
 }
 
-void LM_SND_rad_play_sndfx(unsigned char *p, int channel, int packednote)
+void rad_play_sndfx(unsigned char *p, int channel, int packednote)
 {
 	rad.pInstr[*p] = p + 1;
 	rad_load_instrument(channel, *p);
