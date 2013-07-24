@@ -2795,12 +2795,12 @@ void DoWinScreen()
 	static int x_string = 0;
 	static int win_ticks = 0;
 	static char win_string[410] = ""
-	"										"
-	"ATENCION	ATENCION	 TRANSMISION A LA NAVE EXPLORER		   "
+	"                                        "
+	"ATENCION    ATENCION     TRANSMISION A LA NAVE EXPLORER           "
 	"HAS CUMPLIDO TU ULTIMA MISION Y DEBES RETORNAR AL PLANETA NOVA DE LA GALAXIA TRAION"
-	"										"
+	"                                        "
 	"TU LUCHA NO HA SIDO EN VANO PUES LA LEJANA COLONIA DEL IMPERIO LLAMADA TIERRA HA SIDO "
-	"LIBERADA DE LOS INVASORES Y PUEDE SER HABITADA DE NUEVO			   REPITO  MENSAJE";
+	"LIBERADA DE LOS INVASORES Y PUEDE SER HABITADA DE NUEVO               REPITO  MENSAJE";
 
 	if (youwin_start_flag == 0)
 	{
@@ -3159,7 +3159,7 @@ void DoGame()
 		case GM_PAUSE:
 				DoKeys();
 				if(GKeys[KEY_PAUSE] == 1) {
-					PutString(8*17, 8*17, "	 ");
+					PutString(8*17, 8*17, "     ");
 					SetGameMode(GM_GAME);
 					Keys[SC_ENTER] = 0;
 				}
