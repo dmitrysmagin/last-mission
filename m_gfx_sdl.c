@@ -1,7 +1,7 @@
 /*
 
 	SDL video backend for Windows, *nix and Dingux
-	For handheld consoles better use m_gfx_dingoosdl.c
+	Define __DINGUX__ to build for low resolutions like 320x240
 
 */
 
@@ -14,15 +14,10 @@ extern unsigned char pal256[1024];
 
 unsigned char Keys[128] = {0};
 
-#if defined(__DINGUX__) || defined(__GP2X__) || defined(__CAANOO__)
-int scale2x = 1;
-int fullscr = 0;
-#elif defined(__WIN32__) || defined(__UNIX__)
+#ifndef __DINGUX__
 int scale2x = 2; // 1 - no scale 320x200; 2 - upscale to 640x400
 int fullscr = 0; // or SDL_FULLSCREEN
 int _toggle = 1;
-#else
-	#error Platform not defined or supported
 #endif
 
 int LM_GFX_Init();
@@ -133,8 +128,7 @@ char LM_PollEvents()
 
 	// toggle sizes x1 or x2 with scanlines
 	// for win32 and unix only
-	#if defined(__DINGUX__) || defined(__GP2X__) || defined(__CAANOO__)
-	#elif defined(__WIN32__) || defined(__UNIX__)
+	#ifndef __DINGUX__
 	if(Keys[SC_F] == 1) {
 		fullscr ^= SDL_FULLSCREEN;
 		Keys[SC_F] = 0;
@@ -154,13 +148,11 @@ int LM_GFX_Init()
 	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0) return 0;
 	atexit(SDL_Quit);
 
-#if defined(__DINGUX__) || defined(__GP2X__) || defined(__CAANOO__)
-	screen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE | fullscr);
-#elif defined(__WIN32__) || defined (__UNIX__)
+#ifdef __DINGUX__
+	screen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
+#else
 	screen = SDL_SetVideoMode(640, 480, 8, SDL_SWSURFACE | fullscr);
 	SDL_SetPalette(screen, SDL_PHYSPAL, (SDL_Color *)pal256, 0, 256);
-#else
-	#error Platform not defined or supported
 #endif
 	small_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320, 200, 8, 0, 0, 0, 0);
 	SDL_SetPalette(small_screen, SDL_LOGPAL, (SDL_Color *)pal256, 0, 256);
@@ -180,7 +172,7 @@ void LM_GFX_Deinit()
 
 void LM_GFX_Flip(unsigned char *p)
 {
-#if defined(__DINGUX__) || defined(__GP2X__) || defined(__CAANOO__)
+#ifdef __DINGUX__
 	SDL_Rect dst;
 
 	dst.w = 320;
@@ -190,7 +182,7 @@ void LM_GFX_Flip(unsigned char *p)
 
 	SDL_BlitSurface(small_screen, NULL, screen, &dst);
 	SDL_Flip(screen);
-#elif defined(__WIN32__) || (__UNIX__)
+#else
 	if(scale2x == 2)
 	{
 		for(int y = 0; y <= 199; y++)
@@ -215,8 +207,6 @@ void LM_GFX_Flip(unsigned char *p)
 
 	//Update Screen
 	SDL_Flip(screen);
-#else
-	#error Platform not defined or supported
 #endif
 }
 
@@ -226,7 +216,7 @@ void LM_GFX_WaitVSync()
 
 void LM_GFX_SetScale(int param)
 {
-#if defined(__WIN32__) || (__UNIX__)
+#ifndef __DINGUX__
 	scale2x = ((param - 1) & 1) + 1; // ensure param to be 1 or 2 strictly
 	if(fullscr == SDL_FULLSCREEN) scale2x = 2;
 
