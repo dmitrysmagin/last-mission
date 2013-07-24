@@ -111,7 +111,7 @@ dim shared as string buffer
 screenres XRES, YRES, 8
 bload "tilefont.bmp"
 Open "m_gfx_data.c" For Output As #2
-Print #2, !"#ifndef __GCC__\r\n#define ALIGN4\r\n#else\r\n#define ALIGN4 __attribute__ ((aligned(4)))\r\n#endif\r\n"
+Print #2, !"#ifndef __GNUC__\r\n#define ALIGN4\r\n#else\r\n#define ALIGN4 __attribute__ ((aligned(4)))\r\n#endif\r\n"
 
 ' process tiles
 for y as integer = 0 to 6

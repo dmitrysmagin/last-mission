@@ -1,4 +1,4 @@
-#ifndef __GCC__
+#ifndef __GNUC__
 #define ALIGN4
 #else
 #define ALIGN4 __attribute__ ((aligned(4)))

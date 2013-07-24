@@ -11,7 +11,7 @@ APP_NAME = last-mission
 
 CC = gcc
 
-CFLAGS = -Wall -O2 -std=c99 -fms-extensions -D__GCC__ -D__WIN32__
+CFLAGS = -Wall -O2 -std=c99 -fms-extensions -D__WIN32__
 LFLAGS = -s -mwindows -lgdi32 -lwinmm
 
 # source files

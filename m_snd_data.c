@@ -1,4 +1,4 @@
-#ifndef __GCC__
+#ifndef __GNUC__
 #define __attribute__(A)
 #endif
 
