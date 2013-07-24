@@ -13,7 +13,6 @@
 extern unsigned char pal256[1024];
 
 unsigned char Keys[128] = {0};
-unsigned char ScreenBuffer[320*200] = {0};
 
 #if defined(__DINGUX__) || defined(__GP2X__) || defined(__CAANOO__)
 int scale2x = 1;
@@ -29,11 +28,8 @@ int _toggle = 1;
 int LM_GFX_Init();
 void LM_GFX_Deinit();
 
+SDL_Surface *small_screen = NULL;
 SDL_Surface *screen = NULL;
-
-#if defined(__DINGUX__) || defined(__GP2X__) || defined(__CAANOO__)
-SDL_Surface *hardwareScreen = NULL;
-#endif
 
 //===============================================================
 void LM_ResetKeys()
@@ -63,7 +59,7 @@ void LM_Sleep(int sleep_time)
 int LM_Init(unsigned char **pScreenBuffer)
 {
 	if(LM_GFX_Init() == 0) return 0;
-	*pScreenBuffer = &ScreenBuffer[0];
+	*pScreenBuffer = (unsigned char *)small_screen->pixels;
 	return 1;
 }
 
@@ -137,7 +133,8 @@ char LM_PollEvents()
 
 	// toggle sizes x1 or x2 with scanlines
 	// for win32 and unix only
-	#if defined(__WIN32__) || defined(__UNIX__)
+	#if defined(__DINGUX__) || defined(__GP2X__) || defined(__CAANOO__)
+	#elif defined(__WIN32__) || defined(__UNIX__)
 	if(Keys[SC_F] == 1) {
 		fullscr ^= SDL_FULLSCREEN;
 		Keys[SC_F] = 0;
@@ -158,17 +155,17 @@ int LM_GFX_Init()
 	atexit(SDL_Quit);
 
 #if defined(__DINGUX__) || defined(__GP2X__) || defined(__CAANOO__)
-	screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320, 240, 8, 0, 0, 0, 0);
-	SDL_SetPalette(screen, SDL_LOGPAL, (SDL_Color *)pal256, 0, 256);
-	hardwareScreen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE | fullscr);
-
-	SDL_ShowCursor(SDL_DISABLE);
+	screen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE | fullscr);
 #elif defined(__WIN32__) || defined (__UNIX__)
 	screen = SDL_SetVideoMode(640, 480, 8, SDL_SWSURFACE | fullscr);
 	SDL_SetPalette(screen, SDL_PHYSPAL, (SDL_Color *)pal256, 0, 256);
 #else
 	#error Platform not defined or supported
 #endif
+	small_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320, 200, 8, 0, 0, 0, 0);
+	SDL_SetPalette(small_screen, SDL_LOGPAL, (SDL_Color *)pal256, 0, 256);
+
+	SDL_ShowCursor(SDL_DISABLE);
 
 	//Set the window caption
 	SDL_WM_SetCaption("The Last Mission SDL remake", NULL);
@@ -184,9 +181,15 @@ void LM_GFX_Deinit()
 void LM_GFX_Flip(unsigned char *p)
 {
 #if defined(__DINGUX__) || defined(__GP2X__) || defined(__CAANOO__)
-	memcpy(screen->pixels + 320*20, p, 320*200);
-	SDL_BlitSurface(screen, NULL, hardwareScreen, NULL);
-	SDL_Flip(hardwareScreen);
+	SDL_Rect dst;
+
+	dst.w = 320;
+	dst.h = 240;
+	dst.x = 0;
+	dst.y = 20;
+
+	SDL_BlitSurface(small_screen, NULL, screen, &dst);
+	SDL_Flip(screen);
 #elif defined(__WIN32__) || (__UNIX__)
 	if(scale2x == 2)
 	{
