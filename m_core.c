@@ -2756,6 +2756,10 @@ void DoTitle()
 		BlitLevel();
 		PutSprite(50*4, 108, *(pSprites256[45] + 0));
 		PutString(76, 88, "ESPACIO PARA COMENZAR");
+		PutString(60, 24, "ORIGINAL GAME: PEDRO RUIZ");
+		PutString(76, 36, "REMAKE: DMITRY SMAGIN");
+		PutString(140, 44, "ALEXEY PAVLOV");
+		PutString(60, 56, "MUSIC AND SFX: MARK BRAGA");
 		ResetDemoTicksCounter();
 	}
 
