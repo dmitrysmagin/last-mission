@@ -2532,26 +2532,6 @@ __skip_enemy:;
 		p += 8;
 	}
 
-	// generate enemies for elevator
-	// 1 - right elevator, 2 - left elevator
-	// sprite index - 21
-	if(*p == 1 || *p == 2)
-	{
-		en = PrepareFreeShip();
-		en->state = SH_ACTIVE;
-		en->i = 21;
-		en->x = (*p == 1 ? 256 : 16);
-		en->y = 120;
-		en->anim_speed = 0;
-		en->anim_speed_cnt = en->anim_speed;
-		en->min_frame = 0;
-		en->cur_frame = 0;
-		en->max_frame = 0;
-		en->ai_type = AI_ELEVATOR;
-		en->move_speed = 1;
-		en->move_speed_cnt = en->move_speed;
-	}
-
 	screen_procedure = *(p++);
 	cur_screen_bonus = *p;
 }

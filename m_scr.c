@@ -2338,11 +2338,12 @@ unsigned char screeninfo6[] = {
 	 0, /* No bonus */ };
 unsigned char screeninfo7[] = {
 	 8, 0, 0, 6,
-	 3,
+	 4,
 	 0, 10, 16, 54,			 4, 0, 2, 1,
 	 0, 24, 32, 54,			 4, 0, 3, 2,
 	 0, 10, 54, 54,			 4, 0, 2, 1,
-	 1, // right elevator
+	 0, 21, 64, 120,		 1, 0, 0, AI_ELEVATOR,
+	 0, // right elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo8[] = {
 	 0, 0, 7, 9,
@@ -2399,12 +2400,13 @@ unsigned char screeninfo13[] = {
 	 0, /* No bonus */ };
 unsigned char screeninfo14[] = {
 	 15, 13, 0, 0,
-	 4,
+	 5,
 	 0, 12, 10, 70,			 4, 0, 1, 2,
 	 0, 13, 24, 40,			 4, 0, 2, 1,
 	 0, 10, 35, 50,			 4, 0, 2, 2,
 	 0, 16, 50, 96,			 4, 0, 1, 1,
-	 2, // left elevator
+	 0, 21, 4, 120,			 1, 0, 0, AI_ELEVATOR,
+	 0, // left elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo15[] = {
 	 0, 16, 14, 0,
@@ -2457,12 +2459,13 @@ unsigned char screeninfo20[] = {
 	 0, /* No bonus */ };
 unsigned char screeninfo21[] = {
 	 22, 0, 0, 20,
-	 4,
+	 5,
 	 0, 32, 12, 8,			 4, 0, 5, 4,
 	 0, 25, 40, 60,			 4, 0, 5, 1,
 	 0, 28, 50, 60,			 4, 0, 3, 2,
 	 0, 19, 30, 40,			 4, 0, 2, 1,
-	 1, // right elevator
+	 0, 21, 64, 120,		 1, 0, 0, AI_ELEVATOR,
+	 0, // right elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo22[] = {
 	 0, 0, 21, 23,
@@ -2519,11 +2522,12 @@ unsigned char screeninfo27[] = {
 	 0, /* No bonus */ };
 unsigned char screeninfo28[] = {
 	 29, 27, 0, 0,
-	 3,
+	 4,
 	 0, 12, 40, 40,			 4, 0, 1, 2,
 	 0, 8, 40, 60,			 4, 0, 3, 1,
 	 0, 11, 40, 80,			 4, 0, 3, 1,
-	 2, // left elevator
+	 0, 21, 4, 120,			 1, 0, 0, AI_ELEVATOR,
+	 0, // left elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo29[] = {
 	 0, 30, 28, 0,
@@ -2581,11 +2585,12 @@ unsigned char screeninfo34[] = {
 	 0, /* No bonus */ };
 unsigned char screeninfo35[] = {
 	 36, 0, 0, 34,
-	 3,
+	 4,
 	 0, 36, 8, 56,			 4, 0, 2, 1,
 	 0, 24, 32, 88,			 4, 0, 2, 2,
 	 0, 10, 54, 54,			 4, 0, 2, 1,
-	 1, // right elevator
+	 0, 21, 64, 120,		 1, 0, 0, AI_ELEVATOR,
+	 0, // right elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo36[] = {
 	 0, 0, 35, 37,
@@ -2639,7 +2644,7 @@ unsigned char screeninfo41[] = {
 	 0, /* No bonus */ };
 unsigned char screeninfo42[] = {
 	 43, 41, 0, 0,
-	 7,
+	 8,
 	 0, 6, 16, 72,			 4, 1, 1, 0,
 	 0, 6, 16, 88,			 4, 1, 1, 0,
 	 0, 6, 16, 104,			 4, 1, 1, 0,
@@ -2647,7 +2652,8 @@ unsigned char screeninfo42[] = {
 	 0, 29, 38, 32,			 4, 0, 3, 1,
 	 0, 33, 64, 40,			 4, 0, 3, 1,
 	 0, 5, 22, 70,			 4, 0, 3, 2,
-	 2, // left elevator
+	 0, 21, 4, 120,			 1, 0, 0, AI_ELEVATOR,
+	 0, // left elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo43[] = {
 	 0, 44, 42, 0,
@@ -2700,12 +2706,13 @@ unsigned char screeninfo48[] = {
 	 0, /* No bonus */ };
 unsigned char screeninfo49[] = {
 	 50, 0, 0, 48,
-	 4,
+	 5,
 	 0, 32, 36, 8,			 4, 0, 5, 4,
 	 0, 18, 32, 32,			 4, 0, 1, 3,
 	 0, 12, 22, 32,			 4, 0, 1, 2,
 	 0, 29, 37, 80,			 4, 0, 3, 1,
-	 1, // right elevator
+	 0, 21, 64, 120,		 1, 0, 0, AI_ELEVATOR,
+	 0, // right elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo50[] = {
 	 0, 0, 49, 51,
@@ -2741,12 +2748,13 @@ unsigned char screeninfo53[] = {
 	 0, /* No bonus */ };
 unsigned char screeninfo54[] = {
 	 55, 53, 0, 0,
-	 4,
+	 5,
 	 0, 32, 58, 16,			 4, 0, 5, 4,
 	 0, 4, 20, 70,			 4, 0, 2, 2,
 	 0, 4, 40, 75,			 4, 0, 2, 1,
 	 0, 4, 60, 80,			 4, 0, 2, 1,
-	 2, // left elevator
+	 0, 21, 4, 120,			 1, 0, 0, AI_ELEVATOR,
+	 0, // left elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo55[] = {
 	 0, 56, 54, 0,
@@ -2800,11 +2808,12 @@ unsigned char screeninfo60[] = {
 	 0, /* No bonus */ };
 unsigned char screeninfo61[] = {
 	 62, 0, 0, 60,
-	 3,
+	 4,
 	 0, 33, 10, 20,			 4, 0, 3, 1,
 	 0, 22, 22, 96,			 4, 0, 3, 1,
 	 0, 36, 38, 96,			 4, 0, 3, 2,
-	 1, // right elevator
+	 0, 21, 64, 120,		 1, 0, 0, AI_ELEVATOR,
+	 0, // right elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo62[] = {
 	 0, 0, 61, 63,
@@ -2859,7 +2868,7 @@ unsigned char screeninfo67[] = {
 	 0, /* No bonus */ };
 unsigned char screeninfo68[] = {
 	 69, 67, 0, 0,
-	 8,
+	 9,
 	 0, 6, 36, 24,			 4, 0, 0, 0,
 	 0, 6, 36, 40,			 4, 0, 0, 0,
 	 0, 6, 36, 56,			 4, 0, 0, 0,
@@ -2868,7 +2877,8 @@ unsigned char screeninfo68[] = {
 	 0, 6, 36, 104,			 4, 0, 0, 0,
 	 0, 11, 25, 60,			 4, 0, 3, 2,
 	 0, 11, 40, 60,			 4, 0, 3, 1,
-	 2, // left elevator
+	 0, 21, 4, 120,			 1, 0, 0, AI_ELEVATOR,
+	 0, // left elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo69[] = {
 	 70, 0, 68, 0,
