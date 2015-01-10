@@ -7,7 +7,7 @@ CC = mipsel-linux-gcc
 
 CFLAGS = -march=mips32 -mtune=r4600 -ffast-math -funroll-loops
 CFLAGS += -Wall -O2 -std=c99 -fms-extensions -D__DINGUX__
-LFLAGS = -s -lSDL -lSDL_mixer
+LFLAGS = -s -lSDL -lSDL_mixer -lm
 
 # source files
 

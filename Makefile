@@ -6,7 +6,7 @@ APP_NAME = last-mission-sdl
 CC = gcc
 
 CFLAGS = -Wall -O2 -std=c99 -fms-extensions
-LFLAGS = -s -lSDL -lSDL_mixer
+LFLAGS = -s -lSDL -lSDL_mixer -lm
 
 # source files
 
