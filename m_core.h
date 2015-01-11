@@ -82,7 +82,7 @@
 #define SC_HOME		0x47
 #define SC_UP		0x48
 #define SC_PAGEUP	0x49
-#define SC_MINUS2   0x4A
+#define SC_MINUS2	0x4A
 #define SC_LEFT		0x4B
 #define SC_RIGHT	0x4D
 #define SC_PLUS		0x4E
@@ -108,15 +108,15 @@
 #define GM_PAUSE	6
 #define GM_SPLASH	7
 
-#define SND_LASER_SHOOT			1
+#define SND_LASER_SHOOT		1
 #define SND_SHORT_LASER_SHOOT	2
-#define SND_ROCKET_SHOOT		3
-#define SND_CANNON_SHOOT		4
-#define SND_EXPLODE				5
-#define SND_CONTACT				6
-#define SND_MOVE				7
-#define SND_ELEVATOR			8
-#define SND_BONUS				9
+#define SND_ROCKET_SHOOT	3
+#define SND_CANNON_SHOOT	4
+#define SND_EXPLODE		5
+#define SND_CONTACT		6
+#define SND_MOVE		7
+#define SND_ELEVATOR		8
+#define SND_BONUS		9
 
 #define MUSIC_STOP		0
 #define MUSIC_INTRO		1
@@ -127,14 +127,14 @@
 #define MAX_GARAGES 16
 
 typedef struct TGAMEDATA {
-    int ship_score;
-    int base_level;
-    int num_lives;
-    int fuel;
-    int health;
-    int easy_level;
+	int ship_score;
+	int base_level;
+	int num_lives;
+	int fuel;
+	int health;
+	int easy_level;
 	int hidden_level_entered;
-    int garages[MAX_GARAGES][2];
+	int garages[MAX_GARAGES][2];
 } TGAMEDATA;
 
 #endif // _M_CORE_H_

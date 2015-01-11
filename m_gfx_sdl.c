@@ -34,10 +34,11 @@ void LM_ResetKeys()
 
 int LM_AnyKey()
 {
-	for(int i = 0; i < 127; i++)
-	{
-		if(Keys[i] == 1) return 1;
+	for (int i = 0; i < 127; i++) {
+		if (Keys[i] == 1)
+			return 1;
 	}
+
 	return 0;
 }
 
@@ -53,8 +54,11 @@ void LM_Sleep(int sleep_time)
 
 int LM_Init(unsigned char **pScreenBuffer)
 {
-	if(LM_GFX_Init() == 0) return 0;
+	if (LM_GFX_Init() == 0)
+		return 0;
+
 	*pScreenBuffer = (unsigned char *)small_screen->pixels;
+
 	return 1;
 }
 
@@ -67,22 +71,24 @@ char LM_PollEvents()
 {
 	SDL_Event event;
 
-	while (SDL_PollEvent(&event) != 0)
-	{
+	while (SDL_PollEvent(&event) != 0) {
 		int key_scan = -1;
 		unsigned char key_value = 0;
 
-		if(event.type == SDL_QUIT) {Keys[SC_ESCAPE] = 1; return 1; }
+		if (event.type == SDL_QUIT) {
+			Keys[SC_ESCAPE] = 1;
+			return 1;
+		}
 
 		// unix and dingoo sdl don't have scancodes, so remap usual keys
-		if(event.type == SDL_KEYDOWN) key_value = 1;
-		if(event.type == SDL_KEYUP) key_value = 0;
+		if (event.type == SDL_KEYDOWN)
+			key_value = 1;
+		if (event.type == SDL_KEYUP)
+			key_value = 0;
 
 		// Emulate x86 scancodes
-		if(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
-		{
-			switch(event.key.keysym.sym)
-			{
+		if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+			switch (event.key.keysym.sym) {
 				case SDLK_UP:
 					key_scan = SC_UP;
 					break;
@@ -122,20 +128,26 @@ char LM_PollEvents()
 				default:; // maybe use in future
 					break;
 			}
-			if(key_scan != -1) Keys[key_scan] = key_value;
+			if (key_scan != -1)
+				Keys[key_scan] = key_value;
 		}
 	}
 
 	// toggle sizes x1 or x2 with scanlines
 	// for win32 and unix only
 	#ifndef __DINGUX__
-	if(Keys[SC_F] == 1) {
+	if (Keys[SC_F] == 1) {
 		fullscr ^= SDL_FULLSCREEN;
 		Keys[SC_F] = 0;
 		LM_GFX_SetScale(2);
 		return 0;
 	}
-	if(Keys[SC_S] == 1 && fullscr == 0) {Keys[SC_S] = 0; _toggle ^= 1; LM_GFX_SetScale(_toggle + 1);}
+
+	if (Keys[SC_S] == 1 && fullscr == 0) {
+		Keys[SC_S] = 0;
+		_toggle ^= 1;
+		LM_GFX_SetScale(_toggle + 1);
+	}
 	#endif
 
 	return 0;
@@ -145,7 +157,9 @@ int LM_GFX_Init()
 {
 	//Start SDL
 	//if(SDL_Init(SDL_INIT_EVERYTHING) < 0) return 0;
-	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0) return 0;
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0)
+		return 0;
+
 	atexit(SDL_Quit);
 
 #ifdef __DINGUX__
@@ -183,12 +197,9 @@ void LM_GFX_Flip(unsigned char *p)
 	SDL_BlitSurface(small_screen, NULL, screen, &dst);
 	SDL_Flip(screen);
 #else
-	if(scale2x == 2)
-	{
-		for(int y = 0; y <= 199; y++)
-		{
-			for(int x = 0; x <= 319; x++)
-			{
+	if (scale2x == 2) {
+		for (int y = 0; y <= 199; y++) {
+			for (int x = 0; x <= 319; x++) {
 				unsigned char tmp = *(unsigned char *)(p + y*320+x);
 				unsigned char *pDest = (unsigned char *)screen->pixels;
 
@@ -198,10 +209,7 @@ void LM_GFX_Flip(unsigned char *p)
 				*(pDest + 640*40 + y*2*640+x*2+1) = tmp;
 			}
 		}
-
-	}
-	else
-	{
+	} else {
 		memcpy(screen->pixels + 320*20, p, 320*200);
 	}
 
@@ -218,7 +226,9 @@ void LM_GFX_SetScale(int param)
 {
 #ifndef __DINGUX__
 	scale2x = ((param - 1) & 1) + 1; // ensure param to be 1 or 2 strictly
-	if(fullscr == SDL_FULLSCREEN) scale2x = 2;
+
+	if (fullscr == SDL_FULLSCREEN)
+		scale2x = 2;
 
 	screen = SDL_SetVideoMode(320 * scale2x, 240 * scale2x, 8, SDL_SWSURFACE | fullscr);
 	SDL_SetPalette(screen, SDL_PHYSPAL, (SDL_Color *)pal256, 0, 256);

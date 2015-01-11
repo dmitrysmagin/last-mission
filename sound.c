@@ -22,7 +22,8 @@ int isInitialized = 0;
 
 void LoadSoundFiles()
 {
-	if (isInitialized) return;
+	if (isInitialized)
+		return;
 
 	isInitialized = 1;
 
@@ -120,7 +121,7 @@ void PlayMusic(int music)
 
 int LM_SND_Init()
 {
-	if((Mix_Init(MIX_INIT_OGG) & MIX_INIT_OGG) != MIX_INIT_OGG) {
+	if ((Mix_Init(MIX_INIT_OGG) & MIX_INIT_OGG) != MIX_INIT_OGG) {
 		printf("Failed to init OGG support\n");
 	}
 

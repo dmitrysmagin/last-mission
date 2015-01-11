@@ -18,16 +18,8 @@
 
 #include "sound.h"
 
-#if DEBUG
-#define M_INLINE
-#else
-#define M_INLINE inline
-#endif
-
 #define GAME_START_SCREEN 1 // Start of the labyrinth.
 
-// Sheep is undestroyable.
-// Used to test the complete app flow, win screen, etc.
 //#define GOD_MODE
 
 unsigned char ChangeScreen(int flag);
@@ -81,14 +73,12 @@ unsigned char *pScreenBuffer = 0;
 unsigned char ScreenTilesBuffer[0x2a8];
 unsigned char ship_cur_screen = 0;
 
-typedef struct
-{
+typedef struct {
 	int regenerate_bonus;
 	int bonus_type;
 } TEXPLOSION;
 
-typedef struct
-{
+typedef struct {
 	int x;
 	int y;
 	int i; // Sprite index
@@ -99,8 +89,6 @@ typedef struct
 	unsigned char move_speed_cnt;
 	unsigned char ai_update_cnt;
 
-	// if these are chars, watcom generates erroneous sign extensions in (int) += (char)
-	// because in watcom char's are unsigned by default, use -j switch
 	int dx;
 	int dy;
 
@@ -111,8 +99,7 @@ typedef struct
 	unsigned char ai_type;
 
 	// AI-type specific data. Just to make code a bit more readable.
-	union
-	{
+	union {
 		int parent; // used by something shot by a cannon
 		int just_created; // used by AI_SHOT, AI_HOMING_SHOT and AI_BFG_SHOT
 		int ticks_passed; // used by AI_HOMING_SHOT
@@ -131,8 +118,7 @@ int garage_data[MAX_GARAGES][2];
 // Garage data of the last game start. Will be restored if player is dead.
 int main_garage_data[MAX_GARAGES][2];
 
-typedef struct
-{
+typedef struct {
 	int xc, yc;
 	int xt, yt;
 	int ship;
@@ -184,8 +170,8 @@ unsigned char GKeys[7]; // left, right, up, down, fire, pause, quit
 void PlayMusicInt(int music)
 {
 	static int current_music = MUSIC_STOP;
-	if (current_music != music)
-	{
+
+	if (current_music != music) {
 		current_music = music;
 		PlayMusic(current_music);
 	}
@@ -194,8 +180,8 @@ void PlayMusicInt(int music)
 void SetGameMode(int mode)
 {
 	game_mode = mode;
-	switch (mode)
-	{
+
+	switch (mode) {
 	case GM_TITLE:
 		PlayMusicInt(MUSIC_INTRO);
 
@@ -232,82 +218,85 @@ unsigned char ChangeScreen(int flag)
 {
 	unsigned char  result = *(SCREENINFOS[ship_cur_screen] + flag);
 
-	if(result == 0) return 0;
+	if (result == 0)
+		return 0;
 
 	// if base is blocking the way on the other screen
-	if(result == base_cur_screen)
-	{
-		if(flag == F_LEFT)
-		{
-			if(Ships[1].x >= SCREEN_WIDTH - 32 - 40 && Ships[0].y + 12 >= Ships[1].y) return 0;
+	if (result == base_cur_screen) {
+		if (flag == F_LEFT) {
+			if (Ships[1].x >= SCREEN_WIDTH - 32 - 40 &&
+			    Ships[0].y + 12 >= Ships[1].y)
+				return 0;
 		}
-		if(flag == F_RIGHT)
-		{
-			if(Ships[1].x < 32 && Ships[0].y + 12 >= Ships[1].y) return 0;
+
+		if (flag == F_RIGHT) {
+			if(Ships[1].x < 32 && Ships[0].y + 12 >= Ships[1].y)
+				return 0;
 		}
 	}
 
-	if(player_attached == 1) screen_bridge = 1; else screen_bridge = 0;
+	if (player_attached == 1)
+		screen_bridge = 1;
+	else
+		screen_bridge = 0;
 
 	ship_cur_screen = result;
+
 	return 1;
 }
 
-M_INLINE void GetCurrentSpriteDimensions(TSHIP *i, int *cx, int *cy)
+void GetCurrentSpriteDimensions(TSHIP *i, int *cx, int *cy)
 {
-	if (i->ai_type == AI_GARAGE)
-	{
+	if (i->ai_type == AI_GARAGE) {
 		*cx = GARAGE_WIDTH;
 		*cy = GARAGE_HEIGHT;
-	}
-	else if (i->ai_type == AI_HIDDEN_AREA_ACCESS)
-	{
+	} else if (i->ai_type == AI_HIDDEN_AREA_ACCESS) {
 		*cx = i->dx;
 		*cy = i->dy;
-	}
-	else
-	{
+	} else {
 		*cx = **(pSprites256[i->i] + i->cur_frame);
 		*cy = *(*(pSprites256[i->i] + i->cur_frame) + 1);
 	}
 }
 
-M_INLINE int ShipBaseOffset()
+int ShipBaseOffset()
 {
 	int xs, ys, xb, yb;
+
 	GetCurrentSpriteDimensions(&Ships[0], &xs, &ys);
 	GetCurrentSpriteDimensions(&Ships[1], &xb, &yb);
 	return (xb - xs) / 2;
 }
 
-M_INLINE unsigned char TileForPoint(int x, int y)
+unsigned char TileForPoint(int x, int y)
 {
 	return ScreenTilesBuffer[(y >> 3) * 40 + (x >> 3)];
 }
 
-M_INLINE int IndexOf(TSHIP *ship)
+int IndexOf(TSHIP *ship)
 {
 	return ship - &Ships[0];
 }
 
-M_INLINE int FacingLeft(TSHIP *i)
+int FacingLeft(TSHIP *i)
 {
 	return i->cur_frame == i->max_frame;
 }
 
-M_INLINE int FacingRight(TSHIP *i)
+int FacingRight(TSHIP *i)
 {
 	return i->cur_frame == i->min_frame;
 }
 
-M_INLINE int MaxRightPos(TSHIP *i)
+int MaxRightPos(TSHIP *i)
 {
 	int x, y;
+
 	GetCurrentSpriteDimensions(i, &x, &y);
 	return SCREEN_WIDTH - x;
 }
 
-M_INLINE int MaxBottomPos(TSHIP *i)
+int MaxBottomPos(TSHIP *i)
 {
 	int x, y;
 	GetCurrentSpriteDimensions(i, &x, &y);
@@ -334,16 +323,15 @@ int IsOverlap(TSHIP *i, TSHIP *j)
 	xs2 += j->x;
 
 	// Retrn 1 if rectangles do intersect.
-	if(i->x < j->x)
+	if (i->x < j->x)
 		if(xs > j->x)
 			goto _wdw2;
 
-	if(i->x >= j->x)
-	{
-		if(xs2 > i->x)
-		{
+	if (i->x >= j->x) {
+		if (xs2 > i->x) {
 		_wdw2:
-			if ((i->y < j->y && ys > j->y) || (i->y >= j->y && ys2 > i->y))
+			if ((i->y < j->y && ys > j->y) ||
+			    (i->y >= j->y && ys2 > i->y))
 				return 1;
 		}
 	}
@@ -367,10 +355,10 @@ int IsHurt(int x, int y, int index, int index2)
 	// ignore not-dangerous objects:
 	// bridge, smoke, explosions and elevator
 	if (j->ai_type == AI_BRIDGE ||
-		j->ai_type == AI_EXPLOSION ||
-		j->ai_type == AI_SMOKE ||
-		j->ai_type == AI_ELEVATOR ||
-		j->ai_type == AI_GARAGE)
+	    j->ai_type == AI_EXPLOSION ||
+	    j->ai_type == AI_SMOKE ||
+	    j->ai_type == AI_ELEVATOR ||
+	    j->ai_type == AI_GARAGE)
 		return 0;
 
 	GetCurrentSpriteDimensions(i, &xs, &ys);
@@ -382,17 +370,16 @@ int IsHurt(int x, int y, int index, int index2)
 	ys2 += j->y;
 	xs2 += j->x;
 
-	// Retrn 1 if rectangles do intersect.
-	if(x < j->x)
-		if(xs > j->x)
+	// Return 1 if rectangles do intersect.
+	if (x < j->x)
+		if (xs > j->x)
 			goto _wdw2;
 
-	if(x >= j->x)
-	{
-		if(xs2 > x)
-		{
+	if (x >= j->x) {
+		if (xs2 > x) {
 		_wdw2:
-			if ((y < j->y && ys > j->y) || (y >= j->y && ys2 > y))
+			if ((y < j->y && ys > j->y) ||
+			    (y >= j->y && ys2 > y))
 				return 1;
 		}
 	}
@@ -402,60 +389,47 @@ int IsHurt(int x, int y, int index, int index2)
 
 void HandleShipsContact(int i, int j)
 {
-	if (i < 2 && j < 2)
-	{
+	if (i < 2 && j < 2) {
 		// Both objects are player controlled.
 		return;
 	}
 
-	if (i > 1 && j > 1)
-	{
+	if (i > 1 && j > 1) {
 		// Bot objects are NPC.
 		if (Ships[i].ai_type != AI_SHOT &&
-			Ships[j].ai_type != AI_SHOT &&
-			Ships[i].ai_type != AI_HOMING_SHOT &&
-			Ships[j].ai_type != AI_HOMING_SHOT &&
-			Ships[i].ai_type != AI_BFG_SHOT &&
-			Ships[j].ai_type != AI_BFG_SHOT)
-		{
+		    Ships[j].ai_type != AI_SHOT &&
+		    Ships[i].ai_type != AI_HOMING_SHOT &&
+		    Ships[j].ai_type != AI_HOMING_SHOT &&
+		    Ships[i].ai_type != AI_BFG_SHOT &&
+		    Ships[j].ai_type != AI_BFG_SHOT) {
 			return;
 		}
 	}
 
 	if ((Ships[i].ai_type == AI_SPARE_SHIP && j < 2) ||
-		(Ships[j].ai_type == AI_SPARE_SHIP && i < 2))
-	{
+		(Ships[j].ai_type == AI_SPARE_SHIP && i < 2)) {
 		return;
 	}
 
-	if (Ships[i].ai_type == AI_BFG_SHOT)
-	{
+	if (Ships[i].ai_type == AI_BFG_SHOT) {
 		BlowUpEnemy(j);
-	}
-	else if (Ships[j].ai_type == AI_BFG_SHOT)
-	{
+	} else if (Ships[j].ai_type == AI_BFG_SHOT) {
 		BlowUpEnemy(i);
-	}
-	else if (Ships[i].ai_type == AI_BONUS)
-	{
-		if (j > 1)
-		{
+	} else if (Ships[i].ai_type == AI_BONUS) {
+		if (j > 1) {
 			// Bonus hit by a bullet. Swap bonus.
 			Ships[i].explosion.regenerate_bonus = 1;
 		}
+
 		BlowUpEnemy(i);
-	}
-	else if (Ships[j].ai_type == AI_BONUS)
-	{
-		if (i > 1)
-		{
+	} else if (Ships[j].ai_type == AI_BONUS) {
+		if (i > 1) {
 			// Bonus hit by a bullet. Swap bonus.
 			Ships[i].explosion.regenerate_bonus = 1;
 		}
+
 		BlowUpEnemy(j);
-	}
-	else
-	{
+	} else {
 		if (j > 1 || easy_level || i < 2)
 			BlowUpEnemy(i);
 
@@ -480,50 +454,41 @@ unsigned char IsTouch(int x, int y, int index)
 	if (xs > SCREEN_WIDTH || ys > ACTION_SCREEN_HEIGHT)
 		return 1;
 
-	if (index <= 1)
-	{
+	if (index <= 1) {
 		// Player ship or base.
-		for (int f = 0; f < SHIPS_NUMBER; f++)
-		{
-			if (f != index && Ships[f].state != SH_DEAD)
-			{
+		for (int f = 0; f < SHIPS_NUMBER; f++) {
+			if (f != index && Ships[f].state != SH_DEAD) {
 				// don't compare with itself or with dead one!
-				if (IsHurt(x, y, index, f))
-				{
+				if (IsHurt(x, y, index, f)) {
 					HandleShipsContact(index, f);
+
 					return 1;
 				}
 			}
 		}
-	}
-	else
-	{
+	} else {
 		// Any other ship (non player-controlled).
-		for (int f = 0; f < SHIPS_NUMBER; f++)
-		{
-			if (f == index || Ships[f].state == SH_DEAD)
-			{
+		for (int f = 0; f < SHIPS_NUMBER; f++) {
+			if (f == index || Ships[f].state == SH_DEAD) {
 				// don't compare with itself or with dead one!
 				continue;
 			}
 
 			// ignore sparkles
 			if (Ships[f].ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
-				Ships[f].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
-				Ships[f].ai_type == AI_HOMING_MISSLE ||
-				Ships[f].ai_type == AI_BRIDGE ||
-				Ships[f].ai_type == AI_BULLET)
+			    Ships[f].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
+			    Ships[f].ai_type == AI_HOMING_MISSLE ||
+			    Ships[f].ai_type == AI_BRIDGE ||
+			    Ships[f].ai_type == AI_BULLET)
 				continue;
 
 			if (Ships[index].ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
-				Ships[index].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL)
-			{
+			    Ships[index].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL) {
 				if (f > 1)
 					break;
 			}
 
-			if (IsHurt(x, y, index, f))
-			{
+			if (IsHurt(x, y, index, f)) {
 				HandleShipsContact(f, index);
 
 				if (Ships[index].ai_type == AI_BFG_SHOT)
@@ -534,17 +499,15 @@ unsigned char IsTouch(int x, int y, int index)
 		}
 	}
 
-	for (int dy = y; dy < ys; dy++)
-	{
-		for (int dx = x; dx < xs; dx++)
-		{
+	for (int dy = y; dy < ys; dy++) {
+		for (int dx = x; dx < xs; dx++) {
 			unsigned char b = TileForPoint(dx, dy);
+
 			if (b == 0)
 				continue;
 
 			// All tiles are solid.
-			if (index == 0 && b >= 246)
-			{
+			if (index == 0 && b >= 246) {
 				// ship dies from touching certain tiles
 				BlowUpEnemy(index);
 			}
@@ -560,22 +523,21 @@ int UpdateFuel()
 {
 	static int fuel_cnt = 25;
 
-	if( fuel_cnt == 0)
-	{
-		if(ship_fuel == 0)
-		{
+	if (fuel_cnt == 0) {
+		if (ship_fuel == 0) {
 			SetGameMode(GM_GAMEOVER);
 			LM_ResetKeys();
 			PutString(8*16, 8*10, "NO FUERZA");
+
 			return 1;
 		}
+
 		ship_fuel -= 1;
 		fuel_cnt = 25;
-	}
-	else
-	{
+	} else {
 		fuel_cnt -= 1;
 	}
+
 	return 0;
 }
 
@@ -584,31 +546,31 @@ void DoShip()
 	static unsigned char fallflag = 1;
 	static int dy;
 
-	if (--ticks_for_damage < 0) ticks_for_damage = 0;
+	if (--ticks_for_damage < 0)
+		ticks_for_damage = 0;
 
 	TSHIP *i;
 
 	i = &Ships[0];
 
-	if(i->ai_type == AI_EXPLOSION)
-	{
+	if (i->ai_type == AI_EXPLOSION) {
 		DoEnemy(0);
+
 		return;
 	}
 
 	// check if ships are attached
-	if(Ships[1].state == SH_ACTIVE &&
-	   Ships[1].ai_type != AI_EXPLOSION &&
-	   player_attached == 0)
-	{
-		if(FacingLeft(i) || FacingRight(i))
-		{
+	if (Ships[1].state == SH_ACTIVE &&
+	    Ships[1].ai_type != AI_EXPLOSION &&
+	    player_attached == 0) {
+		if (FacingLeft(i) || FacingRight(i)) {
 			int xs, ys, xb, yb;
+
 			GetCurrentSpriteDimensions(i, &xs, &ys);
 			GetCurrentSpriteDimensions(&Ships[1], &xb, &yb);
+
 			if ((i->x + xs / 2 == Ships[1].x + xb / 2) &&
-				(i->y + ys == Ships[1].y))
-			{
+			    (i->y + ys == Ships[1].y)) {
 				player_attached = 1;
 				screen_bridge = 1;
 				PlaySoundEffect(SND_CONTACT);
@@ -618,124 +580,91 @@ void DoShip()
 
 	// exit if attach mode is ON
 	if (player_attached == 1 ||
-		UpdateFuel() == 1 ||
-		Ships[0].state == SH_DEAD)
-	{
+	    UpdateFuel() == 1 ||
+	    Ships[0].state == SH_DEAD) {
 		return;
 	}
 
-	if(GKeys[KEY_RIGHT] == 1)
-	{
-		if(FacingRight(i))
-		{
-			if(IsTouch(i->x + 2, i->y, 0) == 0)
-			{
+	if (GKeys[KEY_RIGHT] == 1) {
+		if (FacingRight(i)) {
+			if (IsTouch(i->x + 2, i->y, 0) == 0) {
 				i->x += 2;
-			}
-			else
-			{
-				if(i->x == MaxRightPos(i) && ChangeScreen(F_RIGHT) == 1)
-				{
+			} else {
+				if (i->x == MaxRightPos(i) && ChangeScreen(F_RIGHT) == 1) {
 					i->x = 0;
 					InitNewScreen();
 				}
 			}
-		}
-		else
-		{
-			if(i->anim_speed_cnt == 0)
-			{
+		} else {
+			if (i->anim_speed_cnt == 0) {
 				i->cur_frame -= 1;
 				i->anim_speed_cnt = i->anim_speed;
-			}
-			else
-			{
+			} else {
 				i->anim_speed_cnt -= 1;
 			}
 		}
 	}
 
-	if(GKeys[KEY_LEFT] == 1)
-	{
-		if(FacingLeft(i))
-		{
-			if(IsTouch(i->x - 2, i->y, 0) == 0)
-			{
+	if (GKeys[KEY_LEFT] == 1) {
+		if (FacingLeft(i)) {
+			if (IsTouch(i->x - 2, i->y, 0) == 0) {
 				i->x -= 2;
-			}
-			else
-			{
-				if(i->x == 0 && ChangeScreen(F_LEFT) == 1)
-				{
+			} else {
+				if (i->x == 0 && ChangeScreen(F_LEFT) == 1) {
 					i->x = MaxRightPos(i);
 					InitNewScreen();
 				}
 			}
-
-		}
-		else
-		{
-			if(i->anim_speed_cnt == 0)
-			{
+		} else {
+			if (i->anim_speed_cnt == 0) {
 				i->cur_frame += 1;
 				i->anim_speed_cnt = i->anim_speed;
-			}
-			else
-			{
+			} else {
 				i->anim_speed_cnt -= 1;
 			}
 		}
 	}
 
-	if(GKeys[KEY_UP] == 1)
-	{
-		if((i->y & 1) != 0) dy = 1; else dy = 2;
-		if(IsTouch(i->x, i->y - dy, 0) == 0)
-		{
-			i->y -= dy;
-		}
+	if (GKeys[KEY_UP] == 1) {
+		if ((i->y & 1) != 0)
+			dy = 1;
 		else
-		{
-			if(i->y == 0 && ChangeScreen(F_UP) == 1)
-			{
+			dy = 2;
+
+		if (IsTouch(i->x, i->y - dy, 0) == 0) {
+			i->y -= dy;
+		} else {
+			if (i->y == 0 && ChangeScreen(F_UP) == 1) {
 				i->y = MaxBottomPos(i);
 				InitNewScreen();
 			}
 		}
+	} else {
+		if (GKeys[KEY_DOWN] == 1) {
+			if ((i->y & 1) != 0)
+				dy = 1;
+			else
+				dy = 2;
 
-	}
-	else
-	{
-		if(GKeys[KEY_DOWN] == 1)
-		{
-			if((i->y & 1) != 0) dy = 1; else dy = 2;
-			if(IsTouch(i->x, i->y + dy, 0) == 0)
-			{
+			if (IsTouch(i->x, i->y + dy, 0) == 0) {
 				i->y += dy;
-			}
-			else
-			{
-				if(i->y == MaxBottomPos(i) && ChangeScreen(F_DOWN) == 1)
-				{
+			} else {
+				if (i->y == MaxBottomPos(i) && ChangeScreen(F_DOWN) == 1) {
 					i->y = 0;
 					InitNewScreen();
 				}
 			}
-		}
-		else
-		{
-			if(fallflag == 0)
-			{
-				if(IsTouch(i->x, i->y + 1, 0) == 0) i->y += 1;
+		} else {
+			if (fallflag == 0) {
+				if (IsTouch(i->x, i->y + 1, 0) == 0)
+					i->y += 1;
+
 				fallflag = 1;
-				if(i->y == MaxBottomPos(i) && ChangeScreen(F_DOWN) == 1)
-				{
+				if (i->y == MaxBottomPos(i) && ChangeScreen(F_DOWN) == 1) {
 					i->y = 0;
 					InitNewScreen();
 				}
-			}
-			else
-			{
+			} else {
 				fallflag -= 1;
 			}
 		}
@@ -745,12 +674,9 @@ void DoShip()
 
 void ReEnableBase()
 {
-	if(base_cur_screen != ship_cur_screen)
-	{
+	if(base_cur_screen != ship_cur_screen) {
 		Ships[1].state = SH_DEAD;
-	}
-	else
-	{
+	} else {
 		Ships[1].state = SH_ACTIVE;
 	}
 }
@@ -762,10 +688,9 @@ void DoBase()
 	i = &Ships[0]; // ship
 	j = &Ships[1]; // base
 
-	if(j->state == SH_DEAD)
-	{
-		if(j->ai_type == AI_EXPLOSION) // if exploded previously, reenable base at level start
-		{
+	if (j->state == SH_DEAD) {
+		// if exploded previously, reenable base at level start
+		if(j->ai_type == AI_EXPLOSION) {
 			base_cur_screen = base_level_start;
 			j->x = 160;
 			j->y = 104;
@@ -777,80 +702,61 @@ void DoBase()
 			j->anim_speed_cnt = 0;
 			j->ai_type = 0;
 		}
+
 		return;
 	}
 
 	// if exploding
-	if(j->ai_type == AI_EXPLOSION)
-	{
+	if (j->ai_type == AI_EXPLOSION) {
 		DoEnemy(1);
+
 		return;
 	}
 
 	// do smth if attach mode ON
 	int playMoveSound = 0;
 
-	if(player_attached == 1 && i->ai_type != AI_EXPLOSION)
-	{
-		if(GKeys[KEY_RIGHT] == 1)
-		{
-			if(FacingRight(i))
-			{
+	if (player_attached == 1 && i->ai_type != AI_EXPLOSION) {
+		if (GKeys[KEY_RIGHT] == 1) {
+			if (FacingRight(i)) {
 				j->cur_frame ^= 1;
 				playMoveSound = 1;
 
-				if(IsTouch(i->x + 2, i->y, 0) + IsTouch(j->x + 2, j->y, 1) == 0)
-				{
-					if (TileForPoint(j->x + 40, j->y + 16))
-					{
+				if (IsTouch(i->x + 2, i->y, 0) + IsTouch(j->x + 2, j->y, 1) == 0) {
+					if (TileForPoint(j->x + 40, j->y + 16)) {
 						i->x += 2;
 						j->x += 2;
 					}
-				}
-				else
-				{
-					if(j->x == 280 && ChangeScreen(F_RIGHT) == 1)
-					{
+				} else {
+					if (j->x == 280 && ChangeScreen(F_RIGHT) == 1) {
 						i->x = ShipBaseOffset();
 						j->x = 0;
 						base_cur_screen = ship_cur_screen;
 						InitNewScreen();
 					}
 				}
-			}
-			else
-			{
-				if(i->anim_speed_cnt == 0)
-				{
+			} else {
+				if (i->anim_speed_cnt == 0) {
 					i->cur_frame -= 1;
 					i->anim_speed_cnt = i->anim_speed;
-				}
-				else
-				{
+				} else {
 					i->anim_speed_cnt -= 1;
 				}
 			}
 		}
 
-		if(GKeys[KEY_LEFT] == 1)
-		{
-			if(FacingLeft(i))
-			{
+		if (GKeys[KEY_LEFT] == 1) {
+			if (FacingLeft(i)) {
 				j->cur_frame ^= 1;
 				playMoveSound = 1;
 
-				if(IsTouch(i->x - 2, i->y, 0) + IsTouch(j->x - 2, j->y, 1) == 0)
-				{
-					if (TileForPoint(j->x - 2, j->y + 16))
-					{
+				if (IsTouch(i->x - 2, i->y, 0) + IsTouch(j->x - 2, j->y, 1) == 0) {
+					if (TileForPoint(j->x - 2, j->y + 16)) {
 						i->x -= 2;
 						j->x -= 2;
 					}
-				}
-				else
-				{
-					if(j->x == 0 && ChangeScreen(F_LEFT) == 1)
-					{
+				} else {
+					if (j->x == 0 && ChangeScreen(F_LEFT) == 1) {
 						//xxx
 						i->x = 280 + ShipBaseOffset();
 						j->x = 280;
@@ -858,34 +764,31 @@ void DoBase()
 						InitNewScreen();
 					}
 				}
-			}
-			else
-			{
-				if(i->anim_speed_cnt == 0)
-				{
+			} else {
+				if (i->anim_speed_cnt == 0) {
 					i->cur_frame += 1;
 					i->anim_speed_cnt = i->anim_speed;
-				}
-				else
-				{
+				} else {
 					i->anim_speed_cnt -= 1;
 				}
 			}
 		}
 
-		if (playMoveSound) PlaySoundEffect(SND_MOVE);
-		else StopSoundEffect(SND_MOVE);
+		if (playMoveSound)
+			PlaySoundEffect(SND_MOVE);
+		else
+			StopSoundEffect(SND_MOVE);
 
-		if(GKeys[KEY_UP] == 1)
-		{
+		if (GKeys[KEY_UP] == 1) {
 			// if bound with base and standing on a bridge - don't allow to fly up
-			for(int f = 0; f <= 3; f++)
-			{
-				if(ScreenTilesBuffer[((j->y + 16) >> 3) * 40 + ((j->x + 8) >> 3) + f] == 245) return;
+			for (int f = 0; f <= 3; f++) {
+				if (ScreenTilesBuffer[((j->y + 16) >> 3) * 40 + ((j->x + 8) >> 3) + f] == 245)
+					return;
 			}
 
 			// if standing on an elevator which is lifting up - don't allow to fly up
-			if(elevator_flag == 1) return;
+			if (elevator_flag == 1)
+				return;
 
 			StopSoundEffect(SND_MOVE);
 
@@ -911,18 +814,21 @@ void AddScore(int update)
 void UpdateScoreWithShip(int i)
 {
 	if (i > 1 &&
-		Ships[i].ai_type != AI_BULLET &&
-		Ships[i].ai_type != AI_SHOT &&
-		Ships[i].ai_type != AI_BFG_SHOT &&
-		Ships[i].ai_type != AI_HOMING_SHOT &&
-		Ships[i].ai_type != AI_BONUS &&
-		Ships[i].ai_type != AI_ELECTRIC_SPARKLE_VERTICAL &&
-		Ships[i].ai_type != AI_ELECTRIC_SPARKLE_HORIZONTAL)
-	{
+	    Ships[i].ai_type != AI_BULLET &&
+	    Ships[i].ai_type != AI_SHOT &&
+	    Ships[i].ai_type != AI_BFG_SHOT &&
+	    Ships[i].ai_type != AI_HOMING_SHOT &&
+	    Ships[i].ai_type != AI_BONUS &&
+	    Ships[i].ai_type != AI_ELECTRIC_SPARKLE_VERTICAL &&
+	    Ships[i].ai_type != AI_ELECTRIC_SPARKLE_HORIZONTAL) {
 		// /2 less points for hard mode, /2 less for rocket launcher of BFG
 		int score = Ships[i].ai_type * 100 * (game_level & 7) + (RandomInt() & 127);
-		if (easy_level) score >>= 1;
-		if (Ships[0].i == SHIP_TYPE_ROCKET_LAUNCHER || Ships[0].i == SHIP_TYPE_BFG) score >>= 1;
+
+		if (easy_level)
+			score >>= 1;
+
+		if (Ships[0].i == SHIP_TYPE_ROCKET_LAUNCHER || Ships[0].i == SHIP_TYPE_BFG)
+			score >>= 1;
 
 		AddScore(score);
 	}
@@ -931,28 +837,25 @@ void UpdateScoreWithShip(int i)
 void DestroyHiddenAreaAccess(TSHIP *i, int playEffects)
 {
 	// Cleanup background and make noise if needed.
-	for (int y = 0; y < i->dy; ++y)
-	{
+	for (int y = 0; y < i->dy; ++y) {
 		int ay = i->y + y;
-		for (int x = 0; x < i->dx; ++x)
-		{
-			int ax = i->x + x;
 
+		for (int x = 0; x < i->dx; ++x) {
+			int ax = i->x + x;
 			int index = (ay >> 3) * 40 + (ax >> 3);
+
 			if (index >= 0x2a8)
 				break;
 
 			ScreenTilesBuffer[index] = 0;
 
-			if (playEffects && !(y % 16) && !(x % 16) && (ay + 16 < ACTION_SCREEN_HEIGHT))
-			{
+			if (playEffects && !(y % 16) && !(x % 16) && (ay + 16 < ACTION_SCREEN_HEIGHT)) {
 				CreateWallExplosion(ax, ay);
 			}
 		}
 	}
 
-	if (playEffects)
-	{
+	if (playEffects) {
 		PlaySoundEffect(SND_EXPLODE);
 	}
 
@@ -962,81 +865,77 @@ void DestroyHiddenAreaAccess(TSHIP *i, int playEffects)
 void BlowUpEnemy(int i)
 {
 #ifdef GOD_MODE
-	if (i <= 1)
-	{
+	if (i <= 1) {
 		// You cannot hurt a god.
 		return;
 	}
 #endif
 
-	if (i == 0)
-	{
+	if (i == 0) {
 		// This is the player ship.
-		if (easy_level)
-		{
-			if (!ticks_for_damage)
-			{
+		if (easy_level) {
+			if (!ticks_for_damage) {
 				ticks_for_damage = 20;
 				--ship_health;
 			}
-		}
-		else
-		{
+		} else {
 			ship_health = -1;
 		}
 
-		if (ship_health >= 0)
-		{
+		if (ship_health >= 0) {
 			return;
 		}
 	}
 
-	if (i == 1)
-	{
+	if (i == 1) {
 		// This is a base, do not kill the base while moving up,
-		// otherwise player will be disapointed + there is a bug whith
+		// otherwise player will be disappointed + there is a bug whith
 		// elevator_flag being not reset.
 		if (elevator_flag)
 			return;
 	}
 
 	// if already exploding - exit
-	if(Ships[i].ai_type == AI_EXPLOSION) return;
-	if(Ships[i].ai_type == AI_SMOKE) return;
+	if (Ships[i].ai_type == AI_EXPLOSION)
+		return;
+
+	if (Ships[i].ai_type == AI_SMOKE)
+		return;
 
 	if (Ships[i].ai_type == AI_SHOT ||
-		Ships[i].ai_type == AI_HOMING_SHOT)
-	{
+	    Ships[i].ai_type == AI_HOMING_SHOT) {
 		Ships[i].state = SH_DEAD;
+
 		return;
 	}
 
-	if (Ships[i].ai_type == AI_BFG_SHOT)
-	{
+	if (Ships[i].ai_type == AI_BFG_SHOT) {
 		CleanupBfg();
 		Ships[i].state = SH_DEAD;
+
 		return;
 	}
 
-	if (Ships[i].ai_type == AI_HIDDEN_AREA_ACCESS)
-	{
+	if (Ships[i].ai_type == AI_HIDDEN_AREA_ACCESS) {
 		DestroyHiddenAreaAccess(Ships + i, 1);
+
 		return;
 	}
 
 	// some corrections for homing missiles
-	if(Ships[i].i == 40 || Ships[i].i == 41) {
+	if (Ships[i].i == 40 || Ships[i].i == 41) {
 		if (easy_level) {
 			CreateExplosion(i);
 			Ships[i].x += SCREEN_WIDTH;
 			PlaySoundEffect(SND_EXPLODE);
 		}
+
 		return;
 	}
 
-
 	// if non-killable enemy - exit
-	if(Ships[i].i == 11 || Ships[i].i == 42) return;
+	if (Ships[i].i == 11 || Ships[i].i == 42)
+		return;
 
 	MakeScreenShot();
 
@@ -1044,58 +943,52 @@ void BlowUpEnemy(int i)
 	UpdateScoreWithShip(i);
 
 	// if blowing base - zero player_attached
-	if(i == 1) player_attached = 0;
+	if (i == 1)
+		player_attached = 0;
 
 	// reactivate parent cannon
-	if(Ships[i].i == 34) Ships[Ships[i].parent].dx = 0;
+	if (Ships[i].i == 34)
+		Ships[Ships[i].parent].dx = 0;
 
 	// special procedures for breakable walls
-	if(Ships[i].i == 6)
-	{
+	if (Ships[i].i == 6) {
 		#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 		extern int level_cache_fl;
 		level_cache_fl = 1; // doing some magic...
 		#endif
-		if(Ships[i].cur_frame == 0)
-		{
+		if (Ships[i].cur_frame == 0) {
 			Ships[i].x -= 8;
 			ScreenTilesBuffer[(Ships[i].y >> 3) * 40 + (Ships[i].x >> 3)] = 0;
 			ScreenTilesBuffer[((Ships[i].y >> 3) + 1) * 40 + (Ships[i].x >> 3)] = 0;
-		}
-		else
-		{
+		} else {
 			ScreenTilesBuffer[(Ships[i].y >> 3) * 40 + (Ships[i].x >> 3) + 1] = 0;
 			ScreenTilesBuffer[((Ships[i].y >> 3) + 1) * 40 + (Ships[i].x >> 3) + 1] = 0;
 		}
 	}
 
-	if (Ships[i].ai_type == AI_BONUS)
-	{
+	if (Ships[i].ai_type == AI_BONUS) {
 		// Memorize bonus type.
 		Ships[i].explosion.bonus_type = Ships[i].i;
 	}
 
 	if (easy_level &&
-		(Ships[i].ai_type == AI_RANDOM_MOVE || Ships[i].ai_type == AI_KAMIKADZE))
-	{
+	    (Ships[i].ai_type == AI_RANDOM_MOVE || Ships[i].ai_type == AI_KAMIKADZE)) {
 		// Generate bonus if defined by screen and if
 		// this ship is the last one on the screen.
-		if (cur_screen_bonus)
-		{
+		if (cur_screen_bonus) {
 			int alive_ship = 0;
-			for (int n = 2; n < SHIPS_NUMBER; ++n)
-			{
+
+			for (int n = 2; n < SHIPS_NUMBER; ++n) {
 				if (n != i &&
-					Ships[n].state == SH_ACTIVE &&
-					(Ships[n].ai_type == AI_RANDOM_MOVE || Ships[n].ai_type == AI_KAMIKADZE))
-				{
+				    Ships[n].state == SH_ACTIVE &&
+				    (Ships[n].ai_type == AI_RANDOM_MOVE ||
+				     Ships[n].ai_type == AI_KAMIKADZE)) {
 					alive_ship = 1;
 					break;
 				}
 			}
 
-			if (!alive_ship)
-			{
+			if (!alive_ship) {
 				Ships[i].explosion.bonus_type = cur_screen_bonus;
 				Ships[i].explosion.regenerate_bonus = 1;
 			}
@@ -1103,24 +996,23 @@ void BlowUpEnemy(int i)
 	}
 
 	Ships[i].ai_type = AI_EXPLOSION;
-	if(Ships[i].i == 6)
-	{
+
+	if (Ships[i].i == 6) {
 		Ships[i].i = 7;
-	}
-	else
-	{
-		if(Ships[i].i == 1)
-		{
+	} else {
+		if (Ships[i].i == 1) {
 			// explosion's sprite is smaller than base's thus a little hack
 			Ships[i].i = 23;
 			Ships[i].x += 4;
 			Ships[i].y += 4;
-		}
-		else
-		{
-			if(Ships[i].i == 0)	Ships[i].i = 23; else Ships[i].i = 2;
+		} else {
+			if(Ships[i].i == 0)
+				Ships[i].i = 23;
+			else
+				Ships[i].i = 2;
 		}
 	}
+
 	Ships[i].min_frame = 0;
 	Ships[i].max_frame = 2;
 	Ships[i].cur_frame = 0;
@@ -1135,29 +1027,36 @@ int IsLaserHit2(int x_start, int x_end, int y)
 	int xs2, ys2, return_value = 0;
 
 	// swap if x_start > x_end
-	if(x_start > x_end) { x_start ^= x_end; x_end ^= x_start; x_start ^= x_end; }
+	if (x_start > x_end) {
+		x_start ^= x_end;
+		x_end ^= x_start;
+		x_start ^= x_end;
+	}
 
-	if(x_start <= 0) return_value = 1;
-	if(x_end >= 319) return_value =  1;
+	if (x_start <= 0)
+		return_value = 1;
 
-	if (TileForPoint(x_start, y)) return_value = 1;
-	if (TileForPoint(x_end, y)) return_value = 1;
+	if (x_end >= 319)
+		return_value =  1;
 
-	for(int f = 1; f <= SHIPS_NUMBER-1; f++)
-	{
-		if(Ships[f].state != SH_DEAD)
-		{
+	if (TileForPoint(x_start, y))
+		return_value = 1;
+
+	if (TileForPoint(x_end, y))
+		return_value = 1;
+
+	for (int f = 1; f <= SHIPS_NUMBER-1; f++) {
+		if (Ships[f].state != SH_DEAD) {
 			// exclude non-hittable objects
 			if (Ships[f].ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
-				Ships[f].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
-				Ships[f].ai_type == AI_BRIDGE ||
-				Ships[f].ai_type == AI_BULLET ||
-				Ships[f].ai_type == AI_SHOT ||
-				Ships[f].ai_type == AI_BFG_SHOT ||
-				Ships[f].ai_type == AI_HOMING_SHOT ||
-				Ships[f].ai_type == AI_GARAGE ||
-				Ships[f].ai_type == AI_ELEVATOR)
-			{
+			    Ships[f].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
+			    Ships[f].ai_type == AI_BRIDGE ||
+			    Ships[f].ai_type == AI_BULLET ||
+			    Ships[f].ai_type == AI_SHOT ||
+			    Ships[f].ai_type == AI_BFG_SHOT ||
+			    Ships[f].ai_type == AI_HOMING_SHOT ||
+			    Ships[f].ai_type == AI_GARAGE ||
+			    Ships[f].ai_type == AI_ELEVATOR) {
 				continue;
 			}
 
@@ -1167,10 +1066,8 @@ int IsLaserHit2(int x_start, int x_end, int y)
 			xs2 = Ships[f].x + cx;
 			ys2 = Ships[f].y + cy;
 
-			if(y >= Ships[f].y && y < ys2)
-			{
-				if(x_start < Ships[f].x && x_end >= xs2)
-				{
+			if (y >= Ships[f].y && y < ys2) {
+				if (x_start < Ships[f].x && x_end >= xs2) {
 					if (Ships[f].ai_type == AI_BONUS) {
 						Ships[f].explosion.regenerate_bonus = 1;
 					}
@@ -1179,10 +1076,8 @@ int IsLaserHit2(int x_start, int x_end, int y)
 					continue;
 				}
 
-				for(int dx = x_start; dx <= x_end; dx++)
-				{
-					if(dx >= Ships[f].x && dx < xs2)
-					{
+				for (int dx = x_start; dx <= x_end; dx++) {
+					if (dx >= Ships[f].x && dx < xs2) {
 						if (Ships[f].ai_type == AI_BONUS) {
 							Ships[f].explosion.regenerate_bonus = 1;
 						}
@@ -1201,8 +1096,15 @@ int IsLaserHit2(int x_start, int x_end, int y)
 int UpdateLaser(int i)
 {
 	laser_overload += i;
-	if(laser_overload > 32*8-1) {laser_overload = 0; return 1; }
-	if(laser_overload < 0) laser_overload = 0;
+
+	if (laser_overload > 32*8-1) {
+		laser_overload = 0;
+		return 1;
+	}
+
+	if (laser_overload < 0)
+		laser_overload = 0;
+
 	return 0;
 }
 
@@ -1212,22 +1114,19 @@ void DoMachineGun()
 	if (--mg_timeout < 0)
 		mg_timeout = 0;
 
-	if(GKeys[KEY_FIRE] == 1)
-	{
-		if(UpdateLaser(1) == 1)
-		{
+	if (GKeys[KEY_FIRE] == 1) {
+		if (UpdateLaser(1) == 1) {
 			BlowUpEnemy(0);
 			LM_ResetKeys();
 			return;
 		}
 
-		if (!mg_timeout)
-		{
+		if (!mg_timeout) {
 			// Create a new bullet.
 			TSHIP *i = &Ships[0];
 
 			//if ship is not facing right or left, then exit.
-			if(!FacingLeft(i) && !FacingRight(i))
+			if (!FacingLeft(i) && !FacingRight(i))
 				return;
 
 			TSHIP *j = PrepareFreeShip();
@@ -1249,9 +1148,7 @@ void DoMachineGun()
 
 			PlaySoundEffect(SND_SHORT_LASER_SHOOT);
 		}
-	}
-	else
-	{
+	} else {
 		UpdateLaser(-1);
 		mg_timeout = 0;
 	}
@@ -1263,15 +1160,13 @@ void DoBFG()
 	if (--mg_timeout < 0)
 		mg_timeout = 0;
 
-	if(GKeys[KEY_FIRE] == 1)
-	{
-		if (!mg_timeout && !bfg_on)
-		{
+	if (GKeys[KEY_FIRE] == 1) {
+		if (!mg_timeout && !bfg_on) {
 			// Create a new bullet.
 			TSHIP *i = &Ships[0];
 
 			//if ship is not facing right or left, then exit.
-			if(!FacingLeft(i) && !FacingRight(i))
+			if (!FacingLeft(i) && !FacingRight(i))
 				return;
 
 			TSHIP *j = PrepareFreeShip();
@@ -1296,9 +1191,7 @@ void DoBFG()
 
 			PlaySoundEffect(SND_CANNON_SHOOT);
 		}
-	}
-	else
-	{
+	} else {
 		mg_timeout = 0;
 	}
 }
@@ -1309,15 +1202,13 @@ void DoRocketLauncher()
 	if (--rl_timeout < 0)
 		rl_timeout = 0;
 
-	if(GKeys[KEY_FIRE] == 1)
-	{
-		if (!rl_timeout)
-		{
+	if (GKeys[KEY_FIRE] == 1) {
+		if (!rl_timeout) {
 			// Create a new bullet.
 			TSHIP *i = &Ships[0];
 
 			//if ship is not facing right or left, then exit.
-			if(!FacingLeft(i) && !FacingRight(i))
+			if (!FacingLeft(i) && !FacingRight(i))
 				return;
 
 			TSHIP *j = PrepareFreeShip();
@@ -1331,17 +1222,14 @@ void DoRocketLauncher()
 			j->ai_type = AI_HOMING_SHOT;
 			j->just_created = 1;
 
-			if (FacingRight(i))
-			{
+			if (FacingRight(i)) {
 				// to the right
 				j->x = i->x + 32;
 				j->dx = 3 ;
 				j->cur_frame = 2;
 				j->min_frame = 2;
 				j->max_frame = 3;
-			}
-			else
-			{
+			} else {
 				// to the left
 				j->x = i->x - 14;
 				j->dx = -3;
@@ -1354,9 +1242,7 @@ void DoRocketLauncher()
 			// Reset timeout.
 			rl_timeout = 30;
 		}
-	}
-	else
-	{
+	} else {
 		//rl_timeout --;
 	}
 }
@@ -1372,35 +1258,25 @@ void DoLaser()
 	static int previous_phase = 0;
 
 	int fireOn = (GKeys[KEY_FIRE] == 1) && (Ships[0].i == SHIP_TYPE_LASER);
-	if (fireOn)
-	{
+	if (fireOn) {
 		if(UpdateLaser(1) == 1) {BlowUpEnemy(0); LM_ResetKeys(); return;}
-	}
-	else
-	{
+	} else {
 		UpdateLaser(-1);
 	}
 
 	// if zero - no shooting, 1 - shooting right, -1 - shooting left
-	if(laser_dir == 0)
-	{
-		if(fireOn && elevator_flag == 0) // HACK, or you will shoot your base
-		{
+	if (laser_dir == 0) {
+		if (fireOn && elevator_flag == 0) { // HACK, or you will shoot your base
 			//if ship facing right
-			if(FacingRight(&Ships[0]))
-			{
+			if (FacingRight(&Ships[0])) {
 				x_start = Ships[0].x + 32;
 				x_end = x_start;
 				ly = Ships[0].y + 6;
 				laser_dir = 1;
 				laser_phase = 0;
 				goto __woo;
-			}
-			// if facing left
-			else
-			{
-				if(FacingLeft(&Ships[0]))
-				{
+			} else { // if facing left
+				if (FacingLeft(&Ships[0])) {
 					x_start = Ships[0].x - 1;
 					x_end = x_start;
 					ly = Ships[0].y + 6;
@@ -1410,96 +1286,75 @@ void DoLaser()
 				}
 			}
 		}
-	}
-	else
-	{
+	} else {
 		__woo:
 		// animate laser
 		// shooting right
-		if(laser_dir == 1)
-		{
+		if (laser_dir == 1) {
 			// another dirty hack or laser will overlap with ship when moving
 			//x_start = Ships[0].x + 32;
 
-			if(laser_phase == 0)
-			{
+			if (laser_phase == 0) {
 				x_start = Ships[0].x + 32;
 
-				for(dx = 0; dx <= 11; dx++)
-				{
+				for (dx = 0; dx <= 11; dx++) {
 					x_end += 1;
-					if(IsLaserHit2(x_start, x_end, ly) == 1)
-					{
+					if (IsLaserHit2(x_start, x_end, ly) == 1) {
 						laser_phase = 1;
 						break;
 					}
 				}
-			}
-			else
-			{
-				for(dx = 0; dx <= 11; dx++)
-				{
+			} else {
+				for (dx = 0; dx <= 11; dx++) {
 					x_start += 1;
-					if(x_start == x_end)
-					{
+
+					if (x_start == x_end) {
 						laser_dir = 0;
 						break;
 					}
+
 					IsLaserHit2(x_start, x_end, ly);
 				}
 			}
 
-		}
-		// shooting left
-		else
-		{
+		} else { // shooting left
 			// another dirty hack or laser will overlap with ship when moving
 			//x_start = Ships[0].x - 1;
 
-			if(laser_dir == -1)
-			{
-				if(laser_phase == 0)
-				{
+			if (laser_dir == -1) {
+				if (laser_phase == 0) {
 					x_start = Ships[0].x - 1;
 
-					for(dx = 0; dx <= 11; dx++)
-					{
+					for (dx = 0; dx <= 11; dx++) {
 						x_end -= 1;
-						if(IsLaserHit2(x_start, x_end, ly) == 1)
-						{
+
+						if (IsLaserHit2(x_start, x_end, ly) == 1) {
 							laser_phase = 1;
 							break;
 						}
 					}
-				}
-				else
-				{
-					for(dx = 0; dx <= 11; dx++)
-					{
+				} else {
+					for (dx = 0; dx <= 11; dx++) {
 						x_start -= 1;
-						if(x_start == x_end)
-						{
+						if (x_start == x_end) {
 							laser_dir = 0;
 							break;
 						}
+
 						IsLaserHit2(x_start, x_end, ly);
 					}
 				}
 			}
-
 		}
 	}
 
-	if (fireOn)
-	{
+	if (fireOn) {
 		if (laser_phase != previous_phase && !laser_phase) {
 			PlaySoundEffect(SND_LASER_SHOOT);
 		}
 
 		previous_phase = laser_phase;
-	}
-	else
-	{
+	} else {
 		previous_phase = 1;
 	}
 }
@@ -1513,18 +1368,14 @@ int UpdateAnimation(int f)
 	i = &Ships[f];
 
 	// do animation counters
-	if( i->anim_speed_cnt == 0)
-	{
+	if (i->anim_speed_cnt == 0) {
 		i->anim_speed_cnt = i->anim_speed;
 		i->cur_frame += 1;
-		if(i->cur_frame > i->max_frame)
-		{
+		if (i->cur_frame > i->max_frame) {
 			i->cur_frame = i->min_frame;
 			return 1;
 		}
-	}
-	else
-	{
+	} else {
 		i->anim_speed_cnt -= 1;
 	}
 
@@ -1537,13 +1388,10 @@ int UpdateMoveSpeed(int f)
 	TSHIP *i;
 
 	i = &Ships[f];
-	if(i->move_speed_cnt == 0)
-	{
+	if (i->move_speed_cnt == 0) {
 		i->move_speed_cnt = i->move_speed;
 		return 1;
-	}
-	else
-	{
+	} else {
 		i->move_speed_cnt -= 1;
 	}
 
@@ -1568,6 +1416,7 @@ int ShipsDistance(TSHIP *i, TSHIP *j)
 {
 	int x = i->x - j->x;
 	int y = i->y - j->y;
+
 	return (int)sqrt((float)(x*x + y*y));
 }
 
@@ -1577,17 +1426,12 @@ void AddBfgTarget(int index, int bfgIndex)
 	TSHIP *bfg = Ships + bfgIndex;
 
 	TBFGTARGET *t = NULL;
-	for (int n = 0; n < MAX_BFG_TARGETS; ++n)
-	{
+	for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
 		if (BfgTargets[n].ship == index &&
-			BfgTargets[n].ship_i == i->i)
-		{
-
+		    BfgTargets[n].ship_i == i->i) {
 			t = &BfgTargets[n];
 			break;
-		}
-		else if (!t && !BfgTargets[n].ship)
-		{
+		} else if (!t && !BfgTargets[n].ship) {
 			t = &BfgTargets[n];
 		}
 	}
@@ -1653,618 +1497,641 @@ void DoEnemy(int f)
 
 	i = &Ships[f];
 
-	if(i->state == SH_DEAD) return;
+	if (i->state == SH_DEAD)
+		return;
 
 	// if main ship is exploding, freeze other enemies except bridge and garage
 	// it's not safe but ship dies after all and enemy data is reinitialized then
-	if (f != 0 && Ships[0].ai_type == AI_EXPLOSION)
-	{
+	if (f != 0 && Ships[0].ai_type == AI_EXPLOSION) {
 		if(i->ai_type != AI_BRIDGE &&
-			i->ai_type != AI_GARAGE &&
-			i->ai_type != AI_HIDDEN_AREA_ACCESS &&
-			i->ai_type != AI_SPARE_SHIP)
-		{
+		   i->ai_type != AI_GARAGE &&
+		   i->ai_type != AI_HIDDEN_AREA_ACCESS &&
+		   i->ai_type != AI_SPARE_SHIP) {
 			i->ai_type = AI_STATIC; // don't affect ship itself
 		}
 	}
 
 	// do different ai types
-	switch(i->ai_type)
-	{
-		case AI_STATIC: // breakable wall or non-moving enemy
-			UpdateAnimation(f);
-			break;
-		case AI_RANDOM_MOVE:
+	switch (i->ai_type) {
+	case AI_STATIC: // breakable wall or non-moving enemy
+		UpdateAnimation(f);
+		break;
+
+	case AI_RANDOM_MOVE:
 _random_move_ai:
-			UpdateAnimation(f);
-			if(UpdateMoveSpeed(f) == 1)
-			{
-				if(i->ai_update_cnt == 0)
-				{
-					i->dx = RandomInt() & 3;
-					if(i->dx >= 2) i->dx = -1;
+		UpdateAnimation(f);
+		if (UpdateMoveSpeed(f) == 1) {
+			if (i->ai_update_cnt == 0) {
+				i->dx = RandomInt() & 3;
+				if (i->dx >= 2)
+					i->dx = -1;
 
-					i->dy = RandomInt() & 3;
-					if(i->dy >= 2) i->dy = -1;
+				i->dy = RandomInt() & 3;
+				if (i->dy >= 2)
+					i->dy = -1;
 
-					i->ai_update_cnt = RandomInt() & 0x1f;
-					if(i->ai_update_cnt < 15) i->ai_update_cnt = 15;
-				}
-				else
-				{
-					i->ai_update_cnt -= 1;
-				}
-			_optimize1:
-				if(IsTouch(i->x + i->dx, i->y, f) == 0) i->x += i->dx; else i->ai_update_cnt = 0;
-				if(IsTouch(i->x, i->y + i->dy, f) == 0) i->y += i->dy; else i->ai_update_cnt = 0;
-
+				i->ai_update_cnt = RandomInt() & 0x1f;
+				if(i->ai_update_cnt < 15) i->ai_update_cnt = 15;
+			} else {
+				i->ai_update_cnt -= 1;
 			}
-			break;
-		case AI_KAMIKADZE:
-			if (Ships[0].i == SHIP_TYPE_OBSERVER)
-				goto _random_move_ai;
-
-			UpdateAnimation(f);
-			if(UpdateMoveSpeed(f) == 1)
-			{
-				if(i->ai_update_cnt == 0)
-				{
-					if(i->x > Ships[0].x)
-					{
-						i->dx = -1;
-					}
-					else
-					{
-						if(i->x < Ships[0].x) i->dx = 1; else i->dx = 0;
-					}
-
-					if(i->y > Ships[0].y)
-					{
-						i->dy = -1;
-					}
-					else {
-						if(i->y < Ships[0].y) i->dy = 1; else i->dy = 0;
-					}
-
-					i->ai_update_cnt = 15;
-				}
-				else
-				{
-					i->ai_update_cnt -= 1;
-				}
-
-				goto _optimize1;
-			}
-			break;
-
-		case AI_ELECTRIC_SPARKLE_VERTICAL:
-			UpdateAnimation(f);
-			if(UpdateMoveSpeed(f) == 1)
-			{
-				if(i->dy == 0) i->dy = 1;
-				if(IsTouch(i->x, i->y + i->dy, f) == 0) i->y += i->dy; else i->dy = -i->dy;
-			}
-			break;
-		case AI_CEILING_CANNON: // ceiling cannon spawning kamikazes
-			// if object is spawned - do nothig
-			if(i->dx == 1) return;
-			if(UpdateAnimation(f) == 1)
-			{
-				i->dx = 1;
-
-				// spawn a new enemy
-				{
-					TSHIP *j = PrepareFreeShip();
-					j->state = SH_ACTIVE;
-					j->i = 34;
-					j->x = i->x;
-					j->y = i->y + 16;
-					j->anim_speed = 4;
-					j->anim_speed_cnt = j->anim_speed;
-					j->max_frame = 3;
-					j->ai_type = AI_KAMIKADZE;
-					j->parent = f;
-					PlaySoundEffect(SND_CANNON_SHOOT);
-				}
-			}
-			break;
-		case AI_HOMING_MISSLE:
-			UpdateAnimation(f);
-
-			if(i->x > 0)
-			{
-				i->x -= 2;
-				IsTouch(i->x, i->y, f);
-				if(i->x < Ships[0].x) return;
-				if(i->y > Ships[0].y) i->y -= 1;
-				if(i->y < Ships[0].y && i->y < 63) {if((RandomInt() & 1) == 1) i->y += 1;}
-			}
-			else
-			{
-				i->x = 296;
-				i->y = RandomInt() & 63;
-				if(i->i == 40) i->i = 41; else i->i = 40;
-			}
-			break;
-		case AI_CANNON:
-			if(i->x - 40 > Ships[0].x)
-			{
-				i->cur_frame = 0;
-			}
-			else
-			{
-				if(i->x + 40 < Ships[0].x) i->cur_frame = 2; else i->cur_frame = 1;
-			}
-
-			if((RandomInt() & 255) > 252)
-			{
-				TSHIP *j = PrepareFreeShip();
-				if(j->state == SH_DEAD)
-				{
-					j->state = SH_ACTIVE;
-					j->i = 43;
-					if(i->cur_frame == 0) {j->x = i->x - 4; j->y = i->y + 4; j->dx = -1; j->dy = -1;}
-					if(i->cur_frame == 1) {j->x = i->x + 6; j->y = i->y - 4; j->dx = 0; j->dy = -1;}
-					if(i->cur_frame == 2) {j->x = i->x + 16; j->y = i->y + 4; j->dx = 1; j->dy = -1;}
-					j->anim_speed = 4;
-					j->anim_speed_cnt = j->anim_speed;
-					j->ai_type = AI_BULLET;
-					j->parent = f;
-				}
-			}
-			break;
-		case AI_ELECTRIC_SPARKLE_HORIZONTAL:
-			UpdateAnimation(f);
-			if(UpdateMoveSpeed(f) == 1)
-			{
-				if(i->dx == 0) i->dx = 1;
-				if(IsTouch(i->x + i->dx, i->y, f) == 0) i->x += i->dx; else i->dx = -i->dx;
-			}
-			break;
-		case AI_BONUS:
-			if(UpdateAnimation(f) == 1)
-			{
-				static int yOffset[] = {
-					-1, -1, -2, -2, -1,
-					1, 1, 2, 2, 1 };
-
-				i->y += yOffset[i->dy];
-				i->dy = (i->dy + 1) % (sizeof(yOffset) / sizeof(yOffset[0]));
-			}
-			break;
-		case AI_SMOKE:
-			if(UpdateAnimation(f) == 1)
-			{
-				i->state = SH_DEAD;
-			}
-			else if (i->cur_frame % 2)
-			{
+		_optimize1:
+			if (IsTouch(i->x + i->dx, i->y, f) == 0)
 				i->x += i->dx;
+			else
+				i->ai_update_cnt = 0;
+
+			if (IsTouch(i->x, i->y + i->dy, f) == 0)
 				i->y += i->dy;
-			}
-			break;
-		case AI_EXPLOSION: // explosion, do one animation cycle and deactivate enemy entry
-			if(UpdateAnimation(f) == 1)
-			{
-				if (i->explosion.bonus_type)
-				{
-					if (i->explosion.regenerate_bonus) {
-						// Hit with laser, restore the other bonus.
-						i->ai_type = AI_BONUS;
-						i->state = SH_ACTIVE;
-						switch (i->explosion.bonus_type)
-						{
-						case BONUS_FACEBOOK: i->i = BONUS_TWITTER; break;
-						case BONUS_TWITTER: i->i = BONUS_FACEBOOK; break;
-						default: i->i = i->explosion.bonus_type; break;
-						}
-						i->explosion.bonus_type = 0;
-						i->explosion.regenerate_bonus = 0;
-						i->dx = 0;
-						i->dy = 0;
-						i->max_frame = 0;
-						i->cur_frame = 0;
-						i->min_frame = 0;
-						i->anim_speed = 4;
-						return;
-					}
-					else {
-						PlaySoundEffect(SND_BONUS);
+			else
+				i->ai_update_cnt = 0;
 
-						switch (i->explosion.bonus_type)
-						{
-							case BONUS_HP:
-								// add HP
-								++ship_health;
-								if (ship_health > 3)
-									ship_health = 3;
-								break;
+		}
+		break;
 
-							case BONUS_FACEBOOK:
-							case BONUS_TWITTER:
-								HitTheBonus(i->explosion.bonus_type);
-								break;
-						}
-					}
+	case AI_KAMIKADZE:
+		if (Ships[0].i == SHIP_TYPE_OBSERVER)
+			goto _random_move_ai;
 
-				}
-				i->state = SH_DEAD;
-				if(f == 0) RestartLevel();
-				return;
-			}
-			break;
-		case AI_BRIDGE: // bridge, appear if bonded ship, disappear otherwise
-			{
-				int a = 0;
-				if(/*screen_bridge == 1 &&*/ player_attached == 1) a = 245;
-				#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
-				{
-					extern int level_cache_fl;
-					level_cache_fl = 1;
-				}
-				#endif
-
-				// seal or unseal the floor
-				for(int f = 0; f <= 4; f++)
-				{
-					ScreenTilesBuffer[(i->y >> 3) * 40 + (i->x >> 3) + f] = a;
-				}
-			}
-			break;
-
-		case AI_GARAGE:
-			{
-				TSHIP *p = &Ships[0];
-				if (p->state == SH_DEAD ||
-					p->ai_type == AI_EXPLOSION)
-					break;
-
-				if (GarageShipIndex(i->i) != -1)
-				{
-					break;
-				}
-
-				int w, h;
-				GetCurrentSpriteDimensions(p, &w, &h);
-
-				if (!i->garage_inactive &&
-					(p->x >= i->x) &&
-					(p->x + w < i->x + GARAGE_WIDTH) &&
-					(p->y >= i->y) &&
-					(p->y + h < i->y + GARAGE_HEIGHT))
-				{
-					// Player ship is inside the garage, lets
-					// change the ship if possible.
-					TSHIP *r = NULL;
-					for (int n = 2; n < SHIPS_NUMBER; ++n)
-						if (Ships[n].ai_type == AI_SPARE_SHIP &&
-							Ships[n].state == SH_ACTIVE)
-						{
-							r = Ships + n;
-							break;
-						}
-
-					if (r)
-					{
-						// Swap data of the plyer ship and
-						// the spare ship.
-						TSHIP t = Ships[0];
-						Ships[0] = *r;
-						*r = t;
-
-						int otherGarage = Ships[0].garage_index;
-
-						Ships[otherGarage].garage_inactive = 1;
-
-						SetGarageShipIndex(Ships[f].i, r->i);
-						SetGarageShipIndex(Ships[otherGarage].i, -1);
-
-						Ships[0].ai_type = 0;
-						Ships[0].garage_index = -1;
-
-						r->ai_type = AI_SPARE_SHIP;
-						r->garage_index = f;
-
-						// restore HP
-						ship_health = 3;
-
-						PlaySoundEffect(SND_CONTACT);
-					}
-				}
-				else if (i->garage_inactive)
-				{
-					if (!IsOverlap(p, i))
-					{
-						i->garage_inactive = 0;
-					}
-				}
-			}
-			break;
-
-		case AI_SPARE_SHIP:
-			{
-				const int speed = 1;
-				int x, y;
-				BestPositionInGarage(i, &x, &y);
-
-				if (x > i->x) i->x += speed;
-				else if (x < i->x) i->x -= speed;
-
-				if (y > i->y) i->y += speed;
-				else if (y < i->y) i->y -= speed;
-
-				int middle_frame = (i->max_frame + i->min_frame) / 2;
-
-				if (i->cur_frame > i->min_frame && i->cur_frame <= middle_frame)
-					--(i->cur_frame);
-				else if (i->cur_frame > middle_frame && i->cur_frame < i->max_frame)
-					++(i->cur_frame);
-			}
-			break;
-
-		case AI_BULLET: // bullet
-
-			// random exploding
-			if(i->y + 16 < Ships[i->parent].y && (RandomInt() & 63) == 1) {BlowUpEnemy(f); return; }
-
-			i->x += i->dx;
-			if(i->x < 0 || i->x > SCREEN_WIDTH) {BlowUpEnemy(f); return;}
-
-			i->y += i->dy;
-			if(i->y < 0) BlowUpEnemy(f);
-			break;
-
-		case AI_HOMING_SHOT: // missle shot by player.
-			if (i->just_created == 1)
-			{
-				if (IsTouch(i->x, i->y, f))
-				{
-					BlowUpEnemy(f);
-					return;
-				}
-			}
-
-			// Calculate vertical speed.
-			i->dy = 0;
-
-			if (++i->ticks_passed > 10)
-			{
-				int best = -1;
-				int dx_best = 0;
-
-				for (int n = 2; n < SHIPS_NUMBER; ++n)
-				{
-					if (Ships[n].state != SH_ACTIVE ||
-						(Ships[n].ai_type != AI_RANDOM_MOVE && Ships[n].ai_type != AI_KAMIKADZE))
-						continue;
-
-					if (Ships[n].i == 11)
-						continue;
-
-					int dx = Ships[n].x - i->x;
-					if (i->cur_frame < 2)
-					{
-						// moving left.
-						if (dx > 10 || dx < -110) continue;
-						if (best == -1 || dx > dx_best)
-						{
-							best = n;
-							dx_best = dx;
-						}
-					}
+		UpdateAnimation(f);
+		if (UpdateMoveSpeed(f) == 1) {
+			if (i->ai_update_cnt == 0) {
+				if (i->x > Ships[0].x) {
+					i->dx = -1;
+				} else {
+					if (i->x < Ships[0].x)
+						i->dx = 1;
 					else
-					{
-						// moving right.
-						if (dx < 10 || dx > 110) continue;
-						if (best == -1 || dx < dx_best)
-						{
-							best = n;
-							dx_best = dx;
-						}
-					}
+						i->dx = 0;
 				}
 
-				if (best != -1)
-				{
-					int dy = Ships[best].y - i->y;
-					if (dy < 0) i->dy = -1;
-					if (dy > 0) i->dy = 1;
+				if (i->y > Ships[0].y) {
+					i->dy = -1;
+				} else {
+					if (i->y < Ships[0].y)
+						i->dy = 1;
+					else
+						i->dy = 0;
 				}
+
+				i->ai_update_cnt = 15;
+			} else {
+				i->ai_update_cnt -= 1;
 			}
 
-			UpdateAnimation(f);
+			goto _optimize1;
+		}
+		break;
 
-			i->x += i->dx;
-			i->y += i->dy;
+	case AI_ELECTRIC_SPARKLE_VERTICAL:
+		UpdateAnimation(f);
+		if (UpdateMoveSpeed(f) == 1) {
+			if (i->dy == 0)
+				i->dy = 1;
+			if (IsTouch(i->x, i->y + i->dy, f) == 0)
+				i->y += i->dy;
+			else
+				i->dy = -i->dy;
+		}
+		break;
 
-			if (/*i->x + i->dx < 0 ||
-				i->x + i->dx >= SCREEN_WIDTH ||
-				i->y < 0 ||
-				i->y >= SCREEN_HEIGHT ||*/
-				IsTouch(i->x, i->y, f))
-			{
-				i->state = SH_DEAD;
+	case AI_CEILING_CANNON: // ceiling cannon spawning kamikazes
+		// if object is spawned - do nothig
+		if (i->dx == 1)
+			return;
+
+		if (UpdateAnimation(f) == 1) {
+			i->dx = 1;
+
+			// spawn a new enemy
+			TSHIP *j = PrepareFreeShip();
+			j->state = SH_ACTIVE;
+			j->i = 34;
+			j->x = i->x;
+			j->y = i->y + 16;
+			j->anim_speed = 4;
+			j->anim_speed_cnt = j->anim_speed;
+			j->max_frame = 3;
+			j->ai_type = AI_KAMIKADZE;
+			j->parent = f;
+			PlaySoundEffect(SND_CANNON_SHOOT);
+		}
+		break;
+	case AI_HOMING_MISSLE:
+		UpdateAnimation(f);
+
+		if (i->x > 0) {
+			i->x -= 2;
+			IsTouch(i->x, i->y, f);
+			if (i->x < Ships[0].x)
 				return;
+
+			if (i->y > Ships[0].y)
+				i->y -= 1;
+
+			if (i->y < Ships[0].y && i->y < 63) {
+				if ((RandomInt() & 1) == 1)
+					i->y += 1;
 			}
+		} else {
+			i->x = 296;
+			i->y = RandomInt() & 63;
+			if (i->i == 40)
+				i->i = 41;
+			else
+				i->i = 40;
+		}
+		break;
 
-			break;
+	case AI_CANNON:
+		if (i->x - 40 > Ships[0].x) {
+			i->cur_frame = 0;
+		} else {
+			if (i->x + 40 < Ships[0].x)
+				i->cur_frame = 2;
+			else
+				i->cur_frame = 1;
+		}
 
-		case AI_BFG_SHOT:
-			UpdateAnimation(f);
-
-			if (i->dx == 2) i->dx = 3;
-			else if (i->dx == -2) i->dx = -3;
-			else if (i->dx == 3) i->dx = 2;
-			else if (i->dx == -3) i->dx = -2;
-
-			// Calculate hit objects.
-			{
-				for (int n = 0; n < MAX_BFG_TARGETS; ++n)
-					BfgTargets[n].hit_now = 0;
-
-				for (int n = 2; n < SHIPS_NUMBER; ++n)
-				{
-					if (Ships[n].ai_type == AI_KAMIKADZE || Ships[n].ai_type == AI_RANDOM_MOVE)
-					{
-						if (ShipsDistance(i, Ships + n) < BFG_KILL_DISTANCE)
-						{
-							AddBfgTarget(n, f);
-						}
-					}
+		if ((RandomInt() & 255) > 252) {
+			TSHIP *j = PrepareFreeShip();
+			if (j->state == SH_DEAD) {
+				j->state = SH_ACTIVE;
+				j->i = 43;
+				if (i->cur_frame == 0) {
+					j->x = i->x - 4;
+					j->y = i->y + 4;
+					j->dx = -1;
+					j->dy = -1;
 				}
-
-				for (int n = 0; n < MAX_BFG_TARGETS; ++n)
-				{
-					if (BfgTargets[n].hit_count)
-					{
-						if (BfgTargets[n].hit_now)
-						{
-							if (BfgTargets[n].hit_count > BFG_KILL_TIME)
-							{
-								BlowUpEnemy(BfgTargets[n].ship);
-							}
-						}
-						else
-						{
-							memset(BfgTargets + n, 0, sizeof(TBFGTARGET));
-						}
-					}
+				if (i->cur_frame == 1) {
+					j->x = i->x + 6;
+					j->y = i->y - 4;
+					j->dx = 0;
+					j->dy = -1;
 				}
+				if (i->cur_frame == 2) {
+					j->x = i->x + 16;
+					j->y = i->y + 4;
+					j->dx = 1;
+					j->dy = -1;
+				}
+				j->anim_speed = 4;
+				j->anim_speed_cnt = j->anim_speed;
+				j->ai_type = AI_BULLET;
+				j->parent = f;
 			}
+		}
+		break;
 
-		case AI_SHOT: // bullet shot by a player
-			if (i->just_created)
-			{
-				i->just_created = 0;
-				if (IsTouch(i->x, i->y, f))
-				{
-					BlowUpEnemy(f);
-					return;
-				}
-			}
+	case AI_ELECTRIC_SPARKLE_HORIZONTAL:
+		UpdateAnimation(f);
+		if (UpdateMoveSpeed(f) == 1) {
+			if (i->dx == 0)
+				i->dx = 1;
+			if (IsTouch(i->x + i->dx, i->y, f) == 0)
+				i->x += i->dx;
+			else
+				i->dx = -i->dx;
+		}
+		break;
 
+	case AI_BONUS:
+		if (UpdateAnimation(f) == 1) {
+			static int yOffset[] = {
+				-1, -1, -2, -2, -1, 1, 1, 2, 2, 1
+			};
+
+			i->y += yOffset[i->dy];
+			i->dy = (i->dy + 1) % (sizeof(yOffset) / sizeof(yOffset[0]));
+		}
+		break;
+
+	case AI_SMOKE:
+		if (UpdateAnimation(f) == 1) {
+			i->state = SH_DEAD;
+		} else if (i->cur_frame % 2) {
 			i->x += i->dx;
 			i->y += i->dy;
+		}
+		break;
 
-			if (i->x + i->dx < 0 ||
-				i->x + i->dx >= SCREEN_WIDTH ||
-				i->y < 0 ||
-				i->y >= SCREEN_HEIGHT ||
-				IsTouch(i->x, i->y, f))
+	case AI_EXPLOSION: // explosion, do one animation cycle and deactivate enemy entry
+		if (UpdateAnimation(f) == 1) {
+			if (i->explosion.bonus_type) {
+				if (i->explosion.regenerate_bonus) {
+					// Hit with laser, restore the other bonus.
+					i->ai_type = AI_BONUS;
+					i->state = SH_ACTIVE;
+					switch (i->explosion.bonus_type) {
+					case BONUS_FACEBOOK:
+						i->i = BONUS_TWITTER;
+						break;
+					case BONUS_TWITTER:
+						i->i = BONUS_FACEBOOK;
+						break;
+					default:
+						i->i = i->explosion.bonus_type;
+						break;
+					}
+
+					i->explosion.bonus_type = 0;
+					i->explosion.regenerate_bonus = 0;
+					i->dx = 0;
+					i->dy = 0;
+					i->max_frame = 0;
+					i->cur_frame = 0;
+					i->min_frame = 0;
+					i->anim_speed = 4;
+					return;
+				} else {
+					PlaySoundEffect(SND_BONUS);
+
+					switch (i->explosion.bonus_type) {
+					case BONUS_HP:
+						// add HP
+						++ship_health;
+						if (ship_health > 3)
+							ship_health = 3;
+						break;
+
+					case BONUS_FACEBOOK:
+					case BONUS_TWITTER:
+						HitTheBonus(i->explosion.bonus_type);
+						break;
+					}
+				}
+			}
+
+			i->state = SH_DEAD;
+			if (f == 0)
+				RestartLevel();
+
+			return;
+		}
+		break;
+
+	case AI_BRIDGE: // bridge, appear if bonded ship, disappear otherwise
+		{
+			int a = 0;
+
+			if (/*screen_bridge == 1 &&*/ player_attached == 1)
+				a = 245;
+			#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 			{
+				extern int level_cache_fl;
+				level_cache_fl = 1;
+			}
+			#endif
+
+			// seal or unseal the floor
+			for (int f = 0; f <= 4; f++) {
+				ScreenTilesBuffer[(i->y >> 3) * 40 + (i->x >> 3) + f] = a;
+			}
+		}
+		break;
+
+	case AI_GARAGE:
+		{
+			TSHIP *p = &Ships[0];
+			if (p->state == SH_DEAD ||
+				p->ai_type == AI_EXPLOSION)
+				break;
+
+			if (GarageShipIndex(i->i) != -1) {
+				break;
+			}
+
+			int w, h;
+			GetCurrentSpriteDimensions(p, &w, &h);
+
+			if (!i->garage_inactive &&
+			    (p->x >= i->x) &&
+			    (p->x + w < i->x + GARAGE_WIDTH) &&
+			    (p->y >= i->y) &&
+			    (p->y + h < i->y + GARAGE_HEIGHT)) {
+				// Player ship is inside the garage, lets
+				// change the ship if possible.
+				TSHIP *r = NULL;
+				for (int n = 2; n < SHIPS_NUMBER; ++n)
+					if (Ships[n].ai_type == AI_SPARE_SHIP &&
+					    Ships[n].state == SH_ACTIVE) {
+						r = Ships + n;
+						break;
+					}
+
+				if (r) {
+					// Swap data of the player ship and
+					// the spare ship.
+					TSHIP t = Ships[0];
+					Ships[0] = *r;
+					*r = t;
+
+					int otherGarage = Ships[0].garage_index;
+
+					Ships[otherGarage].garage_inactive = 1;
+
+					SetGarageShipIndex(Ships[f].i, r->i);
+					SetGarageShipIndex(Ships[otherGarage].i, -1);
+
+					Ships[0].ai_type = 0;
+					Ships[0].garage_index = -1;
+
+					r->ai_type = AI_SPARE_SHIP;
+					r->garage_index = f;
+
+					// restore HP
+					ship_health = 3;
+
+					PlaySoundEffect(SND_CONTACT);
+				}
+			} else if (i->garage_inactive) {
+				if (!IsOverlap(p, i)) {
+					i->garage_inactive = 0;
+				}
+			}
+		}
+		break;
+
+	case AI_SPARE_SHIP:
+		{
+			const int speed = 1;
+			int x, y;
+			BestPositionInGarage(i, &x, &y);
+
+			if (x > i->x) {
+				i->x += speed;
+			} else {
+				if (x < i->x)
+					i->x -= speed;
+			}
+
+			if (y > i->y) {
+				i->y += speed;
+			} else {
+				if (y < i->y)
+					i->y -= speed;
+			}
+
+			int middle_frame = (i->max_frame + i->min_frame) / 2;
+
+			if (i->cur_frame > i->min_frame && i->cur_frame <= middle_frame)
+				--(i->cur_frame);
+			else
+				if (i->cur_frame > middle_frame && i->cur_frame < i->max_frame)
+					++(i->cur_frame);
+		}
+		break;
+
+	case AI_BULLET: // bullet
+
+		// random exploding
+		if (i->y + 16 < Ships[i->parent].y && (RandomInt() & 63) == 1) {
+			BlowUpEnemy(f);
+			return;
+		}
+
+		i->x += i->dx;
+		if (i->x < 0 || i->x > SCREEN_WIDTH) {
+			BlowUpEnemy(f);
+			return;
+		}
+
+		i->y += i->dy;
+		if (i->y < 0)
+			BlowUpEnemy(f);
+		break;
+
+	case AI_HOMING_SHOT: // missle shot by player.
+		if (i->just_created == 1) {
+			if (IsTouch(i->x, i->y, f)) {
 				BlowUpEnemy(f);
 				return;
 			}
-			break;
+		}
 
-		case AI_ELEVATOR: // elevator
-			if (player_attached == 1)
-			{
-				// start to lift only when ship and base are standing on the elevator
-				// ugly, improve in future
-				//if((i->x == 256 && Ships[1].x >= 260) || (i->x == 16 && Ships[1].x <= 20))
-				if(i->x == Ships[1].x - 4)
-				{
-					static int el_phase = 0;
+		// Calculate vertical speed.
+		i->dy = 0;
 
-					elevator_flag = 1;
+		if (++i->ticks_passed > 10) {
+			int best = -1;
+			int dx_best = 0;
 
-					if (el_phase == 0)
-					{
-						// when starting to lift up - unseal the floor
-						// ugly, maybe change in future
-						if(i->y == 120)
-						{
+			for (int n = 2; n < SHIPS_NUMBER; ++n) {
+				if (Ships[n].state != SH_ACTIVE ||
+				    (Ships[n].ai_type != AI_RANDOM_MOVE &&
+				     Ships[n].ai_type != AI_KAMIKADZE))
+					continue;
+
+				if (Ships[n].i == 11)
+					continue;
+
+				int dx = Ships[n].x - i->x;
+
+				if (i->cur_frame < 2) {
+					// moving left.
+					if (dx > 10 || dx < -110)
+						continue;
+					if (best == -1 || dx > dx_best) {
+						best = n;
+						dx_best = dx;
+					}
+				} else {
+					// moving right.
+					if (dx < 10 || dx > 110)
+						continue;
+					if (best == -1 || dx < dx_best) {
+						best = n;
+						dx_best = dx;
+					}
+				}
+			}
+
+			if (best != -1) {
+				int dy = Ships[best].y - i->y;
+
+				if (dy < 0)
+					i->dy = -1;
+				if (dy > 0)
+					i->dy = 1;
+			}
+		}
+
+		UpdateAnimation(f);
+
+		i->x += i->dx;
+		i->y += i->dy;
+
+		if (/*i->x + i->dx < 0 ||
+		    i->x + i->dx >= SCREEN_WIDTH ||
+		    i->y < 0 ||
+		    i->y >= SCREEN_HEIGHT ||*/
+		    IsTouch(i->x, i->y, f)) {
+			i->state = SH_DEAD;
+			return;
+		}
+
+		break;
+
+	case AI_BFG_SHOT:
+		UpdateAnimation(f);
+
+		if (i->dx == 2)
+			i->dx = 3;
+		else if (i->dx == -2)
+			i->dx = -3;
+		else if (i->dx == 3)
+			i->dx = 2;
+		else if (i->dx == -3)
+			i->dx = -2;
+
+		// Calculate hit objects.
+		{
+			for (int n = 0; n < MAX_BFG_TARGETS; ++n)
+				BfgTargets[n].hit_now = 0;
+
+			for (int n = 2; n < SHIPS_NUMBER; ++n) {
+				if (Ships[n].ai_type == AI_KAMIKADZE ||
+				    Ships[n].ai_type == AI_RANDOM_MOVE) {
+					if (ShipsDistance(i, Ships + n) < BFG_KILL_DISTANCE) {
+						AddBfgTarget(n, f);
+					}
+				}
+			}
+
+			for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
+				if (BfgTargets[n].hit_count) {
+					if (BfgTargets[n].hit_now) {
+						if (BfgTargets[n].hit_count > BFG_KILL_TIME) {
+							BlowUpEnemy(BfgTargets[n].ship);
+						}
+					} else {
+						memset(BfgTargets + n, 0, sizeof(TBFGTARGET));
+					}
+				}
+			}
+		}
+
+	case AI_SHOT: // bullet shot by a player
+		if (i->just_created) {
+			i->just_created = 0;
+			if (IsTouch(i->x, i->y, f)) {
+				BlowUpEnemy(f);
+				return;
+			}
+		}
+
+		i->x += i->dx;
+		i->y += i->dy;
+
+		if (i->x + i->dx < 0 ||
+		    i->x + i->dx >= SCREEN_WIDTH ||
+		    i->y < 0 ||
+		    i->y >= SCREEN_HEIGHT ||
+		    IsTouch(i->x, i->y, f)) {
+			BlowUpEnemy(f);
+			return;
+		}
+		break;
+
+	case AI_ELEVATOR: // elevator
+		if (player_attached == 1) {
+			// start to lift only when ship and base are standing on the elevator
+			// ugly, improve in future
+			//if ((i->x == 256 && Ships[1].x >= 260) || (i->x == 16 && Ships[1].x <= 20))
+			if (i->x == Ships[1].x - 4) {
+				static int el_phase = 0;
+
+				elevator_flag = 1;
+
+				if (el_phase == 0) {
+					// when starting to lift up - unseal the floor
+					// ugly, maybe change in future
+					if (i->y == 120) {
+						#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
+						extern int level_cache_fl;
+						level_cache_fl = 1; // doing some magic...
+						#endif
+						// unseal the floor
+						for (int j = 0; j <= 5; j++) {
+							ScreenTilesBuffer[(i->y >> 3) * 40 + (i->x >> 3) + j] = 0;
+						}
+					}
+
+					// upper limit of the screen is reached
+					if (Ships[0].y == 0) {
+						el_phase = 1;
+
+						int sx, sy;
+						GetCurrentSpriteDimensions(&Ships[0], &sx, &sy);
+
+						Ships[0].y = 112 - sy;
+						Ships[1].y = 112;
+
+						ChangeScreen(F_UP);
+						base_cur_screen = ship_cur_screen;
+						InitNewScreen();
+
+						// now i is invalid, because InitNewScreen reenables enemies
+						// spawn new elevator
+						i = PrepareFreeShip();
+						i->state = SH_ACTIVE;
+						i->i = 21;
+						i->x = Ships[1].x - 4;
+						i->y = 128;
+						i->ai_type = AI_ELEVATOR;
+						goto _here;
+					}
+				} else {
+					// if elevator is done lifting
+					if (Ships[1].y == 104) {
+						el_phase = 0;
+
+						// seal the floor!
+						for (int i = 0; i <= 5; i++) {
 							#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 							extern int level_cache_fl;
 							level_cache_fl = 1; // doing some magic...
 							#endif
-							// unseal the floor
-							for(int j = 0; j <= 5; j++)
-							{
-								ScreenTilesBuffer[(i->y >> 3) * 40 + (i->x >> 3) + j] = 0;
+							ScreenTilesBuffer[((Ships[1].y + 16) >> 3) * 40 + ((Ships[1].x - 4) >> 3) + i] = 245;
+						}
+
+						if (ship_cur_screen != 69) {
+							game_level += 1;
+							memcpy(main_garage_data, garage_data, sizeof(main_garage_data));
+							PublishScore();
+							GameLevelUp();
+						}
+						base_level_start = ship_cur_screen;
+
+						// destroy elevator or it will roll forever
+						// but if not screen 69
+						if (base_cur_screen != 69) {
+							for (int j = 2; j <= SHIPS_NUMBER-2; j++) {
+								if(Ships[j].ai_type == AI_ELEVATOR)
+									Ships[j].state = SH_DEAD;
 							}
 						}
 
-						// upper limit of the screen is reached
-						if(Ships[0].y == 0)
-						{
-							el_phase = 1;
+						elevator_flag = 0;
+						ship_health = 3;
 
-							int sx, sy;
-							GetCurrentSpriteDimensions(&Ships[0], &sx, &sy);
-
-							Ships[0].y = 112 - sy;
-							Ships[1].y = 112;
-
-							ChangeScreen(F_UP);
-							base_cur_screen = ship_cur_screen;
-							InitNewScreen();
-
-							// now i is invalid, because InitNewScreen reenables enemies
-							// spawn new elevator
-							i = PrepareFreeShip();
-							i->state = SH_ACTIVE;
-							i->i = 21;
-							i->x = Ships[1].x - 4;
-							i->y = 128;
-							i->ai_type = AI_ELEVATOR;
-							goto _here;
-						}
+						goto _here;
 					}
-					else
-					{
-						// if elevator is done lifting
-						if(Ships[1].y == 104)
-						{
-							el_phase = 0;
-
-							// seal the floor!
-							for(int i = 0; i <= 5; i++)
-							{
-								#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
-								extern int level_cache_fl;
-								level_cache_fl = 1; // doing some magic...
-								#endif
-								ScreenTilesBuffer[((Ships[1].y + 16) >> 3) * 40 + ((Ships[1].x - 4) >> 3) + i] = 245;
-							}
-
-							if(ship_cur_screen != 69)
-							{
-								game_level += 1;
-								memcpy(main_garage_data, garage_data, sizeof(main_garage_data));
-								PublishScore();
-								GameLevelUp();
-							}
-							base_level_start = ship_cur_screen;
-
-							// destroy elevator or it will roll forever
-							// but if not screen 69
-							if(base_cur_screen != 69)
-							{
-								for(int j = 2; j <= SHIPS_NUMBER-2; j++)
-								{
-									if(Ships[j].ai_type == AI_ELEVATOR) Ships[j].state = SH_DEAD;
-								}
-							}
-
-							elevator_flag = 0;
-							ship_health = 3;
-
-							goto _here;
-						}
-					}
-
-					Ships[0].y -= 1;
-					Ships[1].y -= 1;
-					i->y -= 1;
-
-				_here:
-					if (elevator_flag) PlaySoundEffect(SND_ELEVATOR);
-					else StopSoundEffect(SND_ELEVATOR);
 				}
+
+				Ships[0].y -= 1;
+				Ships[1].y -= 1;
+				i->y -= 1;
+
+			_here:
+				if (elevator_flag)
+					PlaySoundEffect(SND_ELEVATOR);
+				else
+					StopSoundEffect(SND_ELEVATOR);
 			}
-			break;
+		}
+		break;
 	}
 }
 
@@ -2291,8 +2158,7 @@ void InitShip()
 	Ships[0].x = 148 + ShipBaseOffset();
 	Ships[0].y = 68;
 
-	switch (Ships[0].i)
-	{
+	switch (Ships[0].i) {
 	case SHIP_TYPE_LASER:
 	case SHIP_TYPE_MACHINE_GUN:
 	case SHIP_TYPE_ROCKET_LAUNCHER:
@@ -2318,9 +2184,9 @@ void InitShip()
 
 int GetFreeEnemyIndex()
 {
-	for(int i = 2; i <= SHIPS_NUMBER-1; i++)
-	{
-		if(Ships[i].state == SH_DEAD) return i; // and ai_type should be zero!
+	for (int i = 2; i <= SHIPS_NUMBER-1; i++) {
+		if (Ships[i].state == SH_DEAD)
+			return i; // and ai_type should be zero!
 	}
 
 	return SHIPS_NUMBER-1;
@@ -2330,6 +2196,7 @@ TSHIP *PrepareFreeShip()
 {
 	TSHIP *ship = Ships + GetFreeEnemyIndex();
 	memset(ship, 0, sizeof(TSHIP));
+
 	return ship;
 }
 
@@ -2338,14 +2205,11 @@ void BestPositionInGarage(TSHIP *ship, int *x, int *y)
 	int cxShip, cyShip;
 	GetCurrentSpriteDimensions(ship, &cxShip, &cyShip);
 
-	if (ship->garage_index < 0 || ship->garage_index >= SHIPS_NUMBER)
-	{
+	if (ship->garage_index < 0 || ship->garage_index >= SHIPS_NUMBER) {
 		// actually, should not happen.
 		*x = ship->x;
 		*y = ship->y;
-	}
-	else
-	{
+	} else {
 		TSHIP *garage = &Ships[ship->garage_index];
 		*x = garage->x + ((GARAGE_WIDTH - cxShip) >> 1);
 		*y = garage->y + ((GARAGE_HEIGHT - cyShip) >> 1);
@@ -2401,10 +2265,8 @@ void InitGaragesForNewGame()
 
 void SetGarageShipIndex(int garageId, int shipIndex)
 {
-	for (int i = 0; i < MAX_GARAGES; ++i)
-	{
-		if (garage_data[i][0] == garageId)
-		{
+	for (int i = 0; i < MAX_GARAGES; ++i) {
+		if (garage_data[i][0] == garageId) {
 			garage_data[i][1] = shipIndex;
 		}
 	}
@@ -2412,22 +2274,19 @@ void SetGarageShipIndex(int garageId, int shipIndex)
 
 int GarageShipIndex(int garageId)
 {
-	for (int i = 0; i < MAX_GARAGES; ++i)
-	{
-		if (garage_data[i][0] == garageId)
-		{
+	for (int i = 0; i < MAX_GARAGES; ++i) {
+		if (garage_data[i][0] == garageId) {
 			return garage_data[i][1];
 		}
 	}
+
 	return -1;
 }
 
 int IsParked(int ship_type)
 {
-	for (int i = 0; i < MAX_GARAGES; ++i)
-	{
-		if (garage_data[i][0] && garage_data[i][1] == ship_type)
-		{
+	for (int i = 0; i < MAX_GARAGES; ++i) {
+		if (garage_data[i][0] && garage_data[i][1] == ship_type) {
 			return 1;
 		}
 	}
@@ -2460,10 +2319,8 @@ void InitEnemies()
 
 	p = SCREENINFOS[ship_cur_screen] + 5;
 
-	for(int i = *(p-1); i >= 1; i--)
-	{
-		if (*(p + 1) == BONUS_FACEBOOK || *(p + 1) == BONUS_TWITTER)
-		{
+	for (int i = *(p-1); i >= 1; i--) {
+		if (*(p + 1) == BONUS_FACEBOOK || *(p + 1) == BONUS_TWITTER) {
 			if (!sn_enabled || game_mode == GM_DEMO || base_cur_screen < ship_cur_screen)
 				goto __skip_enemy;
 		}
@@ -2482,13 +2339,11 @@ void InitEnemies()
 		en->move_speed = 1; // standard
 		en->move_speed_cnt = en->move_speed;
 
-		if (en->ai_type == AI_GARAGE)
-		{
+		if (en->ai_type == AI_GARAGE) {
 			en->i = *p;
 
 			int iShip = GarageShipIndex(*p);
-			if (iShip != -1)
-			{
+			if (iShip != -1) {
 				// Find which type of the ship is supposed to be here,
 				// create the ship in the best position inside it.
 				TSHIP *ship = PrepareFreeShip();
@@ -2496,8 +2351,8 @@ void InitEnemies()
 				ship->i = iShip;
 				ship->ai_type = AI_SPARE_SHIP;
 				ship->garage_index = IndexOf(en);
-				switch (iShip)
-				{
+
+				switch (iShip) {
 				case SHIP_TYPE_LASER:
 				case SHIP_TYPE_MACHINE_GUN:
 				case SHIP_TYPE_ROCKET_LAUNCHER:
@@ -2516,14 +2371,11 @@ void InitEnemies()
 				}
 				BestPositionInGarage(ship, &ship->x, &ship->y);
 			}
-		}
-		else if (en->ai_type == AI_HIDDEN_AREA_ACCESS)
-		{
+		} else if (en->ai_type == AI_HIDDEN_AREA_ACCESS) {
 			en->dx = *(p + 4);
 			en->dy = *(p + 5);
 
-			if (hidden_level_entered)
-			{
+			if (hidden_level_entered) {
 				DestroyHiddenAreaAccess(en, 0);
 			}
 		}
@@ -2546,13 +2398,10 @@ void InitNewScreen()
 
 	laser_dir = 0;
 
-	if (ship_cur_screen == 92)
-	{
+	if (ship_cur_screen == 92) {
 		// Memorize that we entered the hidden area once.
 		hidden_level_entered = 1;
-	}
-	else if (hidden_level_entered && ship_cur_screen == 1)
-	{
+	} else if (hidden_level_entered && ship_cur_screen == 1) {
 		// Save game, cause we are back from the underggroung (most probably, heh).
 		memcpy(main_garage_data, garage_data, sizeof(main_garage_data));
 		PublishScore();
@@ -2595,8 +2444,7 @@ void InitNewGame()
 	InitShip();
 	InitNewScreen();
 
-	for(int f = 0; f <= 6; f++)
-	{
+	for (int f = 0; f <= 6; f++) {
 		PutStream(0, STATUSBAR1[f * 43 + 1] * 8, &STATUSBAR1[f * 43 + 2]);
 	}
 }
@@ -2611,19 +2459,21 @@ int UpdateLives()
 	StopSoundEffect(SND_MOVE);
 	PublishScore();
 
-	if(ship_lives == 0)
-	{
+	if (ship_lives == 0) {
 		SetGameMode(GM_GAMEOVER);
 		LM_ResetKeys();
 		PutString(8*16, 8*10, "HAS PERDIDO");
+
 		return 1;
 	}
+
 	return 0;
 }
 
 void RestartLevel()
 {
-	if(UpdateLives() == 1) return;
+	if (UpdateLives() == 1)
+		return;
 
 	player_attached = 0;
 	ship_cur_screen = base_level_start;
@@ -2651,15 +2501,13 @@ void BlitStatus()
 
 	// health bar.
 	string_buffer[2] = 0;
-	for (int y = 0; y < 3; ++y)
-	{
+	for (int y = 0; y < 3; ++y) {
 		string_buffer[1] = string_buffer[0] = (ship_health > y) ? 84 : 88;
 		PutStream(8*19, 8*(22 - y), (unsigned char *)&string_buffer[0]);
 	}
 
 	// laser
-	for(int i = 0; i <= 31; i++)
-	{
+	for (int i = 0; i <= 31; i++) {
 
 		unsigned char c = ((i < (laser_overload >> 3)) ? 0x28 : 0);
 
@@ -2686,13 +2534,17 @@ void RotateLogo()
 	static int mirror = 0;
 	static int sign = 1;
 
-	if(speed > 0) {speed -= 1; return;}
+	if (speed > 0) {
+		speed -= 1;
+		return;
+	}
+
 	speed = 2;
 
 	divisor = 24.0 / (24.0 - num_of_lines);
 	iterator = 0.0;
 
-	for(int i2 = num_of_lines; i2 <= 24; i2++) { // if put i2 <= 23, there's a blank line in the center of rotating sprite
+	for (int i2 = num_of_lines; i2 <= 24; i2++) { // if put i2 <= 23, there's a blank line in the center of rotating sprite
 		PutGeneric(96, (mirror == 0 ? 142 + i2 : 142 + 48 - i2), 33 * 4, 1, &LOGO[2 + 33 * (int)iterator]);
 		PutGeneric(96, (mirror == 0 ? 142 + 48 - i2 : 142 + i2), 33 * 4, 1, &LOGO[2 + 47*33 - 33*(int)iterator]);
 
@@ -2700,22 +2552,32 @@ void RotateLogo()
 	}
 
 	num_of_lines += sign;
-	if(num_of_lines > 23) {mirror ^= 1; sign = -sign;}
-	if(num_of_lines < 0) sign = -sign;
+	if (num_of_lines > 23) {
+		mirror ^= 1;
+		sign = -sign;
+	}
+	if (num_of_lines < 0)
+		sign = -sign;
 }
 
 void DoSplash()
 {
-	if(ticks_for_splash == 0) {
-		for(int i = 0; i <= 199; i++) {
+	if (ticks_for_splash == 0) {
+		for (int i = 0; i <= 199; i++) {
 			PutGeneric(0, i * 2, SCREEN_WIDTH, 1, &splash_screen[i*80]);
 			PutGeneric(0, i * 2 + 1, SCREEN_WIDTH, 1, &splash_screen[i*80+8192]);
 		}
 	}
 
 	ticks_for_splash += 1;
-	if(ticks_for_splash > 350) SetGameMode(GM_TITLE);
-	if(LM_AnyKey() == 1) {LM_ResetKeys(); SetGameMode(GM_TITLE);}
+
+	if (ticks_for_splash > 350)
+		SetGameMode(GM_TITLE);
+
+	if (LM_AnyKey() == 1) {
+		LM_ResetKeys();
+		SetGameMode(GM_TITLE);
+	}
 }
 
 int ticks_before_demo = 0;
@@ -2727,8 +2589,7 @@ void ResetDemoTicksCounter()
 
 void DoTitle()
 {
-	if(title_start_flag == 0)
-	{
+	if (title_start_flag == 0) {
 		memset(pScreenBuffer, 0, SCREEN_WIDTH*SCREEN_HEIGHT);
 		ship_cur_screen = 0;
 		title_start_flag = 1;
@@ -2748,8 +2609,7 @@ void DoTitle()
 	ticks_before_demo++;
 
 	// wait some time before switching to demo mode
-	if(ticks_before_demo >= 3660) // wait 1 min
-	{
+	if (ticks_before_demo >= 3660) { // wait 1 min
 		easy_level = 0;
 		ResetDemo();
 		SetGameMode(GM_DEMO);
@@ -2759,15 +2619,13 @@ void DoTitle()
 	}
 
 	// exit to os
-	if(Keys[SC_ESCAPE] == 1)
-	{
+	if (Keys[SC_ESCAPE] == 1) {
 		SetGameMode(GM_EXIT);
 		return;
 	}
 
 	// start
-	if(Keys[SC_SPACE] == 1 || Keys[SC_ENTER] == 1)
-	{
+	if (Keys[SC_SPACE] == 1 || Keys[SC_ENTER] == 1) {
 		SetGameMode(GM_GAME);
 		LM_ResetKeys();
 		InitNewGame();
@@ -2786,15 +2644,12 @@ void DoWinScreen()
 	"TU LUCHA NO HA SIDO EN VANO PUES LA LEJANA COLONIA DEL IMPERIO LLAMADA TIERRA HA SIDO "
 	"LIBERADA DE LOS INVASORES Y PUEDE SER HABITADA DE NUEVO               REPITO  MENSAJE";
 
-	if (youwin_start_flag == 0)
-	{
+	if (youwin_start_flag == 0) {
 		memset(pScreenBuffer + 144 * SCREEN_WIDTH, 0, SCREEN_WIDTH * 56);
 		youwin_start_flag = 1;
 		x_string = 0;
 		win_ticks = 0;
-	}
-	else
-	{
+	} else {
 		win_ticks++;
 	}
 
@@ -2805,13 +2660,10 @@ void DoWinScreen()
 	else
 		x_string += 1;
 
-	if (LM_AnyKey() == 1 && win_ticks > 300) // Ignore input first 5 seconds.
-	{
+	if (LM_AnyKey() == 1 && win_ticks > 300) { // Ignore input first 5 seconds.
 		SetGameMode(GM_TITLE);
 		LM_ResetKeys();
-	}
-	else
-	{
+	} else {
 		// Update animations and screen.
 		GKeys[KEY_RIGHT] = (Ships[0].x < 93) ? 1 : 0;
 		GKeys[KEY_LEFT] = 0;
@@ -2821,7 +2673,7 @@ void DoWinScreen()
 
 		DoShip();
 
-		for(int i = 2; i <= SHIPS_NUMBER-1; i++)
+		for (int i = 2; i <= SHIPS_NUMBER-1; i++)
 			UpdateAnimation(i);
 
 		if (!frame_skip)
@@ -2832,8 +2684,7 @@ void DoWinScreen()
 void DoKeys()
 {
 	// if not demo mode
-	if(game_mode != GM_DEMO)
-	{
+	if (game_mode != GM_DEMO) {
 		GKeys[KEY_LEFT] = Keys[SC_LEFT];
 		GKeys[KEY_RIGHT] = Keys[SC_RIGHT];
 		GKeys[KEY_UP] = Keys[SC_UP];
@@ -2846,20 +2697,16 @@ void DoKeys()
 
 void BlitLaser()
 {
-	if(laser_dir != 0)
-	{
+	if (laser_dir != 0) {
 		DrawLine(x_start, ly, x_end, ly, 7);
 	}
 }
 
 void BlitBfg()
 {
-	if (bfg_on)
-	{
-		for (int n = 0; n < MAX_BFG_TARGETS; ++n)
-		{
-			if (BfgTargets[n].ship)
-			{
+	if (bfg_on) {
+		for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
+			if (BfgTargets[n].ship) {
 				unsigned char color = 10;
 
 				if (BfgTargets[n].hit_count < BFG_KILL_TIME / 2)
@@ -2878,31 +2725,24 @@ void BlitBfg()
 
 void BlitEnemies()
 {
-	for(int i = 0; i <= SHIPS_NUMBER-1; i++)
-	{
-		if (Ships[i].ai_type == AI_GARAGE)
-		{
+	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
+		if (Ships[i].ai_type == AI_GARAGE) {
 #ifdef _DEBUG
 			DrawRect(
 				Ships[i].x, Ships[i].y,
 				GARAGE_WIDTH, GARAGE_HEIGHT,
 				Ships[i].garage_inactive ? 10 : 28);
 #endif
-		}
-		else if (Ships[i].ai_type == AI_HIDDEN_AREA_ACCESS)
-		{
+		} else if (Ships[i].ai_type == AI_HIDDEN_AREA_ACCESS) {
 #ifdef _DEBUG
-			if (Ships[i].state == SH_ACTIVE)
-			{
+			if (Ships[i].state == SH_ACTIVE) {
 				DrawRect(
 					Ships[i].x, Ships[i].y,
 					Ships[i].dx, Ships[i].dy,
 					10);
 			}
 #endif
-		}
-		else if (Ships[i].state != SH_DEAD && Ships[i].ai_type != AI_BRIDGE)
-		{
+		} else if (Ships[i].state != SH_DEAD && Ships[i].ai_type != AI_BRIDGE) {
 			PutSprite(Ships[i].x, Ships[i].y, *(pSprites256[Ships[i].i] + Ships[i].cur_frame));
 		}
 	}
@@ -2911,8 +2751,8 @@ void BlitEnemies()
 void BlitEnemyOutlines()
 {
 	unsigned char shadow = GetScreenDrawInfo(ship_cur_screen)->shadow;
-	for(int i = 0; i <= SHIPS_NUMBER-1; i++)
-	{
+
+	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
 		if (Ships[i].ai_type == AI_BRIDGE && !player_attached)
 			continue;
 
@@ -2961,18 +2801,14 @@ void CastLights()
 	numLights = 0;
 
 	// Laser.
-	if (laser_dir)
-	{
+	if (laser_dir) {
 		AddLight((x_start + x_end) / 2, ly, 60, 50, 50, 50);
 	}
 
 	// Enemies.
-	for(int i = 0; i <= SHIPS_NUMBER-1; i++)
-	{
-		if(Ships[i].state != SH_DEAD && Ships[i].ai_type != AI_BRIDGE)
-		{
-			switch (Ships[i].ai_type)
-			{
+	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
+		if (Ships[i].state != SH_DEAD && Ships[i].ai_type != AI_BRIDGE) {
+			switch (Ships[i].ai_type) {
 			case AI_ELECTRIC_SPARKLE_HORIZONTAL:
 			case AI_ELECTRIC_SPARKLE_VERTICAL:
 				AddLight(Ships[i].x + 8, Ships[i].y + 8, 50, 200, 50, 50);
@@ -3011,8 +2847,7 @@ void CastLights()
 
 void BlitNonAmbientEnemies()
 {
-	for(int i = 0; i <= SHIPS_NUMBER-1; i++)
-	{
+	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
 		if (Ships[i].state != SH_DEAD &&
 			Ships[i].ai_type != AI_BRIDGE &&
 			Ships[i].ai_type != AI_ELECTRIC_SPARKLE_HORIZONTAL &&
@@ -3031,8 +2866,7 @@ void RenderGame(int renderStatus)
 		BlitBackground(); // blit background
 		BlitLevelOutlines();
 		BlitEnemyOutlines(); // draw moving objects' outlines (shadows)
-	}
-	else {
+	} else {
 		EraseBackground();
 	}
 
@@ -3044,8 +2878,7 @@ void RenderGame(int renderStatus)
 	if (renderStatus)
 		BlitStatus(); // draw score etc
 
-	if (pLightBuffer)
-	{
+	if (pLightBuffer) {
 		// Render light map
 		unsigned char *mainSB = pScreenBuffer;
 		pScreenBuffer = pLightBuffer;
@@ -3059,104 +2892,111 @@ void RenderGame(int renderStatus)
 
 void DoGame()
 {
-	switch(game_mode)
-	{
-		case GM_TITLE:
-			// do title here
-			DoTitle();
+	switch(game_mode) {
+	case GM_TITLE:
+		// do title here
+		DoTitle();
+		break;
+
+	case GM_DEMO:
+		// demo mode here
+
+		// if end playing demo
+		if (PlayDemo() == 1 || LM_AnyKey() == 1) {
+			SetGameMode(GM_TITLE);
+			LM_ResetKeys();
+			ship_score = 0;
 			break;
-		case GM_DEMO:
-			// demo mode here
+		}
 
-			// if end playing demo
-			if(PlayDemo() == 1 || LM_AnyKey() == 1)
-			{
-				SetGameMode(GM_TITLE);
-				LM_ResetKeys();
-				ship_score = 0;
-				break;
-			}
+	case GM_GAME:
+		DoKeys();
 
-		case GM_GAME:
-
-			DoKeys();
-
-			if(GKeys[KEY_PAUSE] == 1)
-			{
-				PutString(8*17, 8*17, "PAUSA");
-				SetGameMode(GM_PAUSE);
-				Keys[SC_ENTER] = 0;
-				break;
-			}
+		if (GKeys[KEY_PAUSE] == 1) {
+			PutString(8*17, 8*17, "PAUSA");
+			SetGameMode(GM_PAUSE);
+			Keys[SC_ENTER] = 0;
+			break;
+		}
 
 #ifdef _DEBUG
-			{
-				static char screen_nr_text[16];
-				sprintf(screen_nr_text, "SCREEN %i", ship_cur_screen);
-				PutString(8*17, 8*17, screen_nr_text);
-			}
+		{
+			static char screen_nr_text[16];
+			sprintf(screen_nr_text, "SCREEN %i", ship_cur_screen);
+			PutString(8*17, 8*17, screen_nr_text);
+		}
 #endif
+		RecordDemo();
 
-			RecordDemo();
+		if (Keys[SC_ESCAPE] == 1) {
+			SetGameMode(GM_TITLE);
+			LM_ResetKeys();
+			break;
+		}
 
-			if(Keys[SC_ESCAPE] == 1)
-			{
-				SetGameMode(GM_TITLE);
-				LM_ResetKeys();
+		// win the game:
+		if (screen_procedure == 3 /*&& base_cur_screen >= 70*/) {
+			SetGameMode(GM_YOUWIN);
+
+			LM_ResetKeys();
+			PublishScore();
+			return;
+		}
+
+		// do enemies
+		for (int i = 2; i <= SHIPS_NUMBER-1; i++)
+			DoEnemy(i);
+
+		DoShip();
+		DoBase();
+		DoSmoke();
+
+		if (Ships[0].state == SH_ACTIVE) {
+			switch (Ships[0].i) {
+			case SHIP_TYPE_ROCKET_LAUNCHER:
+				DoRocketLauncher();
+				break;
+			case SHIP_TYPE_MACHINE_GUN:
+				DoMachineGun();
+				break;
+			case SHIP_TYPE_BFG:
+				DoBFG();
 				break;
 			}
 
-			// win the game:
-			if(screen_procedure == 3 /*&& base_cur_screen >= 70*/)
-			{
-				SetGameMode(GM_YOUWIN);
+			// Always do laser.
+			DoLaser();
+		}
 
-				LM_ResetKeys();
-				PublishScore();
-				return;
+		if (!frame_skip)
+			RenderGame(1);
+		break;
+
+	case GM_PAUSE:
+			DoKeys();
+
+			if (GKeys[KEY_PAUSE] == 1) {
+				PutString(8*17, 8*17, "     ");
+				SetGameMode(GM_GAME);
+				Keys[SC_ENTER] = 0;
 			}
+		break;
 
-			// do enemies
-			for(int i = 2; i <= SHIPS_NUMBER-1; i++)
-				DoEnemy(i);
+	case GM_GAMEOVER:
+		if (LM_AnyKey() == 1) {
+			InitNewGame();
+			LM_ResetKeys();
+			SetGameMode(GM_TITLE);
+		}
+		break;
 
-			DoShip();
-			DoBase();
-			DoSmoke();
+	case GM_YOUWIN:
+		DoWinScreen();
+		break;
 
-			if (Ships[0].state == SH_ACTIVE)
-			{
-				switch (Ships[0].i)
-				{
-				case SHIP_TYPE_ROCKET_LAUNCHER: DoRocketLauncher(); break;
-				case SHIP_TYPE_MACHINE_GUN: DoMachineGun(); break;
-				case SHIP_TYPE_BFG: DoBFG(); break;
-				}
-
-				// Always do laser.
-				DoLaser();
-			}
-
-			if (!frame_skip)
-				RenderGame(1);
-			break;
-		case GM_PAUSE:
-				DoKeys();
-				if(GKeys[KEY_PAUSE] == 1) {
-					PutString(8*17, 8*17, "     ");
-					SetGameMode(GM_GAME);
-					Keys[SC_ENTER] = 0;
-				}
-			break;
-		case GM_GAMEOVER:
-			if(LM_AnyKey() == 1) {InitNewGame(); LM_ResetKeys(); SetGameMode(GM_TITLE);}
-			break;
-		case GM_YOUWIN:
-			DoWinScreen();
-			break;
-		case GM_SPLASH:
-			DoSplash();
-			break;
+	case GM_SPLASH:
+		DoSplash();
+		break;
 	}
 
 }
@@ -3192,32 +3032,33 @@ int main(int argc, char *argv[])
 	static int sleep_time = 0, frames = 0, frame_end = 0, frame_start = 0;
 	static int show_fps = 0, max_frameskip = 0;
 
-	if(LM_Init(&pScreenBuffer) == 0) return -1;
+	if (LM_Init(&pScreenBuffer) == 0)
+		return -1;
+
 	LM_SND_Init();
 
 	next_game_tick = LM_Timer();
 
 	// main loop
-	while(1)
-	{
+	while (1) {
 		//next_game_tick = LM_Timer();
-		if(frames == 0) frame_start = next_game_tick;
+		if (frames == 0)
+			frame_start = next_game_tick;
 
 		frame_skip = 0;
-
 		LM_PollEvents();
 		DoGame();
-		if(show_fps == 1) PutString(8*0, 8*17, &infostring[0]);
+
+		if (show_fps == 1)
+			PutString(8*0, 8*17, &infostring[0]);
 
 		#ifdef __DOS__
 		LM_GFX_WaitVSync();
 		#endif
 
-
 		// emulate slow cpu :) just for tests!
 		//for(int i=0;i<12;i++)
 		LM_GFX_Flip(pScreenBuffer);
-
 
 		// in DOS fps shown will be incorrect a little
 		// while real are always 75
@@ -3226,20 +3067,19 @@ int main(int argc, char *argv[])
 		frames += 1;
 		frame_end = LM_Timer();
 
-		if(frame_end - frame_start >= 1000)
-		{
-			if(show_fps == 1) word2string(frames, &infostring[0] + 5);
+		if (frame_end - frame_start >= 1000) {
+			if (show_fps == 1)
+				word2string(frames, &infostring[0] + 5);
 			frames = 0;
 		}
 
 		#ifndef __DOS__
 		sleep_time = next_game_tick - frame_end;
-		if(sleep_time > 0)
-		{
+
+		if(sleep_time > 0) {
 			LM_Sleep(sleep_time);
 		} else { // slow computer, do frameskip
-			while(sleep_time < 0 && frame_skip < max_frameskip) // max frame skip
-			{
+			while (sleep_time < 0 && frame_skip < max_frameskip) { // max frame skip
 				sleep_time += 17; // 1000/60
 				frame_skip += 1;
 				LM_Sleep(2);
@@ -3252,8 +3092,13 @@ int main(int argc, char *argv[])
 		next_game_tick = LM_Timer();
 		#endif
 
-		if(Keys[SC_BACKSPACE] == 1) {max_frameskip ^= 1; Keys[SC_BACKSPACE] = 0;}
-		if(game_mode == GM_EXIT) break;
+		if (Keys[SC_BACKSPACE] == 1) {
+			max_frameskip ^= 1;
+			Keys[SC_BACKSPACE] = 0;
+		}
+
+		if (game_mode == GM_EXIT)
+			break;
 	}
 
 	LM_SND_Deinit();
@@ -3270,8 +3115,7 @@ void SingleMainStep(float delta)
 	const float frameDuration = 0.017;
 	static float timePassed = 0;
 
-	if (delta < 1)
-	{
+	if (delta < 1) {
 		timePassed += delta;
 
 		if (timePassed > frameDuration) {
@@ -3340,8 +3184,7 @@ void LoadGame(TGAMEDATA *data)
 	InitShip();
 	InitNewScreen();
 
-	for(int f = 0; f <= 6; f++)
-	{
+	for (int f = 0; f <= 6; f++) {
 		PutStream(0, STATUSBAR1[f * 43 + 1] * 8, &STATUSBAR1[f * 43 + 2]);
 	}
 }
@@ -3381,4 +3224,3 @@ int CurrentShipType()
 {
 	return Ships[0].i;
 }
-

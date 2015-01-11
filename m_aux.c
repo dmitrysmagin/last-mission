@@ -45,11 +45,12 @@ ScreenDrawInfo *GetScreenDrawInfo(int screen)
 	static const int screens[NumBackgrounds] = {
 		8, 15, 22, 29, 36, 43, 50, 55, 62, 69, 70, 92, 999
 	};
-	
+
 	for (int i = 0; i < NumBackgrounds; ++i) {
 		if (screens[i] > screen)
 			return (ScreenDrawInfo*)data + i;
 	}
+
 	return (ScreenDrawInfo*)data;
 }
 
@@ -58,20 +59,17 @@ void word2string(unsigned int value, char *buffer)
 	char *p = buffer;
 	static unsigned int _smth[5] = {10000, 1000, 100, 10, 1};
 
-
 	if (value == 0) {
-
 		*(unsigned int *)(p) = 0x002030;
 		return;
 	}
 
+	for (int c = 0; c < 5; c++) {
+		if (value / _smth[c] + p == buffer)
+			continue; // skip beginning zeroes
 
-	for(int c = 0; c < 5; c++) {
-		if(value / _smth[c] + p == buffer) continue; // skip beginning zeroes
-		*p = value / _smth[c] + 0x30;
-		p++;
+		*p++ = value / _smth[c] + 0x30;
 		value %= _smth[c];
-
 	}
 
 	#ifdef __DINGOO__
@@ -80,18 +78,18 @@ void word2string(unsigned int value, char *buffer)
 	#else
 	*(unsigned short *)(p) = 0x20;
 	#endif
-
 }
 
 void Int2ZString(int digit, int num_of_digits, char *buffer)
 {
 	static int _smth[8] = {10000000, 1000000, 100000, 10000, 1000, 100, 10, 1};
 
-	if(num_of_digits > 8) num_of_digits = 8;
+	if (num_of_digits > 8)
+		num_of_digits = 8;
 
 	memset(buffer, 0x30, num_of_digits);
 
-	for(int i = 8 - num_of_digits; i < 8; i++) {
+	for (int i = 8 - num_of_digits; i < 8; i++) {
 		*(unsigned char *)(buffer + i - 8 + num_of_digits) = digit / _smth[i] | 0x30;
 		*(unsigned char *)(buffer + i - 8 + num_of_digits + 1) = 0;
 		digit %= _smth[i];
@@ -100,9 +98,13 @@ void Int2ZString(int digit, int num_of_digits, char *buffer)
 
 unsigned char AdjustAscii(unsigned char a)
 {
-	if(a <= 0x5a) {
-		if (a >= 0x41) return a - 0x41 + 0xc;
-		if (a == 0x20) return 0;
+	if (a <= 0x5a) {
+		if (a >= 0x41)
+			return a - 0x41 + 0xc;
+
+		if (a == 0x20)
+			return 0;
+
 		return a - 0x30 + 1;
 	}
 
@@ -115,47 +117,61 @@ void DrawLine(int x1, int y1, int x2, int y2, unsigned char color)
 	const int deltaY = abs(y2 - y1);
 	static int temp, i;
 
-	if (deltaX == 0)
-	{
-		if (x1 < 0 || x1 >= SCREEN_WIDTH) return;
-		if (y1 > y2) { temp = y2; y2 = y1; y1 = temp; }
-		if (y1 < 0) y1 = 0;
-		if (y2 >= ACTION_SCREEN_HEIGHT) y2 = ACTION_SCREEN_HEIGHT - 1;
-		for (i = y1; i <= y2; ++i)
-		{
+	if (deltaX == 0) {
+		if (x1 < 0 || x1 >= SCREEN_WIDTH)
+			return;
+
+		if (y1 > y2) {
+			temp = y2;
+			y2 = y1;
+			y1 = temp;
+		}
+
+		if (y1 < 0)
+			y1 = 0;
+
+		if (y2 >= ACTION_SCREEN_HEIGHT)
+			y2 = ACTION_SCREEN_HEIGHT - 1;
+
+		for (i = y1; i <= y2; ++i) {
 			*(pScreenBuffer + i * SCREEN_WIDTH + x1) = color;
 		}
-	}
-	else if (deltaY == 0)
-	{
-		if (y1 < 0 || y1 >= ACTION_SCREEN_HEIGHT) return;
-		if (x1 > x2) { temp = x2; x2 = x1; x1 = temp; }
-		if (x1 < 0) x1 = 0;
-		if (x2 >= SCREEN_WIDTH) x2 = SCREEN_WIDTH - 1;
-		for (i = x1; i <= x2; ++i)
-		{
+	} else if (deltaY == 0) {
+		if (y1 < 0 || y1 >= ACTION_SCREEN_HEIGHT)
+			return;
+
+		if (x1 > x2) {
+			temp = x2;
+			x2 = x1;
+			x1 = temp;
+		}
+
+		if (x1 < 0)
+			x1 = 0;
+
+		if (x2 >= SCREEN_WIDTH)
+			x2 = SCREEN_WIDTH - 1;
+
+		for (i = x1; i <= x2; ++i) {
 			*(pScreenBuffer + y1 * SCREEN_WIDTH + i) = color;
 		}
-	}
-	else
-	{
+	} else {
 		const int signX = x1 < x2 ? 1 : -1;
 		const int signY = y1 < y2 ? 1 : -1;
 
 		int error = deltaX - deltaY;
 		SET_GAME_AREA_POINT(x2, y2, color);
 
-		while(x1 != x2 || y1 != y2)
-		{
+		while (x1 != x2 || y1 != y2) {
 			SET_GAME_AREA_POINT(x1, y1, color);
 			const int error2 = error * 2;
-			if(error2 > -deltaY)
-			{
+
+			if (error2 > -deltaY) {
 				error -= deltaY;
 				x1 += signX;
 			}
-			if(error2 < deltaX)
-			{
+
+			if (error2 < deltaX) {
 				error += deltaX;
 				y1 += signY;
 			}
@@ -178,18 +194,19 @@ void PutGeneric(int x, int y, int xSize, int ySize, unsigned char *p)
 
 	static int dx, dy;
 
-	for(dy = 0; dy < ySize; dy++)
-		for(dx = 0; dx < xSize; dx++) {
+	for (dy = 0; dy < ySize; dy++)
+		for (dx = 0; dx < xSize; dx++) {
 			SET_SCREEN_POINT(x + dx, y + dy, CGA_Palette[(*p >> smth[dx & 3]) & 3]);
 			if((dx & 3) == 3) p++;
 		}
 }
+
 void PutGeneric256(int x, int y, int xSize, int ySize, unsigned char *p)
 {
 	static int dx, dy;
 
-	for(dy = 0; dy < ySize; dy++)
-		for(dx = 0; dx < xSize; dx++) {
+	for (dy = 0; dy < ySize; dy++)
+		for (dx = 0; dx < xSize; dx++) {
 			SET_SCREEN_POINT_IF(*p != 0, x + dx, y + dy, *p);
 			p++;
 		}
@@ -198,27 +215,27 @@ void PutGeneric256(int x, int y, int xSize, int ySize, unsigned char *p)
 void PutGeneric256Outline(int x, int y, int xSize, int ySize, unsigned char *p, unsigned char shadow)
 {
 	static int dx, dy;
-	for(dy = 0; dy < ySize; dy++)
-		for(dx = 0; dx < xSize; dx++) {
-			if (*p)
-			{
+
+	for (dy = 0; dy < ySize; dy++)
+		for (dx = 0; dx < xSize; dx++) {
+			if (*p) {
 				SET_GAME_AREA_POINT(x + dx - 1, y + dy, shadow);
 				SET_GAME_AREA_POINT(x + dx + 1, y + dy, shadow);
 				SET_GAME_AREA_POINT(x + dx, y + dy - 1, shadow);
 				SET_GAME_AREA_POINT(x + dx, y + dy + 1, shadow);
 				SET_GAME_AREA_POINT(x + dx, y + dy + 2, shadow);
 			}
+
 			p++;
 		}
 }
-
 
 void PutGeneric256NoAlpha(int x, int y, int xSize, int ySize, unsigned char *p)
 {
 	static int dx, dy;
 
-	for(dy = 0; dy < ySize; dy++)
-		for(dx = 0; dx < xSize; dx++) {
+	for (dy = 0; dy < ySize; dy++)
+		for (dx = 0; dx < xSize; dx++) {
 			SET_SCREEN_POINT(x + dx, y + dy, *p);
 			p++;
 		}
@@ -232,8 +249,8 @@ void PutBlank(int x, int y, unsigned char *p)
 	ySize = *(p + 1);
 	p += 2;
 
-	for(dy = 0; dy < ySize; dy++)
-		for(dx = 0; dx < xSize; dx++) {
+	for (dy = 0; dy < ySize; dy++)
+		for (dx = 0; dx < xSize; dx++) {
 			SET_SCREEN_POINT_IF(*p != 0, x + dx, y + dy, 0);
 			p++;
 		}
@@ -259,11 +276,9 @@ void PutLetter(int x, int y, unsigned char a)
 	PutGeneric256NoAlpha(x, y, 8, 8, &Font256[a*64]);
 }
 
-
 void PutString(int x, int y, char *p)
 {
-	while(*p != 0)
-	{
+	while (*p != 0) {
 		PutLetter(x, y, AdjustAscii(*p));
 		p += 1;
 		x += 8;
@@ -273,8 +288,7 @@ void PutString(int x, int y, char *p)
 
 void PutStream(int x, int y, unsigned char *p)
 {
-	while(*p != 0)
-	{
+	while (*p != 0) {
 		PutLetter(x, y, *p);
 		p += 1;
 		x += 8;
@@ -293,10 +307,9 @@ void UnpackLevel()
 	memset(ScreenTilesBuffer, 0x00, 0x2a8);
 
 	unsigned char *endOfScreen = ScreenTilesBuffer + 0x2a8;
-
 	unsigned char *p = SCREENS[ship_cur_screen];
-	for(int i = *p++; i > 0; i--, p += 4)
-	{
+
+	for (int i = *p++; i > 0; i--, p += 4) {
 		int xPos = *(p);
 		int yPos = *(p + 1);
 
@@ -312,9 +325,8 @@ void UnpackLevel()
 
 		ps += 2;
 
-		for(int y = 0; y < dy; y++, pd += 0x28 - dx)
-			for(int x = 0; x < dx; x++, ps++, pd++)
-			{
+		for (int y = 0; y < dy; y++, pd += 0x28 - dx)
+			for (int x = 0; x < dx; x++, ps++, pd++) {
 				if (pd >= endOfScreen)
 					break;
 
@@ -322,6 +334,7 @@ void UnpackLevel()
 					*pd = *ps;
 			}
 	}
+
 	#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 	level_cache_fl = 1;
 	#endif
@@ -330,11 +343,10 @@ void UnpackLevel()
 void BlitLevel()
 {
 	#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
-	if(level_cache_fl == 1)
-	{
+	if(level_cache_fl == 1) {
 	#endif
-		for(int y = 0; y <= 16; y++)
-			for(int x = 0; x <= 39; x++)
+		for (int y = 0; y <= 16; y++)
+			for (int x = 0; x <= 39; x++)
 				PutTile(x*8, y*8, (unsigned char *)&Tiles256[ScreenTilesBuffer[y*0x28+x]*64]);
 	#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
 		memcpy(level_cache, pScreenBuffer, 17*8*SCREEN_WIDTH);
@@ -346,8 +358,9 @@ void BlitLevel()
 void BlitLevelOutlines()
 {
 	unsigned char shadow = GetScreenDrawInfo(ship_cur_screen)->shadow;
-	for(int y = 0; y <= 16; y++)
-		for(int x = 0; x <= 39; x++)
+
+	for (int y = 0; y <= 16; y++)
+		for (int x = 0; x <= 39; x++)
 			PutGeneric256Outline(x*8, y*8, 8, 8, (unsigned char *)&Tiles256[ScreenTilesBuffer[y*0x28+x]*64], shadow);
 }
 
@@ -361,27 +374,22 @@ void BlitBackground()
 	int background = GetScreenDrawInfo(ship_cur_screen)->background;
 	memset(pScreenBuffer, background, SCREEN_WIDTH*ACTION_SCREEN_HEIGHT);
 
-	for (int i = 0; i < 2; ++i)
-	{
+	for (int i = 0; i < 2; ++i) {
 		short *lines = SCREENLINES[ship_cur_screen];
 		short count  = *(lines++);
 		unsigned char color = (i == 1)
 			? GetScreenDrawInfo(ship_cur_screen)->line_light
 			: GetScreenDrawInfo(ship_cur_screen)->line_shadow;
 
-		for (int j = 0; j < count; ++j, lines += 4)
-		{
+		for (int j = 0; j < count; ++j, lines += 4) {
 			int x1 = *(lines + 0);
 			int y1 = *(lines + 1);
 			int x2 = *(lines + 2);
 			int y2 = *(lines + 3);
 
-			if (i == 1)
-			{
+			if (i == 1) {
 				DrawLine(x1, y1, x2, y2, color);
-			}
-			else
-			{
+			} else {
 				if (x1 == x2)
 					DrawLine(x1 - 1, y1, x2 - 1, y2, color);
 				else if (y1 == y2)
@@ -392,10 +400,9 @@ void BlitBackground()
 		}
 	}
 
-	if (ship_cur_screen > 69 && ship_cur_screen < 92)
-	{
-		for(int y = 0; y <= 8; y++)
-			for(int x = 0; x <= 20; x++)
+	if (ship_cur_screen > 69 && ship_cur_screen < 92) {
+		for (int y = 0; y <= 8; y++)
+			for (int x = 0; x <= 20; x++)
 				PutSprite(x*16 - 4, y*16 - 8, pBgSprites[SkyMap[y][x]]);
 	}
 }
@@ -459,5 +466,5 @@ int RandomInt()
 // Set initial seed value, if 0 set to default 0x342a cause it's needed for demo mode
 void Randomize(int seed)
 {
-	if(seed == 0) randseed = 0x342a; else randseed = seed;
+	randseed = (seed == 0 ? 0x342a : seed);
 }

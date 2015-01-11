@@ -1,8 +1,3 @@
-/*
-
-	m_aux.h 
-
-*/
 #ifndef _M_AUX_H_
 #define _M_AUX_H_
 
@@ -31,8 +26,7 @@ void EraseBackground();
 int RandomInt();
 void Randomize(int seed);
 
-typedef struct
-{
+typedef struct {
 	unsigned char background;
 	unsigned char shadow;
 	unsigned char line_light;
@@ -41,8 +35,7 @@ typedef struct
 
 ScreenDrawInfo *GetScreenDrawInfo(int screen);
 
-typedef struct 
-{
+typedef struct {
 	int x, y;
 	float radius;
 	float r, g, b;
