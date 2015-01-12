@@ -952,10 +952,6 @@ void BlowUpEnemy(int i)
 
 	// special procedures for breakable walls
 	if (Ships[i].i == 6) {
-		#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
-		extern int level_cache_fl;
-		level_cache_fl = 1; // doing some magic...
-		#endif
 		if (Ships[i].cur_frame == 0) {
 			Ships[i].x -= 8;
 			ScreenTilesBuffer[(Ships[i].y >> 3) * 40 + (Ships[i].x >> 3)] = 0;
@@ -1777,12 +1773,6 @@ _random_move_ai:
 
 			if (/*screen_bridge == 1 &&*/ player_attached == 1)
 				a = 245;
-			#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
-			{
-				extern int level_cache_fl;
-				level_cache_fl = 1;
-			}
-			#endif
 
 			// seal or unseal the floor
 			for (int f = 0; f <= 4; f++) {
@@ -2048,10 +2038,6 @@ _random_move_ai:
 					// when starting to lift up - unseal the floor
 					// ugly, maybe change in future
 					if (i->y == 120) {
-						#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
-						extern int level_cache_fl;
-						level_cache_fl = 1; // doing some magic...
-						#endif
 						// unseal the floor
 						for (int j = 0; j <= 5; j++) {
 							ScreenTilesBuffer[(i->y >> 3) * 40 + (i->x >> 3) + j] = 0;
@@ -2089,10 +2075,6 @@ _random_move_ai:
 
 						// seal the floor!
 						for (int i = 0; i <= 5; i++) {
-							#if 0 //defined(__DINGUX__) || defined(__DINGOO__)
-							extern int level_cache_fl;
-							level_cache_fl = 1; // doing some magic...
-							#endif
 							ScreenTilesBuffer[((Ships[1].y + 16) >> 3) * 40 + ((Ships[1].x - 4) >> 3) + i] = 245;
 						}
 
