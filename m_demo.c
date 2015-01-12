@@ -10,6 +10,7 @@
 #include "m_gfx.h"
 #include "m_core.h"
 #include "m_aux.h"
+#include "input.h"
 
 #define DEMO_UP 0x01
 #define DEMO_DOWN 0x02
@@ -19,8 +20,6 @@
 #define DEMO_ESCAPE 0x20
 
 extern unsigned char KeyLog[]; // forward reference
-
-extern unsigned char GKeys[7]; // import from m_core.c
 
 unsigned char demo_frames = 0, demo_data = 0, demo_prev_data;
 

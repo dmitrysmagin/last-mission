@@ -17,7 +17,7 @@
 #include "m_gfx_data.h"
 #include "m_scr.h"
 #include "m_demo.h"
-
+#include "input.h"
 #include "sound.h"
 
 #define GAME_START_SCREEN 1 // Start of the labyrinth.
@@ -161,8 +161,6 @@ int title_start_flag = 0;
 int youwin_start_flag = 0;
 int cur_screen_bonus = 0;
 int hidden_level_entered = 0;
-
-unsigned char GKeys[7]; // left, right, up, down, fire, pause, quit
 
 #define F_UP 0
 #define F_RIGHT 1

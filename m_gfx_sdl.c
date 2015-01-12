@@ -7,12 +7,11 @@
 
 #include "m_core.h"
 #include "m_gfx.h"
+#include "input.h"
 #include "SDL/SDL.h"
 
 // forward def of palette in RGBA format
 extern unsigned char pal256[1024];
-
-unsigned char Keys[128] = {0};
 
 #ifndef __DINGUX__
 int scale2x = 1; // 0 - no scale 320x200; 1 - upscale to 640x400
@@ -24,22 +23,6 @@ void LM_GFX_Deinit();
 
 SDL_Surface *small_screen = NULL;
 SDL_Surface *screen = NULL;
-
-//===============================================================
-void LM_ResetKeys()
-{
-	memset(&Keys[0], 0, 128);
-}
-
-int LM_AnyKey()
-{
-	for (int i = 0; i < 127; i++) {
-		if (Keys[i] == 1)
-			return 1;
-	}
-
-	return 0;
-}
 
 int LM_Init(unsigned char **pScreenBuffer)
 {
@@ -54,75 +37,6 @@ int LM_Init(unsigned char **pScreenBuffer)
 void LM_Deinit()
 {
 	LM_GFX_Deinit();
-}
-
-char LM_PollEvents()
-{
-	SDL_Event event;
-
-	while (SDL_PollEvent(&event) != 0) {
-		int key_scan = -1;
-		unsigned char key_value = 0;
-
-		if (event.type == SDL_QUIT) {
-			Keys[SC_ESCAPE] = 1;
-			return 1;
-		}
-
-		// unix and dingoo sdl don't have scancodes, so remap usual keys
-		if (event.type == SDL_KEYDOWN)
-			key_value = 1;
-		if (event.type == SDL_KEYUP)
-			key_value = 0;
-
-		// Emulate x86 scancodes
-		if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-			switch (event.key.keysym.sym) {
-				case SDLK_UP:
-					key_scan = SC_UP;
-					break;
-				case SDLK_DOWN:
-					key_scan = SC_DOWN;
-					break;
-				case SDLK_LEFT:
-					key_scan = SC_LEFT;
-					break;
-				case SDLK_RIGHT:
-					key_scan = SC_RIGHT;
-					break;
-				case SDLK_ESCAPE:
-					key_scan = SC_ESCAPE;
-					break;
-				case SDLK_RETURN: // ENTER
-					key_scan = SC_ENTER;
-					break;
-				case SDLK_LCTRL:
-				case SDLK_LALT:
-				case SDLK_LSHIFT:
-				case SDLK_SPACE:
-					key_scan = SC_SPACE;
-					break;
-				case SDLK_s:
-					key_scan = SC_S;
-					break;
-				case SDLK_f:
-					key_scan = SC_F;
-					break;
-				case SDLK_TAB: // LEFT SHOULDER
-					key_scan = SC_TAB;
-					break;
-				case SDLK_BACKSPACE: // RIGHT SHOULDER
-					key_scan = SC_BACKSPACE;
-					break;
-				default:; // maybe use in future
-					break;
-			}
-			if (key_scan != -1)
-				Keys[key_scan] = key_value;
-		}
-	}
-
-	return 0;
 }
 
 int LM_GFX_Init()
