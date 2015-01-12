@@ -137,4 +137,6 @@ typedef struct TGAMEDATA {
 	int garages[MAX_GARAGES][2];
 } TGAMEDATA;
 
+void GameLoop();
+
 #endif // _M_CORE_H_

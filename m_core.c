@@ -3007,18 +3007,12 @@ void GameLevelUp()
 {
 }
 
-#undef main
-int main(int argc, char *argv[])
+void GameLoop()
 {
 	static char infostring[16] = "FPS: ";
 	static int next_game_tick = 0;
 	static int sleep_time = 0, frames = 0, frame_end = 0, frame_start = 0;
 	static int show_fps = 0, max_frameskip = 0;
-
-	if (LM_Init(&pScreenBuffer) == 0)
-		return -1;
-
-	LM_SND_Init();
 
 	next_game_tick = SDL_GetTicks();
 
@@ -3070,11 +3064,6 @@ int main(int argc, char *argv[])
 		if (game_mode == GM_EXIT)
 			break;
 	}
-
-	LM_SND_Deinit();
-	LM_Deinit();
-
-	return 0;
 }
 
 void EnableSocialNetworkIcon(int enable)
