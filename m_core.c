@@ -8,6 +8,8 @@
 
 #include <string.h>
 #include <math.h>
+#include <SDL/SDL.h>
+
 #include "m_core.h"
 #include "m_aux.h"
 #include "m_gfx.h"
@@ -3007,6 +3009,7 @@ void GameLevelUp()
 {
 }
 
+#undef main
 int main(int argc, char *argv[])
 {
 	static char infostring[16] = "FPS: ";
@@ -3019,11 +3022,10 @@ int main(int argc, char *argv[])
 
 	LM_SND_Init();
 
-	next_game_tick = LM_Timer();
+	next_game_tick = SDL_GetTicks();
 
 	// main loop
 	while (1) {
-		//next_game_tick = LM_Timer();
 		if (frames == 0)
 			frame_start = next_game_tick;
 
@@ -3047,7 +3049,7 @@ int main(int argc, char *argv[])
 		next_game_tick += 17; // gcc rounds (1000 / 60) to 16, but we need 17
 
 		frames += 1;
-		frame_end = LM_Timer();
+		frame_end = SDL_GetTicks();
 
 		if (frame_end - frame_start >= 1000) {
 			if (show_fps == 1)
@@ -3059,19 +3061,19 @@ int main(int argc, char *argv[])
 		sleep_time = next_game_tick - frame_end;
 
 		if(sleep_time > 0) {
-			LM_Sleep(sleep_time);
+			SDL_Delay(sleep_time);
 		} else { // slow computer, do frameskip
 			while (sleep_time < 0 && frame_skip < max_frameskip) { // max frame skip
 				sleep_time += 17; // 1000/60
 				frame_skip += 1;
-				LM_Sleep(2);
+				SDL_Delay(2);
 				LM_PollEvents();
 				DoGame();
 			}
-			next_game_tick = LM_Timer();
+			next_game_tick = SDL_GetTicks();
 		}
 		#else
-		next_game_tick = LM_Timer();
+		next_game_tick = SDL_GetTicks();
 		#endif
 
 		if (Keys[SC_BACKSPACE] == 1) {

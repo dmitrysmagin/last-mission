@@ -41,16 +41,6 @@ int LM_AnyKey()
 	return 0;
 }
 
-int LM_Timer()
-{
-	return SDL_GetTicks();
-}
-
-void LM_Sleep(int sleep_time)
-{
-	SDL_Delay(sleep_time);
-}
-
 int LM_Init(unsigned char **pScreenBuffer)
 {
 	if (LM_GFX_Init() == 0)
