@@ -6,6 +6,8 @@
 
 */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <SDL/SDL.h>
@@ -2470,15 +2472,15 @@ void BlitStatus()
 	static char string_buffer[16];
 
 	// level
-	Int2ZString(game_level, 2, &string_buffer[0]);
+	sprintf(string_buffer, "%02d", game_level);
 	PutString(8*16, 8*20, &string_buffer[0]);
 
 	// fuel
-	Int2ZString(ship_fuel, 4, &string_buffer[0]);
+	sprintf(string_buffer, "%04d", ship_fuel);
 	PutString(8*14, 8*21, &string_buffer[0]);
 
 	// score
-	Int2ZString(ship_score, 8, &string_buffer[0]);
+	sprintf(string_buffer, "%08d", ship_score);
 	PutString(8*10, 8*22, &string_buffer[0]);
 
 	// health bar.
@@ -2499,7 +2501,7 @@ void BlitStatus()
 	}
 
 	// lives
-	Int2ZString(ship_lives, 2, &string_buffer[0]);
+	sprintf(string_buffer, "%02d", ship_lives);
 	PutString(8*28, 8*21, &string_buffer[0]);
 
 	// score record
@@ -3035,7 +3037,7 @@ void GameLoop()
 
 		if (frame_end - frame_start >= 1000) {
 			if (show_fps == 1)
-				word2string(frames, &infostring[0] + 5);
+				sprintf(infostring, "FPS: %d", frames);
 			frames = 0;
 		}
 

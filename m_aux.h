@@ -5,8 +5,6 @@
 #define SCREEN_HEIGHT 200
 #define ACTION_SCREEN_HEIGHT 136
 
-void word2string(unsigned int value, char *buffer);
-void Int2ZString(int digit, int num_of_digits, char *buffer);
 unsigned char AdjustAscii(unsigned char a);
 void DrawLine(int x1, int y1, int x2, int y2, unsigned char color);
 void DrawRect(int x, int y, int width, int height, unsigned char color);

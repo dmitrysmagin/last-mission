@@ -54,48 +54,6 @@ ScreenDrawInfo *GetScreenDrawInfo(int screen)
 	return (ScreenDrawInfo*)data;
 }
 
-void word2string(unsigned int value, char *buffer)
-{
-	char *p = buffer;
-	static unsigned int _smth[5] = {10000, 1000, 100, 10, 1};
-
-	if (value == 0) {
-		*(unsigned int *)(p) = 0x002030;
-		return;
-	}
-
-	for (int c = 0; c < 5; c++) {
-		if (value / _smth[c] + p == buffer)
-			continue; // skip beginning zeroes
-
-		*p++ = value / _smth[c] + 0x30;
-		value %= _smth[c];
-	}
-
-	#ifdef __DINGOO__
-	*p = 0x20;
-	*(p+1) = 0;
-	#else
-	*(unsigned short *)(p) = 0x20;
-	#endif
-}
-
-void Int2ZString(int digit, int num_of_digits, char *buffer)
-{
-	static int _smth[8] = {10000000, 1000000, 100000, 10000, 1000, 100, 10, 1};
-
-	if (num_of_digits > 8)
-		num_of_digits = 8;
-
-	memset(buffer, 0x30, num_of_digits);
-
-	for (int i = 8 - num_of_digits; i < 8; i++) {
-		*(unsigned char *)(buffer + i - 8 + num_of_digits) = digit / _smth[i] | 0x30;
-		*(unsigned char *)(buffer + i - 8 + num_of_digits + 1) = 0;
-		digit %= _smth[i];
-	}
-}
-
 unsigned char AdjustAscii(unsigned char a)
 {
 	if (a <= 0x5a) {
