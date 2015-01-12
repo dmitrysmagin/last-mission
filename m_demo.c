@@ -9,6 +9,7 @@
 #include "m_demo.h"
 #include "m_core.h"
 #include "m_aux.h"
+#include "random.h"
 #include "video.h"
 #include "input.h"
 

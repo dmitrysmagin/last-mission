@@ -21,8 +21,6 @@ void BlitLevel();
 void BlitLevelOutlines();
 void BlitBackground();
 void EraseBackground();
-int RandomInt();
-void Randomize(int seed);
 
 typedef struct {
 	unsigned char background;

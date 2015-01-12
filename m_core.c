@@ -18,6 +18,7 @@
 #include "m_gfx_data.h"
 #include "m_scr.h"
 #include "m_demo.h"
+#include "random.h"
 #include "video.h"
 #include "input.h"
 #include "sound.h"
