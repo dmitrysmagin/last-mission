@@ -15,9 +15,8 @@ extern unsigned char pal256[1024];
 unsigned char Keys[128] = {0};
 
 #ifndef __DINGUX__
-int scale2x = 2; // 1 - no scale 320x200; 2 - upscale to 640x400
+int scale2x = 1; // 0 - no scale 320x200; 1 - upscale to 640x400
 int fullscr = 0; // or SDL_FULLSCREEN
-int _toggle = 1;
 #endif
 
 int LM_GFX_Init();
@@ -133,23 +132,6 @@ char LM_PollEvents()
 		}
 	}
 
-	// toggle sizes x1 or x2 with scanlines
-	// for win32 and unix only
-	#ifndef __DINGUX__
-	if (Keys[SC_F] == 1) {
-		fullscr ^= SDL_FULLSCREEN;
-		Keys[SC_F] = 0;
-		LM_GFX_SetScale(2);
-		return 0;
-	}
-
-	if (Keys[SC_S] == 1 && fullscr == 0) {
-		Keys[SC_S] = 0;
-		_toggle ^= 1;
-		LM_GFX_SetScale(_toggle + 1);
-	}
-	#endif
-
 	return 0;
 }
 
@@ -197,7 +179,17 @@ void LM_GFX_Flip(unsigned char *p)
 	SDL_BlitSurface(small_screen, NULL, screen, &dst);
 	SDL_Flip(screen);
 #else
-	if (scale2x == 2) {
+	/* toggle sizes x1 or x2 and fullscreen, for win32 and unix only */
+	if (Keys[SC_F] == 1) {
+		fullscr ^= SDL_FULLSCREEN;
+		Keys[SC_F] = 0;
+		LM_GFX_SetScale(1);
+	} else if (Keys[SC_S] == 1 && fullscr == 0) {
+		Keys[SC_S] = 0;
+		LM_GFX_SetScale(scale2x ^ 1);
+	}
+
+	if (scale2x) {
 		for (int y = 0; y <= 199; y++) {
 			for (int x = 0; x <= 319; x++) {
 				unsigned char tmp = *(unsigned char *)(p + y*320+x);
@@ -222,15 +214,15 @@ void LM_GFX_WaitVSync()
 {
 }
 
-void LM_GFX_SetScale(int param)
+void LM_GFX_SetScale(int scale)
 {
 #ifndef __DINGUX__
-	scale2x = ((param - 1) & 1) + 1; // ensure param to be 1 or 2 strictly
+	scale2x = scale &= 1;
 
 	if (fullscr == SDL_FULLSCREEN)
-		scale2x = 2;
+		scale = 1;
 
-	screen = SDL_SetVideoMode(320 * scale2x, 240 * scale2x, 8, SDL_SWSURFACE | fullscr);
+	screen = SDL_SetVideoMode(320 << scale, 240 << scale, 8, SDL_SWSURFACE | fullscr);
 	SDL_SetPalette(screen, SDL_PHYSPAL, (SDL_Color *)pal256, 0, 256);
 	LM_ResetKeys();
 #endif
