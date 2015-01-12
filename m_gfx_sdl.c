@@ -200,10 +200,6 @@ void LM_GFX_Flip(unsigned char *p)
 #endif
 }
 
-void LM_GFX_WaitVSync()
-{
-}
-
 void LM_GFX_SetScale(int scale)
 {
 #ifndef __DINGUX__

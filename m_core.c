@@ -2995,8 +2995,6 @@ void SetEasyLevel(int level)
 	easy_level = level;
 }
 
-#ifndef __APPLE__
-
 void HitTheBonus(int param)
 {
 }
@@ -3036,16 +3034,8 @@ int main(int argc, char *argv[])
 		if (show_fps == 1)
 			PutString(8*0, 8*17, &infostring[0]);
 
-		#ifdef __DOS__
-		LM_GFX_WaitVSync();
-		#endif
-
-		// emulate slow cpu :) just for tests!
-		//for(int i=0;i<12;i++)
 		LM_GFX_Flip(pScreenBuffer);
 
-		// in DOS fps shown will be incorrect a little
-		// while real are always 75
 		next_game_tick += 17; // gcc rounds (1000 / 60) to 16, but we need 17
 
 		frames += 1;
@@ -3057,7 +3047,6 @@ int main(int argc, char *argv[])
 			frames = 0;
 		}
 
-		#ifndef __DOS__
 		sleep_time = next_game_tick - frame_end;
 
 		if(sleep_time > 0) {
@@ -3072,9 +3061,6 @@ int main(int argc, char *argv[])
 			}
 			next_game_tick = SDL_GetTicks();
 		}
-		#else
-		next_game_tick = SDL_GetTicks();
-		#endif
 
 		if (Keys[SC_BACKSPACE] == 1) {
 			max_frameskip ^= 1;
@@ -3090,35 +3076,6 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
-#else // __APPLE__
-
-void SingleMainStep(float delta)
-{
-#if (1)
-	const float frameDuration = 0.017;
-	static float timePassed = 0;
-
-	if (delta < 1) {
-		timePassed += delta;
-
-		if (timePassed > frameDuration) {
-			timePassed -= frameDuration;
-			while (timePassed > frameDuration) {
-				timePassed -= frameDuration;
-				frame_skip = 1;
-				DoGame();
-			}
-			timePassed = 0;
-			frame_skip = 0;
-		}
-	}
-#endif
-
-	DoGame();
-}
-
-#endif // __APPLE__
 
 void EnableSocialNetworkIcon(int enable)
 {
