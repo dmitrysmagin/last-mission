@@ -11,11 +11,9 @@ LFLAGS = -s -lSDL -lSDL_mixer -lm
 # source files
 
 OBJ =	m_core.o m_aux.o m_demo.o m_data.o m_gfx_data.o \
-	m_scr.o m_scr_lines.o input.o main.o
+	m_scr.o m_scr_lines.o
 
-OBJ +=	sound.o
-
-OBJ +=	m_gfx_sdl.o
+OBJ +=	input.o main.o sound.o video.o
 
 all : $(APP_NAME)
 

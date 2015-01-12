@@ -15,22 +15,14 @@
  *
  */
 
-#include "m_core.h"
-#include "video.h"
-#include "sound.h"
+#ifndef _VIDEO_H_
+#define _VIDEO_H_
 
-int main(int argc, char *argv[])
-{
+extern unsigned char *pScreenBuffer;
 
-	if (LM_Init(&pScreenBuffer) == 0)
-		return -1;
+int LM_Init(unsigned char **pScreenBuffer);
+void LM_Deinit();
+void LM_GFX_Flip(unsigned char *p);
+void LM_GFX_SetScale(int scale);
 
-	LM_SND_Init();
-
-	GameLoop();
-
-	LM_SND_Deinit();
-	LM_Deinit();
-
-	return 0;
-}
+#endif /* _VIDEO_H_ */

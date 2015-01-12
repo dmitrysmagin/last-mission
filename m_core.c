@@ -12,11 +12,11 @@
 
 #include "m_core.h"
 #include "m_aux.h"
-#include "m_gfx.h"
 #include "m_data.h"
 #include "m_gfx_data.h"
 #include "m_scr.h"
 #include "m_demo.h"
+#include "video.h"
 #include "input.h"
 #include "sound.h"
 

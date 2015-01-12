@@ -7,9 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "m_demo.h"
-#include "m_gfx.h"
 #include "m_core.h"
 #include "m_aux.h"
+#include "video.h"
 #include "input.h"
 
 #define DEMO_UP 0x01

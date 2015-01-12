@@ -16,8 +16,8 @@
  */
 
 #include "m_core.h"
-#include "m_gfx.h"
 #include "input.h"
+#include "video.h"
 #include "SDL/SDL.h"
 
 /* game keys */
