@@ -16,7 +16,6 @@
 #include "m_aux.h"
 #include "m_data.h"
 #include "m_gfx_data.h"
-#include "m_scr.h"
 #include "m_demo.h"
 #include "random.h"
 #include "video.h"
@@ -2545,13 +2544,26 @@ void RotateLogo()
 		sign = -sign;
 }
 
+void LoadSplash()
+{
+	extern SDL_Surface *small_screen;
+	char name[256];
+	SDL_Rect dst;
+
+	sprintf(name, "graphics/title%i.bmp", (SDL_GetTicks() & 3) + 1);
+	SDL_Surface *title = SDL_LoadBMP(name);
+
+	dst.x = (small_screen->w - title->w) / 2;
+	dst.h = (small_screen->h - title->h) / 2;
+
+	SDL_BlitSurface(title, NULL, small_screen, &dst);
+	SDL_FreeSurface(title);
+}
+
 void DoSplash()
 {
 	if (ticks_for_splash == 0) {
-		for (int i = 0; i <= 199; i++) {
-			PutGeneric(0, i * 2, SCREEN_WIDTH, 1, &splash_screen[i*80]);
-			PutGeneric(0, i * 2 + 1, SCREEN_WIDTH, 1, &splash_screen[i*80+8192]);
-		}
+		LoadSplash();
 	}
 
 	ticks_for_splash += 1;
