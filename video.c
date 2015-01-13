@@ -18,11 +18,12 @@
 /*
  * Note: define __DINGUX__ to build for low resolutions like 320x240
  */
+#include <SDL/SDL.h>
+#include <SDL/SDL_rotozoom.h>
 
 #include "m_core.h"
 #include "video.h"
 #include "input.h"
-#include "SDL/SDL.h"
 
 // forward def of palette in RGBA format
 extern unsigned char pal256[1024];
@@ -65,8 +66,7 @@ int LM_GFX_Init()
 #ifdef __DINGUX__
 	screen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
 #else
-	screen = SDL_SetVideoMode(640, 480, 8, SDL_SWSURFACE | fullscr);
-	SDL_SetPalette(screen, SDL_PHYSPAL, (SDL_Color *)pal256, 0, 256);
+	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE | fullscr);
 #endif
 	small_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320, 200, 8, 0, 0, 0, 0);
 	SDL_SetPalette(small_screen, SDL_LOGPAL, (SDL_Color *)pal256, 0, 256);
@@ -86,17 +86,9 @@ void LM_GFX_Deinit()
 
 void LM_GFX_Flip(unsigned char *p)
 {
-#ifdef __DINGUX__
 	SDL_Rect dst;
 
-	dst.w = 320;
-	dst.h = 240;
-	dst.x = 0;
-	dst.y = 20;
-
-	SDL_BlitSurface(small_screen, NULL, screen, &dst);
-	SDL_Flip(screen);
-#else
+#ifndef __DINGUX__
 	/* toggle sizes x1 or x2 and fullscreen, for win32 and unix only */
 	if (Keys[SC_F] == 1) {
 		fullscr ^= SDL_FULLSCREEN;
@@ -108,24 +100,23 @@ void LM_GFX_Flip(unsigned char *p)
 	}
 
 	if (scale2x) {
-		for (int y = 0; y <= 199; y++) {
-			for (int x = 0; x <= 319; x++) {
-				unsigned char tmp = *(unsigned char *)(p + y*320+x);
-				unsigned char *pDest = (unsigned char *)screen->pixels;
+		dst.x = 0;
+		dst.y = 40;
 
-				*(pDest + 640*40 + (y*2+1)*640+x*2) = tmp;
-				*(pDest + 640*40 + (y*2+1)*640+x*2+1) = tmp;
-				*(pDest + 640*40 + y*2*640+x*2) = tmp;
-				*(pDest + 640*40 + y*2*640+x*2+1) = tmp;
-			}
-		}
-	} else {
-		memcpy(screen->pixels + 320*20, p, 320*200);
+		SDL_Surface *tmp = zoomSurface(small_screen, 2, 2, 0);
+		SDL_FillRect(screen, NULL, 0);
+		SDL_BlitSurface(tmp, NULL, screen, &dst);
+		SDL_FreeSurface(tmp);
+	} else
+#endif
+	{
+		dst.x = 0;
+		dst.y = 20;
+
+		SDL_BlitSurface(small_screen, NULL, screen, &dst);
 	}
 
-	//Update Screen
 	SDL_Flip(screen);
-#endif
 }
 
 void LM_GFX_SetScale(int scale)
@@ -136,8 +127,7 @@ void LM_GFX_SetScale(int scale)
 	if (fullscr == SDL_FULLSCREEN)
 		scale = 1;
 
-	screen = SDL_SetVideoMode(320 << scale, 240 << scale, 8, SDL_SWSURFACE | fullscr);
-	SDL_SetPalette(screen, SDL_PHYSPAL, (SDL_Color *)pal256, 0, 256);
+	screen = SDL_SetVideoMode(320 << scale, 240 << scale, 32, SDL_SWSURFACE | fullscr);
 	LM_ResetKeys();
 #endif
 }
