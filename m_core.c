@@ -2509,6 +2509,12 @@ void BlitStatus()
 
 }
 
+SDL_Surface *logo;
+
+void LoadLogo()
+{
+	logo = SDL_LoadBMP("graphics/logo.bmp");
+}
 
 void RotateLogo()
 {
