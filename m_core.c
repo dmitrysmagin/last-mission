@@ -11,6 +11,7 @@
 #include <string.h>
 #include <math.h>
 #include <SDL/SDL.h>
+#include <SDL/SDL_rotozoom.h>
 
 #include "m_core.h"
 #include "m_aux.h"
@@ -2510,19 +2511,22 @@ void BlitStatus()
 }
 
 SDL_Surface *logo;
+float factor, delta;
 
 void LoadLogo()
 {
 	logo = SDL_LoadBMP("graphics/logo.bmp");
+
+	factor = 1.0;
+	delta = -1.0 / (float)(logo->h / 2);
 }
 
 void RotateLogo()
 {
-	static float divisor, iterator;
-	static int num_of_lines = 0;
 	static int speed = 2;
-	static int mirror = 0;
-	static int sign = 1;
+	extern SDL_Surface *small_screen;
+	SDL_Surface *scaled_logo;
+	SDL_Rect dst;
 
 	if (speed > 0) {
 		speed -= 1;
@@ -2531,23 +2535,30 @@ void RotateLogo()
 
 	speed = 2;
 
-	divisor = 24.0 / (24.0 - num_of_lines);
-	iterator = 0.0;
+	factor += delta;
 
-	for (int i2 = num_of_lines; i2 <= 24; i2++) { // if put i2 <= 23, there's a blank line in the center of rotating sprite
-		PutGeneric(96, (mirror == 0 ? 142 + i2 : 142 + 48 - i2), 33 * 4, 1, &LOGO[2 + 33 * (int)iterator]);
-		PutGeneric(96, (mirror == 0 ? 142 + 48 - i2 : 142 + i2), 33 * 4, 1, &LOGO[2 + 47*33 - 33*(int)iterator]);
-
-		iterator += divisor;
+	if (factor >= 1.0) {
+		factor = 1.0;
+		delta = -delta;
 	}
 
-	num_of_lines += sign;
-	if (num_of_lines > 23) {
-		mirror ^= 1;
-		sign = -sign;
+	if (factor <= -1.0) {
+		factor = -1.0;
+		delta = -delta;
 	}
-	if (num_of_lines < 0)
-		sign = -sign;
+
+	dst.x = 96;
+	dst.y = 142;
+	dst.w = logo->w;
+	dst.h = logo->h;
+
+	SDL_FillRect(small_screen, &dst, 0);
+
+	dst.y += logo->h / 2 - fabs(factor) * logo->h / 2;
+
+	scaled_logo = zoomSurface(logo, 1.0, factor, 0);
+	SDL_BlitSurface(scaled_logo, 0, small_screen, &dst);
+	SDL_FreeSurface(scaled_logo);
 }
 
 void LoadSplash()
@@ -3032,6 +3043,8 @@ void GameLoop()
 	static int next_game_tick = 0;
 	static int sleep_time = 0, frames = 0, frame_end = 0, frame_start = 0;
 	static int show_fps = 0, max_frameskip = 0;
+
+	LoadLogo();
 
 	next_game_tick = SDL_GetTicks();
 

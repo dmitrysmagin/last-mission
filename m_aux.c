@@ -145,20 +145,6 @@ void DrawRect(int x, int y, int width, int height, unsigned char color)
 	DrawLine(x, y + height, x, y, color);
 }
 
-void PutGeneric(int x, int y, int xSize, int ySize, unsigned char *p)
-{
-	static unsigned char smth[4] = {6, 4, 2, 0};
-	static unsigned char CGA_Palette[4] = {0, 3, 5, 7};
-
-	static int dx, dy;
-
-	for (dy = 0; dy < ySize; dy++)
-		for (dx = 0; dx < xSize; dx++) {
-			SET_SCREEN_POINT(x + dx, y + dy, CGA_Palette[(*p >> smth[dx & 3]) & 3]);
-			if((dx & 3) == 3) p++;
-		}
-}
-
 void PutGeneric256(int x, int y, int xSize, int ySize, unsigned char *p)
 {
 	static int dx, dy;
