@@ -22,6 +22,7 @@
 #include "video.h"
 #include "input.h"
 #include "sound.h"
+#include "sprites.h"
 
 #define GAME_START_SCREEN 1 // Start of the labyrinth.
 
@@ -257,8 +258,8 @@ void GetCurrentSpriteDimensions(TSHIP *i, int *cx, int *cy)
 		*cx = i->dx;
 		*cy = i->dy;
 	} else {
-		*cx = **(pSprites256[i->i] + i->cur_frame);
-		*cy = *(*(pSprites256[i->i] + i->cur_frame) + 1);
+		*cx = GetSpriteW(i->i);
+		*cy = GetSpriteH(i->i);
 	}
 }
 
@@ -2609,7 +2610,7 @@ void DoTitle()
 		title_start_flag = 1;
 		InitNewScreen();
 		BlitLevel();
-		PutSprite(50*4, 108, *(pSprites256[45] + 0));
+		PutSpriteI(50*4, 108, 45, 0);
 		PutString(76, 88, "ESPACIO PARA COMENZAR");
 		PutString(60, 24, "ORIGINAL GAME: PEDRO RUIZ");
 		PutString(76, 36, "REMAKE: DMITRY SMAGIN");
@@ -2757,7 +2758,7 @@ void BlitEnemies()
 			}
 #endif
 		} else if (Ships[i].state != SH_DEAD && Ships[i].ai_type != AI_BRIDGE) {
-			PutSprite(Ships[i].x, Ships[i].y, *(pSprites256[Ships[i].i] + Ships[i].cur_frame));
+			PutSpriteI(Ships[i].x, Ships[i].y, Ships[i].i, Ships[i].cur_frame);
 		}
 	}
 }
@@ -2783,7 +2784,7 @@ void BlitEnemyOutlines()
 			Ships[i].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL) && Ships[i].i != 11)
 		   continue;
 
-		PutSpriteOutline(Ships[i].x, Ships[i].y, *(pSprites256[Ships[i].i] + Ships[i].cur_frame), shadow);
+		PutSpriteS(Ships[i].x, Ships[i].y, Ships[i].i, Ships[i].cur_frame, shadow);
 	}
 }
 
@@ -2863,14 +2864,14 @@ void BlitNonAmbientEnemies()
 {
 	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
 		if (Ships[i].state != SH_DEAD &&
-			Ships[i].ai_type != AI_BRIDGE &&
-			Ships[i].ai_type != AI_ELECTRIC_SPARKLE_HORIZONTAL &&
-			Ships[i].ai_type != AI_ELECTRIC_SPARKLE_VERTICAL &&
-			Ships[i].ai_type != AI_SMOKE &&
-			Ships[i].ai_type != AI_GARAGE &&
-			Ships[i].ai_type != AI_HIDDEN_AREA_ACCESS &&
-			Ships[i].ai_type != AI_EXPLOSION)
-			PutSprite(Ships[i].x, Ships[i].y, *(pSprites256[Ships[i].i] + Ships[i].cur_frame));
+		    Ships[i].ai_type != AI_BRIDGE &&
+		    Ships[i].ai_type != AI_ELECTRIC_SPARKLE_HORIZONTAL &&
+		    Ships[i].ai_type != AI_ELECTRIC_SPARKLE_VERTICAL &&
+		    Ships[i].ai_type != AI_SMOKE &&
+		    Ships[i].ai_type != AI_GARAGE &&
+		    Ships[i].ai_type != AI_HIDDEN_AREA_ACCESS &&
+		    Ships[i].ai_type != AI_EXPLOSION)
+			PutSpriteI(Ships[i].x, Ships[i].y, Ships[i].i, Ships[i].cur_frame);
 	}
 }
 
@@ -3045,6 +3046,7 @@ void GameLoop()
 	static int show_fps = 0, max_frameskip = 0;
 
 	LoadLogo();
+	LoadSprites();
 
 	next_game_tick = SDL_GetTicks();
 

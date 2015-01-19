@@ -8,7 +8,6 @@
 unsigned char AdjustAscii(unsigned char a);
 void DrawLine(int x1, int y1, int x2, int y2, unsigned char color);
 void DrawRect(int x, int y, int width, int height, unsigned char color);
-void PutBlank(int x, int y, unsigned char *p);
 void PutSprite(int x, int y,unsigned char *p);
 void PutSpriteOutline(int x, int y, unsigned char *p, unsigned char shadow);
 void PutTile(int x, int y, unsigned char *p);

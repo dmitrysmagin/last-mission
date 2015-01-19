@@ -13,7 +13,7 @@ LFLAGS = -s -lSDL_gfx -lSDL -lSDL_mixer -lm
 OBJ =	m_core.o m_aux.o m_demo.o m_data.o m_gfx_data.o \
 	m_scr.o m_scr_lines.o
 
-OBJ +=	input.o main.o random.o sound.o video.o
+OBJ +=	input.o main.o random.o sound.o sprites.o video.o
 
 all : $(APP_NAME)
 

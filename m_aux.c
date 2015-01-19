@@ -185,21 +185,6 @@ void PutGeneric256NoAlpha(int x, int y, int xSize, int ySize, unsigned char *p)
 		}
 }
 
-void PutBlank(int x, int y, unsigned char *p)
-{
-	static int dx, dy, xSize, ySize;
-
-	xSize = *p;
-	ySize = *(p + 1);
-	p += 2;
-
-	for (dy = 0; dy < ySize; dy++)
-		for (dx = 0; dx < xSize; dx++) {
-			SET_SCREEN_POINT_IF(*p != 0, x + dx, y + dy, 0);
-			p++;
-		}
-}
-
 void PutSprite(int x, int y,unsigned char *p)
 {
 	PutGeneric256(x, y, *p, *(p + 1), p + 2);
