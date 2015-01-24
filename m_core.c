@@ -2882,7 +2882,7 @@ void RenderGame(int renderStatus)
 		BlitLevelOutlines();
 		BlitEnemyOutlines(); // draw moving objects' outlines (shadows)
 	} else {
-		EraseBackground();
+		EraseBackground(0);
 	}
 
 	BlitLevel(); // blit walls

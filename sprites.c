@@ -102,6 +102,7 @@ SPRITESET SpriteSet[SPRITE_NUMBER] = {
 
 extern SDL_Surface *small_screen;
 SDL_Surface *sprites;
+SDL_Surface *tiles;
 
 int GetSpriteW(int index)
 {
@@ -133,6 +134,10 @@ void PutSpriteI(int x, int y, int index, int frame)
 
 	SDL_BlitSurface(sprites, &src, small_screen, &dst);
 }
+
+#define SET_GAME_AREA_POINT(x, y, color) \
+{ if ((x) >= 0 && (x) < SCREEN_WIDTH && (y) >= 0 && (y) < ACTION_SCREEN_HEIGHT) \
+	putpixel(small_screen, x, y, color); }
 
 /*
  * getpixel() and putpixel() are taken from
@@ -224,20 +229,226 @@ void PutSpriteS(int x, int y, int index, int frame, int color)
 	for (dy = 0; dy < h; dy++)
 		for (dx = 0; dx < w; dx++) {
 			if (GetSpritePixel(dx, dy, index, frame)) {
-				putpixel(small_screen, x + dx - 1, y + dy, color);
-				putpixel(small_screen, x + dx + 1, y + dy, color);
-				putpixel(small_screen, x + dx, y + dy - 1, color);
-				putpixel(small_screen, x + dx, y + dy + 1, color);
-				putpixel(small_screen, x + dx, y + dy + 2, color);
+				SET_GAME_AREA_POINT(x + dx - 1, y + dy, color);
+				SET_GAME_AREA_POINT(x + dx + 1, y + dy, color);
+				SET_GAME_AREA_POINT(x + dx, y + dy - 1, color);
+				SET_GAME_AREA_POINT(x + dx, y + dy + 1, color);
+				SET_GAME_AREA_POINT(x + dx, y + dy + 2, color);
 
 			}
 		}
 }
 
+/* Tiles are grouped 40x7, 8x8 each tile*/
+void PutTileI(int x, int y, int index)
+{
+	SDL_Rect src, dst;
+
+	if (index > 256)
+		return;
+
+	dst.x = x;
+	dst.y = y;
+
+	src.x = index % 40 * 8;
+	src.y = index / 40 * 8;
+	src.w = 8;
+	src.h = 8;
+
+	SDL_BlitSurface(tiles, &src, small_screen, &dst);
+}
+
+int GetTilePixel(int x, int y, int index)
+{
+	return getpixel(tiles,
+			x + index % 40 * 8,
+			y + index / 40 * 8);
+}
+
+void PutTileS(int x, int y, int index, int color)
+{
+	int w = 8;
+	int h = 8;
+	int dx, dy;
+
+	for (dy = 0; dy < h; dy++)
+		for (dx = 0; dx < w; dx++) {
+			if (GetTilePixel(dx, dy, index)) {
+				SET_GAME_AREA_POINT(x + dx - 1, y + dy, color);
+				SET_GAME_AREA_POINT(x + dx + 1, y + dy, color);
+				SET_GAME_AREA_POINT(x + dx, y + dy - 1, color);
+				SET_GAME_AREA_POINT(x + dx, y + dy + 1, color);
+				SET_GAME_AREA_POINT(x + dx, y + dy + 2, color);
+
+			}
+		}
+}
+
+void PutBgI(int x, int y, int index)
+{
+	SDL_Rect src, dst;
+
+	if (index > 9)
+		return;
+
+	dst.x = x;
+	dst.y = y;
+
+	src.x = index * 16;
+	src.y = 6 * 16;
+	src.w = 16;
+	src.h = 16;
+
+	SDL_BlitSurface(tiles, &src, small_screen, &dst);
+}
+
+void PutLetterI(int x, int y, int index)
+{
+	SDL_Rect src, dst;
+
+	if (index > 256)
+		return;
+
+	dst.x = x;
+	dst.y = y;
+
+	src.x = index % 40 * 8;
+	src.y = index / 40 * 8 + 64;
+	src.w = 8;
+	src.h = 8;
+
+	SDL_SetColorKey(tiles, 0, 0);
+	SDL_BlitSurface(tiles, &src, small_screen, &dst);
+	SDL_SetColorKey(tiles, SDL_SRCCOLORKEY, 0);
+}
+
+unsigned char AdjustAscii(unsigned char a)
+{
+	if (a <= 0x5a) {
+		if (a >= 0x41)
+			return a - 0x41 + 0xc;
+
+		if (a == 0x20)
+			return 0;
+
+		return a - 0x30 + 1;
+	}
+
+	return 0;
+}
+
+void PutString(int x, int y, char *p)
+{
+	while (*p != 0) {
+		PutLetterI(x, y, AdjustAscii(*p));
+		p += 1;
+		x += 8;
+	}
+}
+
+
+void PutStream(int x, int y, unsigned char *p)
+{
+	while (*p != 0) {
+		PutLetterI(x, y, *p);
+		p += 1;
+		x += 8;
+	}
+}
+
+void EraseBackground(int color)
+{
+	SDL_Rect dst;
+
+	dst.x = 0;
+	dst.y = 0;
+	dst.w = SCREEN_WIDTH;
+	dst.h = ACTION_SCREEN_HEIGHT;
+
+	SDL_FillRect(small_screen, &dst, color);
+}
+
+void DrawLine(int x1, int y1, int x2, int y2, unsigned char color)
+{
+	const int deltaX = abs(x2 - x1);
+	const int deltaY = abs(y2 - y1);
+	static int temp, i;
+
+	if (deltaX == 0) {
+		if (x1 < 0 || x1 >= SCREEN_WIDTH)
+			return;
+
+		if (y1 > y2) {
+			temp = y2;
+			y2 = y1;
+			y1 = temp;
+		}
+
+		if (y1 < 0)
+			y1 = 0;
+
+		if (y2 >= ACTION_SCREEN_HEIGHT)
+			y2 = ACTION_SCREEN_HEIGHT - 1;
+
+		for (i = y1; i <= y2; ++i) {
+			SET_GAME_AREA_POINT(x1, i, color);
+		}
+	} else if (deltaY == 0) {
+		if (y1 < 0 || y1 >= ACTION_SCREEN_HEIGHT)
+			return;
+
+		if (x1 > x2) {
+			temp = x2;
+			x2 = x1;
+			x1 = temp;
+		}
+
+		if (x1 < 0)
+			x1 = 0;
+
+		if (x2 >= SCREEN_WIDTH)
+			x2 = SCREEN_WIDTH - 1;
+
+		for (i = x1; i <= x2; ++i) {
+			SET_GAME_AREA_POINT(i, y1, color);
+		}
+	} else {
+		const int signX = x1 < x2 ? 1 : -1;
+		const int signY = y1 < y2 ? 1 : -1;
+
+		int error = deltaX - deltaY;
+		SET_GAME_AREA_POINT(x2, y2, color);
+
+		while (x1 != x2 || y1 != y2) {
+			SET_GAME_AREA_POINT(x1, y1, color);
+			const int error2 = error * 2;
+
+			if (error2 > -deltaY) {
+				error -= deltaY;
+				x1 += signX;
+			}
+
+			if (error2 < deltaX) {
+				error += deltaX;
+				y1 += signY;
+			}
+		}
+	}
+}
+
+void DrawRect(int x, int y, int width, int height, unsigned char color)
+{
+	DrawLine(x, y, x + width, y, color);
+	DrawLine(x + width, y, x + width, y + height, color);
+	DrawLine(x + width, y + height, x, y + height, color);
+	DrawLine(x, y + height, x, y, color);
+}
+
 void LoadSprites()
 {
 	sprites = SDL_LoadBMP("graphics/sprites.bmp");
-	//printf("sprites bpp: %d\n", sprites->format->BitsPerPixel);
-
 	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY, 0);
+
+	tiles = SDL_LoadBMP("graphics/tiles.bmp");
+	SDL_SetColorKey(tiles, SDL_SRCCOLORKEY, 0);
 }

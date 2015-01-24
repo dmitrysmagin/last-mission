@@ -1,24 +1,10 @@
 #ifndef _M_AUX_H_
 #define _M_AUX_H_
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 200
-#define ACTION_SCREEN_HEIGHT 136
-
-unsigned char AdjustAscii(unsigned char a);
-void DrawLine(int x1, int y1, int x2, int y2, unsigned char color);
-void DrawRect(int x, int y, int width, int height, unsigned char color);
-void PutSprite(int x, int y,unsigned char *p);
-void PutSpriteOutline(int x, int y, unsigned char *p, unsigned char shadow);
-void PutTile(int x, int y, unsigned char *p);
-void PutLetter(int x, int y, unsigned char a);
-void PutString(int x, int y, char *p);
-void PutStream(int x, int y, unsigned char *p);
 void UnpackLevel();
 void BlitLevel();
 void BlitLevelOutlines();
 void BlitBackground();
-void EraseBackground();
 
 typedef struct {
 	unsigned char background;
