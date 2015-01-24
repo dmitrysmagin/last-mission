@@ -5,7 +5,6 @@
 #include "sprites.h"
 #include "m_aux.h"
 #include "m_data.h"
-#include "m_gfx_data.h"
 
 // external data in m_core.c
 extern unsigned char ScreenTilesBuffer[0x2a8];

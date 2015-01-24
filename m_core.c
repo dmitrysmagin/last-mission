@@ -16,7 +16,6 @@
 #include "m_core.h"
 #include "m_aux.h"
 #include "m_data.h"
-#include "m_gfx_data.h"
 #include "m_demo.h"
 #include "random.h"
 #include "video.h"
