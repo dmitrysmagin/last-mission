@@ -74,7 +74,6 @@ void MakeScreenShot();
 #define MakeScreenShot()
 #endif
 
-unsigned char *pScreenBuffer = 0;
 unsigned char ScreenTilesBuffer[0x2a8];
 unsigned char ship_cur_screen = 0;
 
@@ -2496,9 +2495,9 @@ void BlitStatus()
 
 		unsigned char c = ((i < (laser_overload >> 3)) ? 0x28 : 0);
 
-		*(pScreenBuffer + i + 192 + 162 * SCREEN_WIDTH) = c;
-		*(pScreenBuffer + i + 192 + 163 * SCREEN_WIDTH) = c;
-		*(pScreenBuffer + i + 192 + 164 * SCREEN_WIDTH) = c;
+		PutPixel(i + 192, 162, c);
+		PutPixel(i + 192, 163, c);
+		PutPixel(i + 192, 164, c);
 	}
 
 	// lives
@@ -2604,7 +2603,7 @@ void ResetDemoTicksCounter()
 void DoTitle()
 {
 	if (title_start_flag == 0) {
-		memset(pScreenBuffer, 0, SCREEN_WIDTH*SCREEN_HEIGHT);
+		FillScreen(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 		ship_cur_screen = 0;
 		title_start_flag = 1;
 		InitNewScreen();
@@ -2659,7 +2658,7 @@ void DoWinScreen()
 	"LIBERADA DE LOS INVASORES Y PUEDE SER HABITADA DE NUEVO               REPITO  MENSAJE";
 
 	if (youwin_start_flag == 0) {
-		memset(pScreenBuffer + 144 * SCREEN_WIDTH, 0, SCREEN_WIDTH * 56);
+		FillScreen(0, 144, SCREEN_WIDTH, 56, 0);
 		youwin_start_flag = 1;
 		x_string = 0;
 		win_ticks = 0;
@@ -2894,13 +2893,15 @@ void RenderGame(int renderStatus)
 
 	if (pLightBuffer) {
 		// Render light map
-		unsigned char *mainSB = pScreenBuffer;
-		pScreenBuffer = pLightBuffer;
-		memset(pScreenBuffer, 0, SCREEN_WIDTH*SCREEN_HEIGHT);
+#if 0
+		/*
+		 * TODO: Render to lights_screen and later mix with small_screen
+		 * in LM_GFX_Flip
+		 */
 		BlitLevel();
 		BlitNonAmbientEnemies();
 		CastLights();
-		pScreenBuffer = mainSB;
+#endif
 	}
 }
 
@@ -3061,7 +3062,7 @@ void GameLoop()
 		if (show_fps == 1)
 			PutString(8*0, 8*17, &infostring[0]);
 
-		LM_GFX_Flip(pScreenBuffer);
+		LM_GFX_Flip();
 
 		next_game_tick += 17; // gcc rounds (1000 / 60) to 16, but we need 17
 

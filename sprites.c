@@ -212,6 +212,11 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 	}
 }
 
+void PutPixel(int x, int y, unsigned int color)
+{
+	putpixel(small_screen, x, y, color);
+}
+
 int GetSpritePixel(int x, int y, int index, int frame)
 {
 	return getpixel(sprites,
@@ -356,16 +361,21 @@ void PutStream(int x, int y, unsigned char *p)
 	}
 }
 
-void EraseBackground(int color)
+void FillScreen(int x, int y, int w, int h, unsigned int color)
 {
 	SDL_Rect dst;
 
-	dst.x = 0;
-	dst.y = 0;
-	dst.w = SCREEN_WIDTH;
-	dst.h = ACTION_SCREEN_HEIGHT;
+	dst.x = x;
+	dst.y = y;
+	dst.w = w;
+	dst.h = h;
 
 	SDL_FillRect(small_screen, &dst, color);
+}
+
+void EraseBackground(int color)
+{
+	FillScreen(0, 0, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT, color);
 }
 
 void DrawLine(int x1, int y1, int x2, int y2, unsigned char color)

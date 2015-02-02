@@ -22,7 +22,7 @@
 int main(int argc, char *argv[])
 {
 
-	if (LM_Init(&pScreenBuffer) == 0)
+	if (LM_Init() == 0)
 		return -1;
 
 	LM_SND_Init();

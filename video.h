@@ -18,11 +18,8 @@
 #ifndef _VIDEO_H_
 #define _VIDEO_H_
 
-extern unsigned char *pScreenBuffer;
-
-int LM_Init(unsigned char **pScreenBuffer);
+int LM_Init();
 void LM_Deinit();
-void LM_GFX_Flip(unsigned char *p);
-void LM_GFX_SetScale(int scale);
+void LM_GFX_Flip();
 
 #endif /* _VIDEO_H_ */

@@ -35,16 +35,15 @@ int fullscr = 0; // or SDL_FULLSCREEN
 
 int LM_GFX_Init();
 void LM_GFX_Deinit();
+void LM_GFX_SetScale(int scale);
 
 SDL_Surface *small_screen = NULL;
 SDL_Surface *screen = NULL;
 
-int LM_Init(unsigned char **pScreenBuffer)
+int LM_Init()
 {
 	if (LM_GFX_Init() == 0)
 		return 0;
-
-	*pScreenBuffer = (unsigned char *)small_screen->pixels;
 
 	return 1;
 }
@@ -84,7 +83,7 @@ void LM_GFX_Deinit()
 	//SDL_Quit();
 }
 
-void LM_GFX_Flip(unsigned char *p)
+void LM_GFX_Flip()
 {
 	SDL_Rect dst;
 

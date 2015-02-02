@@ -21,8 +21,11 @@ void PutString(int x, int y, char *p);
 void PutStream(int x, int y, unsigned char *p);
 
 void EraseBackground(int color);
+void FillScreen(int x, int y, int w, int h, unsigned int color);
 
 void DrawLine(int x1, int y1, int x2, int y2, unsigned char color);
 void DrawRect(int x, int y, int width, int height, unsigned char color);
+
+void PutPixel(int x, int y, unsigned int color);
 
 #endif /* _SPRITES_H_ */
