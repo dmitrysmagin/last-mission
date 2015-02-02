@@ -15,9 +15,9 @@
  *
  */
 
-#include "m_core.h"
 #include "video.h"
 #include "sound.h"
+#include "engine.h"
 
 int main(int argc, char *argv[])
 {

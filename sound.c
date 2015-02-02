@@ -8,8 +8,8 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 
-#include "m_core.h"
 #include "sound.h"
+#include "engine.h"
 
 Mix_Chunk *laser, *short_laser, *rocket_shot, *cannon_shot, *explosions[3],
 	*contact, *elevator, *bonus, *move;

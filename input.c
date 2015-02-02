@@ -15,10 +15,11 @@
  *
  */
 
-#include "m_core.h"
-#include "input.h"
+#include <SDL/SDL.h>
+
 #include "video.h"
-#include "SDL/SDL.h"
+#include "input.h"
+#include "engine.h"
 
 /* game keys */
 unsigned char GKeys[7]; // left, right, up, down, fire, pause, quit

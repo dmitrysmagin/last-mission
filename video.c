@@ -21,9 +21,9 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_rotozoom.h>
 
-#include "m_core.h"
 #include "video.h"
 #include "input.h"
+#include "engine.h"
 
 // forward def of palette in RGBA format
 extern unsigned char pal256[1024];

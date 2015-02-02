@@ -13,7 +13,6 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_rotozoom.h>
 
-#include "m_core.h"
 #include "m_aux.h"
 #include "m_data.h"
 #include "m_demo.h"
@@ -22,6 +21,7 @@
 #include "input.h"
 #include "sound.h"
 #include "sprites.h"
+#include "engine.h"
 
 #define GAME_START_SCREEN 1 // Start of the labyrinth.
 

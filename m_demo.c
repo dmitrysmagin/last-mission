@@ -6,12 +6,13 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include "m_demo.h"
-#include "m_core.h"
 #include "m_aux.h"
 #include "random.h"
 #include "video.h"
 #include "input.h"
+#include "engine.h"
 
 #define DEMO_UP 0x01
 #define DEMO_DOWN 0x02
