@@ -1,0 +1,10 @@
+dingux/*
+*.bat
+*.dat
+*.opk
+*.exe
+*.dll
+*.dge
+*.o
+*~.*
+last-mission
