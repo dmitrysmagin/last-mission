@@ -12,23 +12,24 @@ extern unsigned char ship_cur_screen;
 
 #define NumBackgrounds 13
 
+static ScreenDrawInfo data[NumBackgrounds] = {
+	{ RGB( 56, 56, 56), RGB( 32, 32, 32), RGB( 44, 64, 64), RGB( 44, 52, 64) },
+	{ RGB(113,  0,  0), RGB( 64,  0,  0), RGB(113, 28,  0), RGB(  0,  0,  0) },
+	{ RGB( 56, 56, 13), RGB( 32, 32, 64), RGB( 56, 68,113), RGB( 44, 52, 64) },
+	{ RGB(113, 89, 80), RGB( 64, 48, 44), RGB(113,105, 80), RGB(113, 80, 80) },
+	{ RGB(113, 56,  0), RGB( 64, 32,  0), RGB(113, 85,  0), RGB(113,  0, 28) },
+	{ RGB(  0, 56, 13), RGB(  0, 32, 64), RGB( 56, 85,113), RGB( 44, 52, 64) },
+	{ RGB( 80, 80,113), RGB( 44, 44, 64), RGB( 80, 97,113), RGB( 44, 64, 64) },
+	{ RGB( 56, 68,113), RGB( 32, 40, 64), RGB( 56, 85,113), RGB( 44, 52, 64) },
+	{ RGB(113, 56,  0), RGB( 64, 32,  0), RGB(113, 85,  0), RGB(113, 28,  0) },
+	{ RGB(  0,113, 56), RGB(  0, 64, 32), RGB(  0,  0,  0), RGB( 32, 64, 56) },
+	{ RGB(113, 28,  0), RGB( 64, 16,  0), RGB(113, 85,  0), RGB(113,  0, 28) },
+	{ 0, 0 },
+	{ RGB( 44, 44, 44), RGB( 32, 32, 32), RGB( 44, 64, 64), RGB( 44, 52, 64) },
+};
+
 ScreenDrawInfo *GetScreenDrawInfo(int screen)
 {
-	static ScreenDrawInfo data[NumBackgrounds] = {
-		{ 20, 18, 244, 246 },
-		{ 112, 112 + 72, 113, 255 },
-		{ 128, 128 + 72, 151, 246 },
-		{ 161, 161 + 72, 163, 160 },
-		{ 114, 114 + 72, 115, 111 },
-		{ 126, 126 + 72, 150, 246 },
-		{ 152, 152 + 72, 174, 244 },
-		{ 151, 151 + 72, 150, 246 },
-		{ 114, 114 + 72, 115, 113 },
-		{ 122, 122 + 72, 254, 219 },
-		{ 113, 113 + 72, 115, 111 },
-		{ 0, 0 },
-		{ 19, 18, 244, 246 },
-	};
 
 	static const int screens[NumBackgrounds] = {
 		8, 15, 22, 29, 36, 43, 50, 55, 62, 69, 70, 92, 999
@@ -85,7 +86,7 @@ void BlitLevel()
 
 void BlitLevelOutlines()
 {
-	unsigned char shadow = GetScreenDrawInfo(ship_cur_screen)->shadow;
+	unsigned int shadow = GetScreenDrawInfo(ship_cur_screen)->shadow;
 
 	for (int y = 0; y <= 16; y++)
 		for (int x = 0; x <= 39; x++)
@@ -100,7 +101,7 @@ void BlitBackground()
 	for (int i = 0; i < 2; ++i) {
 		short *lines = SCREENLINES[ship_cur_screen];
 		short count  = *(lines++);
-		unsigned char color = (i == 1)
+		unsigned int color = (i == 1)
 			? GetScreenDrawInfo(ship_cur_screen)->line_light
 			: GetScreenDrawInfo(ship_cur_screen)->line_shadow;
 

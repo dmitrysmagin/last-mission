@@ -18,6 +18,8 @@
 #ifndef _VIDEO_H_
 #define _VIDEO_H_
 
+#define GAME_SCREEN_BPP 16
+
 int LM_Init();
 void LM_Deinit();
 void LM_GFX_Flip();

@@ -2493,7 +2493,7 @@ void BlitStatus()
 	// laser
 	for (int i = 0; i <= 31; i++) {
 
-		unsigned char c = ((i < (laser_overload >> 3)) ? 0x28 : 0);
+		unsigned int c = ((i < (laser_overload >> 3)) ? RGB(255, 0, 0) : 0);
 
 		PutPixel(i + 192, 162, c);
 		PutPixel(i + 192, 163, c);
@@ -2711,7 +2711,7 @@ void DoKeys()
 void BlitLaser()
 {
 	if (laser_dir != 0) {
-		DrawLine(x_start, ly, x_end, ly, 7);
+		DrawLine(x_start, ly, x_end, ly, RGB(170, 170, 170));
 	}
 }
 
@@ -2720,10 +2720,10 @@ void BlitBfg()
 	if (bfg_on) {
 		for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
 			if (BfgTargets[n].ship) {
-				unsigned char color = 10;
+				unsigned int color = RGB(85, 255, 85);
 
 				if (BfgTargets[n].hit_count < BFG_KILL_TIME / 2)
-					color = 2;
+					color = RGB(0, 170, 0);
 
 				DrawLine(
 					BfgTargets[n].xc,
@@ -2763,7 +2763,7 @@ void BlitEnemies()
 
 void BlitEnemyOutlines()
 {
-	unsigned char shadow = GetScreenDrawInfo(ship_cur_screen)->shadow;
+	unsigned int shadow = GetScreenDrawInfo(ship_cur_screen)->shadow;
 
 	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
 		if (Ships[i].ai_type == AI_BRIDGE && !player_attached)

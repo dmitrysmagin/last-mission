@@ -225,7 +225,7 @@ int GetSpritePixel(int x, int y, int index, int frame)
 }
 
 /* Blit a 'shadow' of the sprite */
-void PutSpriteS(int x, int y, int index, int frame, int color)
+void PutSpriteS(int x, int y, int index, int frame, unsigned int color)
 {
 	int w = GetSpriteW(index);
 	int h = GetSpriteH(index);
@@ -270,7 +270,7 @@ int GetTilePixel(int x, int y, int index)
 			y + index / 40 * 8);
 }
 
-void PutTileS(int x, int y, int index, int color)
+void PutTileS(int x, int y, int index, unsigned int color)
 {
 	int w = 8;
 	int h = 8;
@@ -373,12 +373,12 @@ void FillScreen(int x, int y, int w, int h, unsigned int color)
 	SDL_FillRect(small_screen, &dst, color);
 }
 
-void EraseBackground(int color)
+void EraseBackground(unsigned int color)
 {
 	FillScreen(0, 0, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT, color);
 }
 
-void DrawLine(int x1, int y1, int x2, int y2, unsigned char color)
+void DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
 {
 	const int deltaX = abs(x2 - x1);
 	const int deltaY = abs(y2 - y1);
@@ -446,7 +446,7 @@ void DrawLine(int x1, int y1, int x2, int y2, unsigned char color)
 	}
 }
 
-void DrawRect(int x, int y, int width, int height, unsigned char color)
+void DrawRect(int x, int y, int width, int height, unsigned int color)
 {
 	DrawLine(x, y, x + width, y, color);
 	DrawLine(x + width, y, x + width, y + height, color);

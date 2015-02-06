@@ -7,10 +7,10 @@ void BlitLevelOutlines();
 void BlitBackground();
 
 typedef struct {
-	unsigned char background;
-	unsigned char shadow;
-	unsigned char line_light;
-	unsigned char line_shadow;
+	unsigned int background;
+	unsigned int shadow;
+	unsigned int line_light;
+	unsigned int line_shadow;
 } ScreenDrawInfo;
 
 ScreenDrawInfo *GetScreenDrawInfo(int screen);
