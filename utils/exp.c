@@ -10,7 +10,6 @@
 #include <string.h>
 
 #include "../m_data.c"
-#include "../m_gfx_data.c"
 #include "../m_scr.c"
 #include "../m_scr_lines.c"
 #include "../world.c"

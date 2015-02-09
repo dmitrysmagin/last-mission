@@ -7,6 +7,14 @@
 
 #include "world.h"
 
+#define DEBUG
+
+#ifdef DEBUG
+#define DPRINTF printf
+#else
+#define DPRINTF()
+#endif
+
 typedef struct {
 	char id[4];
 	int size;
@@ -84,11 +92,11 @@ static void fread_ROOM(WORLD *world, FILE *fp)
 			(world->room + i)->object = (OBJECT *)malloc(sizeof(OBJECT) * (world->room + i)->object_num);
 	}
 
-	/*for(i = 0; i < world->room_num; i++)
-		printf("ROOM %i, pattern_num: %i; object_num: %i\n",
+	for(i = 0; i < world->room_num; i++)
+		DPRINTF("ROOM %i, pattern_num: %i; object_num: %i\n",
 			i,
 			(world->room + i)->pattern_num,
-			(world->room + i)->object_num);*/
+			(world->room + i)->object_num);
 }
 
 static void fwrite_ROOM_PATTERN(WORLD *world, FILE *fp)
@@ -109,7 +117,7 @@ static void fread_ROOM_PATTERN(WORLD *world, FILE *fp)
 	if(chunk.size > 0)
 		fread((world->room + i)->pattern, 1, sizeof(PATTERN) * (world->room + i)->pattern_num, fp);
 
-	//printf("PATTERN %i, size %i\n", i, sizeof(PATTERN) * (world->room + i)->pattern_num);
+	DPRINTF("PATTERN %i, size %i\n", i, sizeof(PATTERN) * (world->room + i)->pattern_num);
 
 	if(++i > world->room_num) i = 0;
 }
@@ -132,7 +140,7 @@ static void fread_ROOM_OBJECT(WORLD *world, FILE *fp)
 	if(chunk.size > 0)
 		fread((world->room + i)->object, 1, sizeof(OBJECT) * (world->room + i)->object_num, fp);
 
-	//printf("OBJECT %i, size %i\n", i, sizeof(OBJECT) * (world->room + i)->object_num);
+	DPRINTF("OBJECT %i, size %i\n", i, sizeof(OBJECT) * (world->room + i)->object_num);
 
 	if(++i > world->room_num) i = 0;
 }
@@ -163,7 +171,7 @@ static void fread_PATTERNSET(WORLD *world, FILE *fp)
 		fread((world->patternset + i)->data, 1, (world->patternset + i)->xs * (world->patternset + i)->ys, fp);
 	}
 
-	//printf("PATTERNSET %i, size %i\n", i, (world->patternset + i)->xs * (world->patternset + i)->ys);
+	DPRINTF("PATTERNSET %i, size %i\n", i, (world->patternset + i)->xs * (world->patternset + i)->ys);
 
 	if(++i > world->patternset_num) i = 0;
 }
