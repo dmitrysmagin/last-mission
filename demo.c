@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "m_demo.h"
 #include "m_aux.h"
+#include "demo.h"
 #include "random.h"
 #include "video.h"
 #include "input.h"

@@ -10,10 +10,8 @@ LFLAGS = -s -lSDL_gfx -lSDL -lSDL_mixer -lm
 
 # source files
 
-OBJ =	m_aux.o m_demo.o m_data.o \
-	m_scr.o m_scr_lines.o
-
-OBJ +=	engine.o input.o main.o random.o sound.o sprites.o video.o
+OBJ =	m_aux.o m_data.o m_scr.o m_scr_lines.o
+OBJ +=	demo.o engine.o input.o main.o random.o sound.o sprites.o video.o
 
 all : $(APP_NAME)
 
