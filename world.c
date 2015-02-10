@@ -320,3 +320,38 @@ WORLD *load_world(char *name)
 	fclose(fp);
 	return world;
 }
+
+void free_world(WORLD *world)
+{
+	int i;
+
+	// roll through all rooms
+	for (i = 0; i < world->room_num; i++) {
+		if ((world->room + i)->pattern) {
+			free((world->room + i)->pattern);
+			(world->room + i)->pattern = NULL;
+		}
+
+		if ((world->room + i)->object) {
+			free((world->room + i)->object);
+			(world->room + i)->object = NULL;
+		}
+
+		if ((world->room + i)->bgline) {
+			free((world->room + i)->bgline);
+			(world->room + i)->bgline = NULL;
+		}
+	}
+
+	if (world->room) {
+		free(world->room);
+		world->room = NULL;
+	}
+
+	if (world->patternset) {
+		free(world->patternset);
+		world->patternset = NULL;
+	}
+
+	free(world);
+}

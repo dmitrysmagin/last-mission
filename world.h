@@ -103,5 +103,6 @@ typedef struct {
 
 WORLD *load_world(char *name);
 void save_world(char *name, WORLD *world);
+void free_world(WORLD *world);
 
 #endif /* _WORLD_H_ */
