@@ -8,7 +8,6 @@
 
 // external data in m_core.c
 extern unsigned char ScreenTilesBuffer[0x2a8];
-extern unsigned char ship_cur_screen;
 
 #define NumBackgrounds 13
 
@@ -43,12 +42,12 @@ ScreenDrawInfo *GetScreenDrawInfo(int screen)
 	return (ScreenDrawInfo*)data;
 }
 
-void UnpackLevel()
+void UnpackLevel(int room)
 {
 	memset(ScreenTilesBuffer, 0x00, 0x2a8);
 
 	unsigned char *endOfScreen = ScreenTilesBuffer + 0x2a8;
-	unsigned char *p = SCREENS[ship_cur_screen];
+	unsigned char *p = SCREENS[room];
 
 	for (int i = *p++; i > 0; i--, p += 4) {
 		int xPos = *(p);
@@ -77,33 +76,33 @@ void UnpackLevel()
 	}
 }
 
-void BlitLevel()
+void BlitLevel(int room)
 {
 	for (int y = 0; y <= 16; y++)
 		for (int x = 0; x <= 39; x++)
 			PutTileI(x*8, y*8, ScreenTilesBuffer[y*0x28+x]);
 }
 
-void BlitLevelOutlines()
+void BlitLevelOutlines(int room)
 {
-	unsigned int shadow = GetScreenDrawInfo(ship_cur_screen)->shadow;
+	unsigned int shadow = GetScreenDrawInfo(room)->shadow;
 
 	for (int y = 0; y <= 16; y++)
 		for (int x = 0; x <= 39; x++)
 			PutTileS(x*8, y*8, ScreenTilesBuffer[y*0x28+x], shadow);
 }
 
-void BlitBackground()
+void BlitBackground(int room)
 {
-	int background = GetScreenDrawInfo(ship_cur_screen)->background;
+	int background = GetScreenDrawInfo(room)->background;
 	EraseBackground(background);
 
 	for (int i = 0; i < 2; ++i) {
-		short *lines = SCREENLINES[ship_cur_screen];
+		short *lines = SCREENLINES[room];
 		short count  = *(lines++);
 		unsigned int color = (i == 1)
-			? GetScreenDrawInfo(ship_cur_screen)->line_light
-			: GetScreenDrawInfo(ship_cur_screen)->line_shadow;
+			? GetScreenDrawInfo(room)->line_light
+			: GetScreenDrawInfo(room)->line_shadow;
 
 		for (int j = 0; j < count; ++j, lines += 4) {
 			int x1 = *(lines + 0);
@@ -124,7 +123,7 @@ void BlitBackground()
 		}
 	}
 
-	if (ship_cur_screen > 69 && ship_cur_screen < 92) {
+	if (room > 69 && room < 92) {
 		for (int y = 0; y <= 8; y++)
 			for (int x = 0; x <= 20; x++)
 				PutBgI(x*16 - 4, y*16 - 8, SkyMap[y][x]);

@@ -1,10 +1,10 @@
 #ifndef _M_AUX_H_
 #define _M_AUX_H_
 
-void UnpackLevel();
-void BlitLevel();
-void BlitLevelOutlines();
-void BlitBackground();
+void UnpackLevel(int room);
+void BlitLevel(int room);
+void BlitLevelOutlines(int room);
+void BlitBackground(int room);
 
 typedef struct {
 	unsigned int background;

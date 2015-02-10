@@ -2374,7 +2374,7 @@ __skip_enemy:;
 
 void InitNewScreen()
 {
-	UnpackLevel();
+	UnpackLevel(ship_cur_screen);
 
 	InitEnemies();
 
@@ -2607,7 +2607,7 @@ void DoTitle()
 		ship_cur_screen = 0;
 		title_start_flag = 1;
 		InitNewScreen();
-		BlitLevel();
+		BlitLevel(ship_cur_screen);
 		PutSpriteI(50*4, 108, 45, 0);
 		PutString(76, 88, "ESPACIO PARA COMENZAR");
 		PutString(60, 24, "ORIGINAL GAME: PEDRO RUIZ");
@@ -2876,14 +2876,14 @@ void BlitNonAmbientEnemies()
 void RenderGame(int renderStatus)
 {
 	if (modern_background) {
-		BlitBackground(); // blit background
-		BlitLevelOutlines();
+		BlitBackground(ship_cur_screen); // blit background
+		BlitLevelOutlines(ship_cur_screen);
 		BlitEnemyOutlines(); // draw moving objects' outlines (shadows)
 	} else {
 		EraseBackground(0);
 	}
 
-	BlitLevel(); // blit walls
+	BlitLevel(ship_cur_screen); // blit walls
 	BlitBfg();
 	BlitEnemies(); // draw all enemies and cannon+base
 	BlitLaser(); // don't forget laser
