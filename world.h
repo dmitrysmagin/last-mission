@@ -27,10 +27,16 @@ typedef struct {
 typedef struct {
 	int xs, ys; // room dimensions in 8x8 tiles
 
-	int pattern_num;
-	int object_num;
-	int bg_type; // lines or bgspritemap
-	int bg_num;
+	int pattern_num;	// number of PATTERN * entries
+	int object_num;		// number of OBJECT * entries
+	int bg_type;		// lines or bgspritemap
+	int bg_num;		// number of background entries
+
+	// color values for background
+	unsigned int background;
+	unsigned int shadow;
+	unsigned int line_light;
+	unsigned int line_shadow;
 
 	int up, right, down, left; // screens
 	int procedure; // 3 - win screen

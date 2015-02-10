@@ -33,6 +33,7 @@ static CHUNK world_chunk	= {{'W', 'R', 'L', 'D'}, 0};
 static CHUNK room_chunk		= {{'R', 'O', 'O', 'M'}, 0};
 static CHUNK pattern_chunk	= {{'P', 'T', 'R', 'N'}, 0};
 static CHUNK object_chunk	= {{'O', 'B', 'J', 'T'}, 0};
+static CHUNK bgline_chunk	= {{'B', 'G', 'L', 'N'}, 0};
 static CHUNK patternset_chunk	= {{'P', 'T', 'S', 'T'}, 0};
 static CHUNK chunk;
 
@@ -90,13 +91,17 @@ static void fread_ROOM(WORLD *world, FILE *fp)
 
 		if((world->room + i)->object_num > 0)
 			(world->room + i)->object = (OBJECT *)malloc(sizeof(OBJECT) * (world->room + i)->object_num);
+
+		if((world->room + i)->bg_num > 0)
+			(world->room + i)->bgline = (BGLINE *)malloc(sizeof(BGLINE) * (world->room + i)->bg_num);
 	}
 
 	for(i = 0; i < world->room_num; i++)
-		DPRINTF("ROOM %i, pattern_num: %i; object_num: %i\n",
+		DPRINTF("ROOM %i, pattern_num: %i; object_num: %i, bg_num: %i\n",
 			i,
 			(world->room + i)->pattern_num,
-			(world->room + i)->object_num);
+			(world->room + i)->object_num,
+			(world->room + i)->bg_num);
 }
 
 static void fwrite_ROOM_PATTERN(WORLD *world, FILE *fp)
@@ -144,6 +149,30 @@ static void fread_ROOM_OBJECT(WORLD *world, FILE *fp)
 
 	if(++i > world->room_num) i = 0;
 }
+
+static void fwrite_ROOM_BGLINE(WORLD *world, FILE *fp)
+{
+	int i;
+
+	for(i = 0; i < world->room_num; i++) {
+		bgline_chunk.size = sizeof(BGLINE) * (world->room + i)->bg_num;
+		fwrite(&bgline_chunk, 1, sizeof(CHUNK), fp);
+		fwrite((world->room + i)->bgline, 1, bgline_chunk.size, fp);
+	}
+}
+
+static void fread_ROOM_BGLINE(WORLD *world, FILE *fp)
+{
+	static int i = 0;
+
+	if(chunk.size > 0)
+		fread((world->room + i)->bgline, 1, sizeof(BGLINE) * (world->room + i)->bg_num, fp);
+
+	DPRINTF("BGLINE %i, size %i\n", i, sizeof(BGLINE) * (world->room + i)->bg_num);
+
+	if (++i > world->room_num) i = 0;
+}
+
 
 static void fwrite_PATTERNSET(WORLD *world, FILE *fp)
 {
@@ -199,6 +228,9 @@ void save_world(char *name, WORLD *world)
 	// write OBJECT chunks for each room
 	fwrite_ROOM_OBJECT(world, fp);
 
+	// write BGLINE chunks for each room
+	fwrite_ROOM_BGLINE(world, fp);
+
 	// write PATTERNSETs for world
 	fwrite_PATTERNSET(world, fp);
 
@@ -215,6 +247,7 @@ void save_world(char *name, WORLD *world)
 #define CHUNK_ROOM (!memcmp(chunk.id, room_chunk.id, sizeof(chunk.id)))
 #define CHUNK_PTRN (!memcmp(chunk.id, pattern_chunk.id, sizeof(chunk.id)))
 #define CHUNK_OBJT (!memcmp(chunk.id, object_chunk.id, sizeof(chunk.id)))
+#define CHUNK_BGLN (!memcmp(chunk.id, bgline_chunk.id, sizeof(chunk.id)))
 #define CHUNK_PTST (!memcmp(chunk.id, patternset_chunk.id, sizeof(chunk.id)))
 
 WORLD *load_world(char *name)
@@ -247,6 +280,9 @@ WORLD *load_world(char *name)
 		else if(CHUNK_OBJT)
 			fread_ROOM_OBJECT(world, fp);
 
+		else if(CHUNK_BGLN)
+			fread_ROOM_BGLINE(world, fp);
+
 		else if(CHUNK_PTST)
 			fread_PATTERNSET(world, fp);
 
@@ -257,7 +293,7 @@ WORLD *load_world(char *name)
 		
 	}
 
-	close(fp);
+	fclose(fp);
 	return world;
 }
 
