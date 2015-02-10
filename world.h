@@ -1,5 +1,22 @@
 /*
-*/
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS for(int A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
+#ifndef _WORLD_H_
+#define _WORLD_H_
 
 typedef struct {
 	int x, y;
@@ -47,7 +64,7 @@ typedef struct {
 
 	union {
 		BGLINE *bgline;
-		BGMAP *bgmap;
+		BGMAP *bgmap;	// not used yet
 	};
 } ROOM;
 
@@ -59,30 +76,32 @@ typedef struct {
 typedef struct {
 	char xs, ys;
 	char data[];
-} SPRITE;
+} SPRITE;			// not used yet
 
 typedef struct {
 	int num; // number of sprites
 	SPRITE *sprite;
-} SPRITESET;
+} SPRITESET;			// not used yet
 
 typedef struct {
 	int room_num;
 	int patternset_num;
 	int spriteset_num;
-	int tileset_num;
-	int fontset_num;
-	int bgspriteset_num;
+	int tileset_num;	// not used yet
+	int fontset_num;	// not used yet
+	int bgspriteset_num;	// not used yet
 
 	ROOM *room;
 	PATTERNSET *patternset;
-	SPRITESET *spriteset;
-	char *tileset;
-	SPRITESET *bgspriteset;
-	char *fontset;
+	SPRITESET *spriteset;	// not used yet
+	char *tileset;		// not used yet
+	SPRITESET *bgspriteset;	// not used yet
+	char *fontset;		// not used yet
 } WORLD;
 
 // ============================================================================
 
 WORLD *load_world(char *name);
 void save_world(char *name, WORLD *world);
+
+#endif /* _WORLD_H_ */
