@@ -40,6 +40,14 @@ typedef struct TGAMEDATA {
 	int garages[MAX_GARAGES][2];
 } TGAMEDATA;
 
+#define MAX_LIGHTS 13
+
+typedef struct {
+	int x, y;
+	float radius;
+	float r, g, b;
+} Light;
+
 void GameLoop();
 
 #endif // _M_CORE_H_

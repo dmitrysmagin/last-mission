@@ -9,12 +9,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../m_aux.h"
+#include "../m_scr.c"
+#include "../m_scr_lines.c"
 #include "../video.h"
 #include "../sprites.h"
 #include "../m_data.c"
-#include "../m_scr.c"
-#include "../m_scr_lines.c"
+#include "../room.h"
 #include "../world.c"
 
 #define NumBackgrounds 13

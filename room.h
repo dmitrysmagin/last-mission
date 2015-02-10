@@ -1,5 +1,5 @@
-#ifndef _M_AUX_H_
-#define _M_AUX_H_
+#ifndef _ROOM_H_
+#define _ROOM_H_
 
 void UnpackLevel(int room);
 void BlitLevel(int room);
@@ -15,12 +15,4 @@ typedef struct {
 
 ScreenDrawInfo *GetScreenDrawInfo(int screen);
 
-typedef struct {
-	int x, y;
-	float radius;
-	float r, g, b;
-} Light;
-
-#define MAX_LIGHTS 13
-
-#endif //_M_AUX_H_
+#endif //_ROOM_H_

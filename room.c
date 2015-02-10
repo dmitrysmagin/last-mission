@@ -1,9 +1,8 @@
-
 #include <string.h>
 #include <stdlib.h>
 
 #include "sprites.h"
-#include "m_aux.h"
+#include "room.h"
 #include "m_data.h"
 
 // external data in m_core.c
