@@ -30,12 +30,12 @@
 #define MAX_GARAGES 16
 
 typedef struct TGAMEDATA {
-	int ship_score;
+	int score;
 	int base_level;
-	int num_lives;
+	int lives;
 	int fuel;
 	int health;
-	int easy_level;
+	int easy_mode;
 	int hidden_level_entered;
 	int garages[MAX_GARAGES][2];
 } TGAMEDATA;

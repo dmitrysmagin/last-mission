@@ -146,13 +146,8 @@ int base_level_start = 1;
 char screen_procedure;
 int screen_bridge = 0;
 int game_level = 1;
-int ship_fuel = 5000;
-int ship_lives = 10;
-int ship_health = 3;
 int ticks_for_damage = 0;
-int ship_score = 0;
 int laser_overload = 0;
-int easy_level = 1;
 int sn_enabled = 1; // Facebook/Twitter integration.
 int game_mode = GM_SPLASH;
 int elevator_flag = 0; // 1 if elevator is working
@@ -167,6 +162,9 @@ int hidden_level_entered = 0;
 #define F_RIGHT 1
 #define F_DOWN 2
 #define F_LEFT 3
+
+/* Global pointer to internal game data, fix later*/
+TGAMEDATA gamedata, *game = &gamedata;
 
 void PlayMusicInt(int music)
 {
@@ -431,10 +429,10 @@ void HandleShipsContact(int i, int j)
 
 		BlowUpEnemy(j);
 	} else {
-		if (j > 1 || easy_level || i < 2)
+		if (j > 1 || game->easy_mode || i < 2)
 			BlowUpEnemy(i);
 
-		if (i > 1 || easy_level || j < 2)
+		if (i > 1 || game->easy_mode || j < 2)
 			BlowUpEnemy(j);
 	}
 }
@@ -525,7 +523,7 @@ int UpdateFuel()
 	static int fuel_cnt = 25;
 
 	if (fuel_cnt == 0) {
-		if (ship_fuel == 0) {
+		if (game->fuel == 0) {
 			SetGameMode(GM_GAMEOVER);
 			LM_ResetKeys();
 			PutString(8*16, 8*10, "NO FUERZA");
@@ -533,7 +531,7 @@ int UpdateFuel()
 			return 1;
 		}
 
-		ship_fuel -= 1;
+		game->fuel -= 1;
 		fuel_cnt = 25;
 	} else {
 		fuel_cnt -= 1;
@@ -803,13 +801,13 @@ void AddScore(int update)
 {
 	const int points_per_life = 15000;
 
-	int livesBefore = ship_score / points_per_life;
+	int livesBefore = game->score / points_per_life;
 
-	ship_score += update;
+	game->score += update;
 
-	int livesAfter = ship_score / points_per_life;
+	int livesAfter = game->score / points_per_life;
 
-	ship_lives += (livesAfter - livesBefore);
+	game->lives += (livesAfter - livesBefore);
 }
 
 void UpdateScoreWithShip(int i)
@@ -825,7 +823,7 @@ void UpdateScoreWithShip(int i)
 		// /2 less points for hard mode, /2 less for rocket launcher of BFG
 		int score = Ships[i].ai_type * 100 * (game_level & 7) + (RandomInt() & 127);
 
-		if (easy_level)
+		if (game->easy_mode)
 			score >>= 1;
 
 		if (Ships[0].i == SHIP_TYPE_ROCKET_LAUNCHER || Ships[0].i == SHIP_TYPE_BFG)
@@ -874,16 +872,16 @@ void BlowUpEnemy(int i)
 
 	if (i == 0) {
 		// This is the player ship.
-		if (easy_level) {
+		if (game->easy_mode) {
 			if (!ticks_for_damage) {
 				ticks_for_damage = 20;
-				--ship_health;
+				--game->health;
 			}
 		} else {
-			ship_health = -1;
+			game->health = -1;
 		}
 
-		if (ship_health >= 0) {
+		if (game->health >= 0) {
 			return;
 		}
 	}
@@ -925,7 +923,7 @@ void BlowUpEnemy(int i)
 
 	// some corrections for homing missiles
 	if (Ships[i].i == 40 || Ships[i].i == 41) {
-		if (easy_level) {
+		if (game->easy_mode) {
 			CreateExplosion(i);
 			Ships[i].x += SCREEN_WIDTH;
 			PlaySoundEffect(SND_EXPLODE);
@@ -968,7 +966,7 @@ void BlowUpEnemy(int i)
 		Ships[i].explosion.bonus_type = Ships[i].i;
 	}
 
-	if (easy_level &&
+	if (game->easy_mode &&
 	    (Ships[i].ai_type == AI_RANDOM_MOVE || Ships[i].ai_type == AI_KAMIKADZE)) {
 		// Generate bonus if defined by screen and if
 		// this ship is the last one on the screen.
@@ -1462,7 +1460,7 @@ void CreateWallExplosion(int x, int y)
 
 void DoSmoke()
 {
-	if (!easy_level || ship_health > 1)
+	if (!game->easy_mode || game->health > 1)
 		return;
 
 	static int smoke_counter = 0;
@@ -1747,9 +1745,9 @@ _random_move_ai:
 					switch (i->explosion.bonus_type) {
 					case BONUS_HP:
 						// add HP
-						++ship_health;
-						if (ship_health > 3)
-							ship_health = 3;
+						++game->health;
+						if (game->health > 3)
+							game->health = 3;
 						break;
 
 					case BONUS_FACEBOOK:
@@ -1832,7 +1830,7 @@ _random_move_ai:
 					r->garage_index = f;
 
 					// restore HP
-					ship_health = 3;
+					game->health = 3;
 
 					PlaySoundEffect(SND_CONTACT);
 				}
@@ -2097,7 +2095,7 @@ _random_move_ai:
 						}
 
 						elevator_flag = 0;
-						ship_health = 3;
+						game->health = 3;
 
 						goto _here;
 					}
@@ -2410,10 +2408,10 @@ int GameLevelFromScreen(int screen)
 
 void InitNewGame()
 {
-	ship_fuel = 5000;
-	ship_lives = 10;
-	ship_health = 3;
-	ship_score = 0;
+	game->fuel = 5000;
+	game->lives = 10;
+	game->health = 3;
+	game->score = 0;
 
 	ship_cur_screen = GAME_START_SCREEN;
 	base_cur_screen = GAME_START_SCREEN;
@@ -2434,15 +2432,15 @@ void InitNewGame()
 
 int UpdateLives()
 {
-	ship_lives -= 1;
-	ship_health = 3;
+	game->lives -= 1;
+	game->health = 3;
 
 	// Just in case they are playing.
 	StopSoundEffect(SND_ELEVATOR);
 	StopSoundEffect(SND_MOVE);
 	PublishScore();
 
-	if (ship_lives == 0) {
+	if (game->lives == 0) {
 		SetGameMode(GM_GAMEOVER);
 		LM_ResetKeys();
 		PutString(8*16, 8*10, "HAS PERDIDO");
@@ -2475,17 +2473,17 @@ void BlitStatus()
 	PutString(8*16, 8*20, &string_buffer[0]);
 
 	// fuel
-	sprintf(string_buffer, "%04d", ship_fuel);
+	sprintf(string_buffer, "%04d", game->fuel);
 	PutString(8*14, 8*21, &string_buffer[0]);
 
 	// score
-	sprintf(string_buffer, "%08d", ship_score);
+	sprintf(string_buffer, "%08d", game->score);
 	PutString(8*10, 8*22, &string_buffer[0]);
 
 	// health bar.
 	string_buffer[2] = 0;
 	for (int y = 0; y < 3; ++y) {
-		string_buffer[1] = string_buffer[0] = (ship_health > y) ? 84 : 88;
+		string_buffer[1] = string_buffer[0] = (game->health > y) ? 84 : 88;
 		PutStream(8*19, 8*(22 - y), (unsigned char *)&string_buffer[0]);
 	}
 
@@ -2500,7 +2498,7 @@ void BlitStatus()
 	}
 
 	// lives
-	sprintf(string_buffer, "%02d", ship_lives);
+	sprintf(string_buffer, "%02d", game->lives);
 	PutString(8*28, 8*21, &string_buffer[0]);
 
 	// score record
@@ -2624,7 +2622,7 @@ void DoTitle()
 
 	// wait some time before switching to demo mode
 	if (ticks_before_demo >= 3660) { // wait 1 min
-		easy_level = 0;
+		game->easy_mode = 0;
 		ResetDemo();
 		SetGameMode(GM_DEMO);
 		LM_ResetKeys();
@@ -2640,6 +2638,7 @@ void DoTitle()
 
 	// start
 	if (Keys[SC_SPACE] == 1 || Keys[SC_ENTER] == 1) {
+		game->easy_mode = 1;
 		SetGameMode(GM_GAME);
 		LM_ResetKeys();
 		InitNewGame();
@@ -2921,7 +2920,7 @@ void DoGame()
 		if (PlayDemo() == 1 || LM_AnyKey() == 1) {
 			SetGameMode(GM_TITLE);
 			LM_ResetKeys();
-			ship_score = 0;
+			game->score = 0;
 			break;
 		}
 
@@ -3024,7 +3023,7 @@ int GameMode()
 
 void SetEasyLevel(int level)
 {
-	easy_level = level;
+	game->easy_mode = level;
 }
 
 void HitTheBonus(int param)
@@ -3118,7 +3117,7 @@ int CurrentLevel()
 
 int CurrentPoints()
 {
-	return ship_score;
+	return game->score;
 }
 
 void LoadGame(TGAMEDATA *data)
@@ -3129,13 +3128,13 @@ void LoadGame(TGAMEDATA *data)
 	SetGameMode(GM_GAME);
 	elevator_flag = 0;
 
-	easy_level = data->easy_level;
+	game->easy_mode = data->easy_mode;
 
 	hidden_level_entered = data->hidden_level_entered;
-	ship_fuel = data->fuel;
-	ship_lives = data->num_lives;
-	ship_health = data->health;
-	ship_score = data->ship_score;
+	game->fuel = data->fuel;
+	game->lives = data->lives;
+	game->health = data->health;
+	game->score = data->score;
 
 	ship_cur_screen = data->base_level;
 	base_cur_screen = data->base_level;
@@ -3155,13 +3154,13 @@ void LoadGame(TGAMEDATA *data)
 
 void SaveGame(TGAMEDATA *data)
 {
-	data->ship_score = ship_score;
+	data->score = game->score;
 	data->base_level = base_level_start;
-	data->num_lives = ship_lives;
+	data->lives = game->lives;
 	data->hidden_level_entered = hidden_level_entered;
-	data->fuel = ship_fuel;
-	data->health = ship_health;
-	data->easy_level = easy_level;
+	data->fuel = game->fuel;
+	data->health = game->health;
+	data->easy_mode = game->easy_mode;
 	memcpy(data->garages, main_garage_data, sizeof(main_garage_data));
 }
 
@@ -3171,11 +3170,11 @@ void ResetGame(int gameMode)
 	base_level_start = 1;
 	screen_bridge = 0;
 	game_level = 1;
-	ship_fuel = 5000;
-	ship_lives = 10;
+	game->fuel = 5000;
+	game->lives = 10;
 	hidden_level_entered = 0;
-	ship_health = 3;
-	ship_score = 0;
+	game->health = 3;
+	game->score = 0;
 	laser_overload = 0;
 	SetGameMode(gameMode);
 	elevator_flag = 0;
