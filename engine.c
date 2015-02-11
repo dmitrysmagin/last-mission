@@ -149,7 +149,6 @@ int game_level = 1;
 int ticks_for_damage = 0;
 int laser_overload = 0;
 int sn_enabled = 1; // Facebook/Twitter integration.
-int game_mode = GM_SPLASH;
 int elevator_flag = 0; // 1 if elevator is working
 int frame_skip = 0;
 int modern_background = 1;
@@ -178,7 +177,7 @@ void PlayMusicInt(int music)
 
 void SetGameMode(int mode)
 {
-	game_mode = mode;
+	game->mode = mode;
 
 	switch (mode) {
 	case GM_TITLE:
@@ -2302,7 +2301,7 @@ void InitEnemies()
 
 	for (int i = *(p-1); i >= 1; i--) {
 		if (*(p + 1) == BONUS_FACEBOOK || *(p + 1) == BONUS_TWITTER) {
-			if (!sn_enabled || game_mode == GM_DEMO || base_cur_screen < ship_cur_screen)
+			if (!sn_enabled || game->mode == GM_DEMO || base_cur_screen < ship_cur_screen)
 				goto __skip_enemy;
 		}
 
@@ -2697,7 +2696,7 @@ void DoWinScreen()
 void DoKeys()
 {
 	// if not demo mode
-	if (game_mode != GM_DEMO) {
+	if (game->mode != GM_DEMO) {
 		GKeys[KEY_LEFT] = Keys[SC_LEFT];
 		GKeys[KEY_RIGHT] = Keys[SC_RIGHT];
 		GKeys[KEY_UP] = Keys[SC_UP];
@@ -2907,7 +2906,7 @@ void RenderGame(int renderStatus)
 
 void DoGame()
 {
-	switch(game_mode) {
+	switch(game->mode) {
 	case GM_TITLE:
 		// do title here
 		DoTitle();
@@ -3018,7 +3017,7 @@ void DoGame()
 
 int GameMode()
 {
-	return game_mode;
+	return game->mode;
 }
 
 void SetEasyLevel(int level)
@@ -3044,6 +3043,8 @@ void GameLoop()
 	static int next_game_tick = 0;
 	static int sleep_time = 0, frames = 0, frame_end = 0, frame_start = 0;
 	static int show_fps = 0, max_frameskip = 0;
+
+	SetGameMode(GM_SPLASH);
 
 	LoadLogo();
 	LoadSprites();
@@ -3095,7 +3096,7 @@ void GameLoop()
 			Keys[SC_BACKSPACE] = 0;
 		}
 
-		if (game_mode == GM_EXIT)
+		if (game->mode == GM_EXIT)
 			break;
 	}
 }

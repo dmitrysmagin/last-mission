@@ -30,6 +30,7 @@
 #define MAX_GARAGES 16
 
 typedef struct TGAMEDATA {
+	int mode;
 	int score;
 	int base_level;
 	int lives;
