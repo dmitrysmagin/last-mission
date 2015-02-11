@@ -3134,7 +3134,7 @@ void LoadGame(TGAMEDATA *data)
 	hidden_level_entered = data->hidden_level_entered;
 	ship_fuel = data->fuel;
 	ship_lives = data->num_lives;
-	ship_health = ship_health;
+	ship_health = data->health;
 	ship_score = data->ship_score;
 
 	ship_cur_screen = data->base_level;
