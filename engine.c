@@ -152,7 +152,6 @@ int ship_health = 3;
 int ticks_for_damage = 0;
 int ship_score = 0;
 int laser_overload = 0;
-int ticks_for_splash = 0;
 int easy_level = 1;
 int sn_enabled = 1; // Facebook/Twitter integration.
 int game_mode = GM_SPLASH;
@@ -2578,6 +2577,8 @@ void LoadSplash()
 
 void DoSplash()
 {
+	static int ticks_for_splash = 0;
+
 	if (ticks_for_splash == 0) {
 		LoadSplash();
 	}
@@ -3125,7 +3126,6 @@ void LoadGame(TGAMEDATA *data)
 	player_attached = 0;
 	screen_bridge = 0;
 	laser_overload = 0;
-	ticks_for_splash = 0;
 	SetGameMode(GM_GAME);
 	elevator_flag = 0;
 
@@ -3177,7 +3177,6 @@ void ResetGame(int gameMode)
 	ship_health = 3;
 	ship_score = 0;
 	laser_overload = 0;
-	ticks_for_splash = 0;
 	SetGameMode(gameMode);
 	elevator_flag = 0;
 
