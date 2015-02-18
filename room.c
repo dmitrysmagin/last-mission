@@ -5,8 +5,10 @@
 #include "room.h"
 #include "m_data.h"
 
-// external data in m_core.c
-extern unsigned char ScreenTilesBuffer[0x2a8];
+#define ROOM_WIDTH (SCREEN_WIDTH/8)
+#define ROOM_HEIGHT (ACTION_SCREEN_HEIGHT/8)
+
+static unsigned char ScreenTilesBuffer[ROOM_WIDTH * ROOM_HEIGHT];
 
 #define NumBackgrounds 13
 
@@ -41,35 +43,49 @@ ScreenDrawInfo *GetScreenDrawInfo(int screen)
 	return (ScreenDrawInfo*)data;
 }
 
+int GetTileI(int x, int y)
+{
+	if (x < 0 || x > ROOM_WIDTH ||
+	    y < 0 || y > ROOM_HEIGHT)
+		return 0;
+
+	return ScreenTilesBuffer[y * ROOM_WIDTH + x];
+}
+
+void SetTileI(int x, int y, int i)
+{
+	if (x < 0 || x > ROOM_WIDTH ||
+	    y < 0 || y > ROOM_HEIGHT)
+		return;
+
+	ScreenTilesBuffer[y * ROOM_WIDTH + x] = i;
+}
+
 void UnpackLevel(int room)
 {
-	memset(ScreenTilesBuffer, 0x00, 0x2a8);
+	memset(ScreenTilesBuffer, 0x00, sizeof(ScreenTilesBuffer));
 
-	unsigned char *endOfScreen = ScreenTilesBuffer + 0x2a8;
+	unsigned char *endOfScreen = ScreenTilesBuffer + sizeof(ScreenTilesBuffer);
 	unsigned char *p = SCREENS[room];
 
 	for (int i = *p++; i > 0; i--, p += 4) {
 		int xPos = *(p);
 		int yPos = *(p + 1);
 
-		unsigned char *pd = (unsigned char *)&ScreenTilesBuffer[yPos * 0x28 + xPos];
-		#ifdef __DINGOO__
-		unsigned char *ps = (unsigned char *)PATTERNS[*(p + 2) + (*(p + 3) << 8)];
-		#else
+		unsigned char *pd = (unsigned char *)&ScreenTilesBuffer[yPos * ROOM_WIDTH + xPos];
 		unsigned char *ps = (unsigned char *)PATTERNS[*(unsigned short *)(p + 2)];
-		#endif
 
 		int dy = *(ps + 1);
 		int dx = *ps;
 
 		ps += 2;
 
-		for (int y = 0; y < dy; y++, pd += 0x28 - dx)
+		for (int y = 0; y < dy; y++, pd += ROOM_WIDTH - dx)
 			for (int x = 0; x < dx; x++, ps++, pd++) {
 				if (pd >= endOfScreen)
 					break;
 
-				if (x + xPos < 0x28 && *ps)
+				if (x + xPos < ROOM_WIDTH && *ps)
 					*pd = *ps;
 			}
 	}
@@ -77,18 +93,18 @@ void UnpackLevel(int room)
 
 void BlitLevel(int room)
 {
-	for (int y = 0; y <= 16; y++)
-		for (int x = 0; x <= 39; x++)
-			PutTileI(x*8, y*8, ScreenTilesBuffer[y*0x28+x]);
+	for (int y = 0; y < ROOM_HEIGHT; y++)
+		for (int x = 0; x < ROOM_WIDTH; x++)
+			PutTileI(x*8, y*8, ScreenTilesBuffer[y*ROOM_WIDTH+x]);
 }
 
 void BlitLevelOutlines(int room)
 {
 	unsigned int shadow = GetScreenDrawInfo(room)->shadow;
 
-	for (int y = 0; y <= 16; y++)
-		for (int x = 0; x <= 39; x++)
-			PutTileS(x*8, y*8, ScreenTilesBuffer[y*0x28+x], shadow);
+	for (int y = 0; y < ROOM_HEIGHT; y++)
+		for (int x = 0; x < ROOM_WIDTH; x++)
+			PutTileS(x*8, y*8, ScreenTilesBuffer[y*ROOM_WIDTH+x], shadow);
 }
 
 void BlitBackground(int room)

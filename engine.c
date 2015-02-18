@@ -74,7 +74,6 @@ void MakeScreenShot();
 #define MakeScreenShot()
 #endif
 
-unsigned char ScreenTilesBuffer[0x2a8];
 unsigned char ship_cur_screen = 0;
 
 typedef struct {
@@ -264,11 +263,6 @@ int ShipBaseOffset()
 	GetCurrentSpriteDimensions(&Ships[0], &xs, &ys);
 	GetCurrentSpriteDimensions(&Ships[1], &xb, &yb);
 	return (xb - xs) / 2;
-}
-
-unsigned char TileForPoint(int x, int y)
-{
-	return ScreenTilesBuffer[(y >> 3) * 40 + (x >> 3)];
 }
 
 int IndexOf(TSHIP *ship)
@@ -499,7 +493,7 @@ unsigned char IsTouch(int x, int y, int index)
 
 	for (int dy = y; dy < ys; dy++) {
 		for (int dx = x; dx < xs; dx++) {
-			unsigned char b = TileForPoint(dx, dy);
+			unsigned char b = GetTileI(dx >> 3, dy >> 3);
 
 			if (b == 0)
 				continue;
@@ -721,7 +715,7 @@ void DoBase()
 				playMoveSound = 1;
 
 				if (IsTouch(i->x + 2, i->y, 0) + IsTouch(j->x + 2, j->y, 1) == 0) {
-					if (TileForPoint(j->x + 40, j->y + 16)) {
+					if (GetTileI((j->x + 40) >> 3, (j->y + 16) >> 3)) {
 						i->x += 2;
 						j->x += 2;
 					}
@@ -749,7 +743,7 @@ void DoBase()
 				playMoveSound = 1;
 
 				if (IsTouch(i->x - 2, i->y, 0) + IsTouch(j->x - 2, j->y, 1) == 0) {
-					if (TileForPoint(j->x - 2, j->y + 16)) {
+					if (GetTileI((j->x - 2) >> 3, (j->y + 16) >> 3)) {
 						i->x -= 2;
 						j->x -= 2;
 					}
@@ -780,7 +774,7 @@ void DoBase()
 		if (GKeys[KEY_UP] == 1) {
 			// if bound with base and standing on a bridge - don't allow to fly up
 			for (int f = 0; f <= 3; f++) {
-				if (ScreenTilesBuffer[((j->y + 16) >> 3) * 40 + ((j->x + 8) >> 3) + f] == 245)
+				if (GetTileI(((j->x + 8) >> 3) + f, (j->y + 16) >> 3) == 245)
 					return;
 			}
 
@@ -840,12 +834,8 @@ void DestroyHiddenAreaAccess(TSHIP *i, int playEffects)
 
 		for (int x = 0; x < i->dx; ++x) {
 			int ax = i->x + x;
-			int index = (ay >> 3) * 40 + (ax >> 3);
 
-			if (index >= 0x2a8)
-				break;
-
-			ScreenTilesBuffer[index] = 0;
+			SetTileI(ax >> 3, ay >> 3, 0);
 
 			if (playEffects && !(y % 16) && !(x % 16) && (ay + 16 < ACTION_SCREEN_HEIGHT)) {
 				CreateWallExplosion(ax, ay);
@@ -952,11 +942,11 @@ void BlowUpEnemy(int i)
 	if (Ships[i].i == 6) {
 		if (Ships[i].cur_frame == 0) {
 			Ships[i].x -= 8;
-			ScreenTilesBuffer[(Ships[i].y >> 3) * 40 + (Ships[i].x >> 3)] = 0;
-			ScreenTilesBuffer[((Ships[i].y >> 3) + 1) * 40 + (Ships[i].x >> 3)] = 0;
+			SetTileI(Ships[i].x >> 3, Ships[i].y >> 3, 0);
+			SetTileI(Ships[i].x >> 3, (Ships[i].y >> 3) + 1, 0);
 		} else {
-			ScreenTilesBuffer[(Ships[i].y >> 3) * 40 + (Ships[i].x >> 3) + 1] = 0;
-			ScreenTilesBuffer[((Ships[i].y >> 3) + 1) * 40 + (Ships[i].x >> 3) + 1] = 0;
+			SetTileI((Ships[i].x >> 3) + 1, Ships[i].y >> 3, 0);
+			SetTileI((Ships[i].x >> 3) + 1, (Ships[i].y >> 3) + 1, 0);
 		}
 	}
 
@@ -1033,10 +1023,10 @@ int IsLaserHit2(int x_start, int x_end, int y)
 	if (x_end >= 319)
 		return_value =  1;
 
-	if (TileForPoint(x_start, y))
+	if (GetTileI(x_start >> 3, y >> 3))
 		return_value = 1;
 
-	if (TileForPoint(x_end, y))
+	if (GetTileI(x_end >> 3, y >> 3))
 		return_value = 1;
 
 	for (int f = 1; f <= SHIPS_NUMBER-1; f++) {
@@ -1774,7 +1764,7 @@ _random_move_ai:
 
 			// seal or unseal the floor
 			for (int f = 0; f <= 4; f++) {
-				ScreenTilesBuffer[(i->y >> 3) * 40 + (i->x >> 3) + f] = a;
+				SetTileI((i->x >> 3) + f, i->y >> 3, a);
 			}
 		}
 		break;
@@ -2038,7 +2028,7 @@ _random_move_ai:
 					if (i->y == 120) {
 						// unseal the floor
 						for (int j = 0; j <= 5; j++) {
-							ScreenTilesBuffer[(i->y >> 3) * 40 + (i->x >> 3) + j] = 0;
+							SetTileI((i->x >> 3) + j, i->y >> 3, 0);
 						}
 					}
 
@@ -2073,7 +2063,7 @@ _random_move_ai:
 
 						// seal the floor!
 						for (int i = 0; i <= 5; i++) {
-							ScreenTilesBuffer[((Ships[1].y + 16) >> 3) * 40 + ((Ships[1].x - 4) >> 3) + i] = 245;
+							SetTileI(((Ships[1].x - 4) >> 3) + i, (Ships[1].y + 16) >> 3, 245);
 						}
 
 						if (ship_cur_screen != 69) {

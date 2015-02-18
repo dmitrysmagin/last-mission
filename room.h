@@ -1,6 +1,8 @@
 #ifndef _ROOM_H_
 #define _ROOM_H_
 
+int GetTileI(int x, int y);
+void SetTileI(int x, int y, int i);
 void UnpackLevel(int room);
 void BlitLevel(int room);
 void BlitLevelOutlines(int room);
