@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../m_scr.c"
+#include "m_scr.c"
 #include "screenlines/m_scr_lines.c"
 #include "../video.h"
 #include "../m_data.c"

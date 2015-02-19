@@ -1,8 +1,4 @@
-#ifndef __GNUC__
-#define __attribute__(A)
-#endif
-
-#include "m_data.h"
+#include "../m_data.h"
 
 unsigned char screen0[] = {
 	 16,
