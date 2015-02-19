@@ -4,7 +4,6 @@
 extern unsigned char SkyMap[9][21];
 extern unsigned char LOGO[];
 extern unsigned char STATUSBAR1[7*43];
-extern unsigned char *SCREENS[NUM_SCREENS];
 extern unsigned char *PATTERNS[NUM_PATTERNS];
 
 #define SH_DEAD 0

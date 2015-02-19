@@ -2376,7 +2376,7 @@ void InitEnemies()
 
 void InitNewScreen()
 {
-	UnpackLevel(ship_cur_screen);
+	UnpackLevel(game->world, ship_cur_screen);
 
 	InitEnemies();
 

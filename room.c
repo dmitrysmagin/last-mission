@@ -30,19 +30,20 @@ void SetTileI(int x, int y, int i)
 	ScreenTilesBuffer[y * ROOM_WIDTH + x] = i;
 }
 
-void UnpackLevel(int room)
+void UnpackLevel(WORLD *world, int room)
 {
 	memset(ScreenTilesBuffer, 0x00, sizeof(ScreenTilesBuffer));
 
 	unsigned char *endOfScreen = ScreenTilesBuffer + sizeof(ScreenTilesBuffer);
-	unsigned char *p = SCREENS[room];
+	PATTERN *pattern = (world->room + room)->pattern;
+	int count = (world->room + room)->pattern_num;
 
-	for (int i = *p++; i > 0; i--, p += 4) {
-		int xPos = *(p);
-		int yPos = *(p + 1);
+	for (;count-- > 0; pattern++) {
+		int xPos = pattern->x;
+		int yPos = pattern->y;
 
 		unsigned char *pd = (unsigned char *)&ScreenTilesBuffer[yPos * ROOM_WIDTH + xPos];
-		unsigned char *ps = (unsigned char *)PATTERNS[*(unsigned short *)(p + 2)];
+		unsigned char *ps = (unsigned char *)PATTERNS[pattern->index];
 
 		int dy = *(ps + 1);
 		int dx = *ps;
