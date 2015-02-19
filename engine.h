@@ -1,5 +1,7 @@
-#ifndef _M_CORE_H_
-#define _M_CORE_H_
+#ifndef _ENGINE_H_
+#define _ENGINE_H_
+
+#include "world.h"
 
 #define GM_EXIT 	(-1)
 #define GM_TITLE	0
@@ -39,6 +41,8 @@ typedef struct TGAMEDATA {
 	int easy_mode;
 	int hidden_level_entered;
 	int garages[MAX_GARAGES][2];
+
+	WORLD *world;
 } TGAMEDATA;
 
 #define MAX_LIGHTS 13
@@ -51,4 +55,4 @@ typedef struct {
 
 void GameLoop();
 
-#endif // _M_CORE_H_
+#endif // _ENGINE_H_

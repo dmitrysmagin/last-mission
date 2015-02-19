@@ -3035,6 +3035,7 @@ void GameLoop()
 	static int show_fps = 0, max_frameskip = 0;
 
 	SetGameMode(GM_SPLASH);
+	game->world = load_world("data/lastmission.dat");
 
 	LoadLogo();
 	LoadSprites();
@@ -3089,6 +3090,8 @@ void GameLoop()
 		if (game->mode == GM_EXIT)
 			break;
 	}
+
+	free_world(game->world);
 }
 
 void EnableSocialNetworkIcon(int enable)

@@ -25,12 +25,12 @@
 
 #include "world.h"
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #define DPRINTF printf
 #else
-#define DPRINTF()
+#define DPRINTF(...)
 #endif
 
 typedef struct {

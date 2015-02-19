@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "engine.h"
 #include "sprites.h"
 #include "room.h"
 #include "m_data.h"
