@@ -213,7 +213,25 @@ void SetGameMode(int mode)
 
 unsigned char ChangeScreen(int flag)
 {
-	unsigned char  result = *(SCREENINFOS[ship_cur_screen] + flag);
+	WORLD *world = game->world;
+	int result;
+
+	switch (flag) {
+	case F_UP:
+		result = (world->room + ship_cur_screen)->up;
+		break;
+	case F_RIGHT:
+		result = (world->room + ship_cur_screen)->right;
+		break;
+	case F_DOWN:
+		result = (world->room + ship_cur_screen)->down;
+		break;
+	case F_LEFT:
+		result = (world->room + ship_cur_screen)->left;
+		break;
+	default:
+		result = 0;
+	}
 
 	if (result == 0)
 		return 0;
