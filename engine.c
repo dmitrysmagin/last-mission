@@ -2750,9 +2750,9 @@ void BlitEnemies()
 	}
 }
 
-void BlitEnemyOutlines()
+void BlitEnemyOutlines(WORLD *world)
 {
-	unsigned int shadow = GetScreenDrawInfo(ship_cur_screen)->shadow;
+	unsigned int shadow = (world->room + ship_cur_screen)->shadow;
 
 	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
 		if (Ships[i].ai_type == AI_BRIDGE && !player_attached)
@@ -2866,8 +2866,8 @@ void RenderGame(int renderStatus)
 {
 	if (modern_background) {
 		BlitBackground(game->world, ship_cur_screen); // blit background
-		BlitLevelOutlines(ship_cur_screen);
-		BlitEnemyOutlines(); // draw moving objects' outlines (shadows)
+		BlitLevelOutlines(game->world, ship_cur_screen);
+		BlitEnemyOutlines(game->world); // draw moving objects' outlines (shadows)
 	} else {
 		EraseBackground(0);
 	}
