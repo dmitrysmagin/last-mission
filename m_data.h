@@ -6,7 +6,6 @@ extern unsigned char LOGO[];
 extern unsigned char STATUSBAR1[7*43];
 extern unsigned char *SCREENS[NUM_SCREENS];
 extern unsigned char *PATTERNS[NUM_PATTERNS];
-extern unsigned char *SCREENINFOS[NUM_SCREENS];
 
 #define SH_DEAD 0
 #define SH_ACTIVE 1

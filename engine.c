@@ -2300,37 +2300,41 @@ int GetPlayerShipIndex()
 
 void InitEnemies()
 {
-	unsigned char *p;
-	TSHIP *en;
+	ROOM *room = game->world->room + ship_cur_screen;
+	OBJECT *object = room->object;
+	int count = room->object_num;
 
 	memset(&Ships[2] , 0, sizeof(TSHIP) * (SHIPS_NUMBER - 2));
 
-	p = SCREENINFOS[ship_cur_screen] + 5;
+	screen_procedure = room->procedure;
+	cur_screen_bonus = room->bonus;
 
-	for (int i = *(p-1); i >= 1; i--) {
-		if (*(p + 1) == BONUS_FACEBOOK || *(p + 1) == BONUS_TWITTER) {
+	for (; count > 0; count--, object++) {
+
+		if (object->index == BONUS_FACEBOOK || object->index == BONUS_TWITTER) {
 			if (!sn_enabled || game->mode == GM_DEMO || base_cur_screen < ship_cur_screen)
-				goto __skip_enemy;
+				continue;
 		}
 
-		en = PrepareFreeShip();
+		TSHIP *en = PrepareFreeShip();
+
 		en->state = SH_ACTIVE;
-		en->i = *(p + 1);
-		en->x = *(p + 2) << 2 ;
-		en->y = *(p + 3);
-		en->anim_speed = *(p + 4) * 2;
-		en->anim_speed_cnt = en->anim_speed;
-		en->min_frame = *(p + 5);
-		en->cur_frame = en->min_frame;
-		en->max_frame = *(p + 6);
-		en->ai_type = *(p + 7);
+		en->i = object->index;
+		en->x = object->x << 2;
+		en->y = object->y;
+		en->anim_speed = object->speed * 2;
+		en->anim_speed_cnt = object->speed * 2;
+		en->min_frame = object->minframe;
+		en->cur_frame = object->minframe;
+		en->max_frame = object->maxframe;
+		en->ai_type = object->ai;
 		en->move_speed = 1; // standard
-		en->move_speed_cnt = en->move_speed;
+		en->move_speed_cnt = 1;
 
 		if (en->ai_type == AI_GARAGE) {
-			en->i = *p;
+			en->i = object->garage_id;
 
-			int iShip = GarageShipIndex(*p);
+			int iShip = GarageShipIndex(en->i);
 			if (iShip != -1) {
 				// Find which type of the ship is supposed to be here,
 				// create the ship in the best position inside it.
@@ -2360,20 +2364,14 @@ void InitEnemies()
 				BestPositionInGarage(ship, &ship->x, &ship->y);
 			}
 		} else if (en->ai_type == AI_HIDDEN_AREA_ACCESS) {
-			en->dx = *(p + 4);
-			en->dy = *(p + 5);
+			en->dx = object->speed;
+			en->dy = object->minframe;
 
 			if (hidden_level_entered) {
 				DestroyHiddenAreaAccess(en, 0);
 			}
 		}
-
-__skip_enemy:;
-		p += 8;
 	}
-
-	screen_procedure = *(p++);
-	cur_screen_bonus = *p;
 }
 
 void InitNewScreen()
