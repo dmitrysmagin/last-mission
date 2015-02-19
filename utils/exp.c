@@ -33,7 +33,7 @@ int main()
 
 	// fill room data
 	for(i = 0; i < NUM_SCREENS; i++) {
-		char *p;
+		unsigned char *p;
 
 		// fill info on patterns
 		p = SCREENS[i];
