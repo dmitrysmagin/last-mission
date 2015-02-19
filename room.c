@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "world.h"
 #include "engine.h"
 #include "sprites.h"
 #include "room.h"
@@ -108,23 +109,25 @@ void BlitLevelOutlines(int room)
 			PutTileS(x*8, y*8, ScreenTilesBuffer[y*ROOM_WIDTH+x], shadow);
 }
 
-void BlitBackground(int room)
+void BlitBackground(WORLD *world, int room)
 {
-	int background = GetScreenDrawInfo(room)->background;
-	EraseBackground(background);
+	if (room > world->room_num)
+		return;
+
+	EraseBackground((world->room + room)->background);
 
 	for (int i = 0; i < 2; ++i) {
-		short *lines = SCREENLINES[room];
-		short count  = *(lines++);
+		BGLINE *bgline = (world->room + room)->bgline;
+		int count = (world->room + room)->bg_num;
 		unsigned int color = (i == 1)
-			? GetScreenDrawInfo(room)->line_light
-			: GetScreenDrawInfo(room)->line_shadow;
+			? (world->room + room)->line_light
+			: (world->room + room)->line_shadow;
 
-		for (int j = 0; j < count; ++j, lines += 4) {
-			int x1 = *(lines + 0);
-			int y1 = *(lines + 1);
-			int x2 = *(lines + 2);
-			int y2 = *(lines + 3);
+		for (int j = 0; j < count; ++j, bgline++) {
+			int x1 = bgline->x1;
+			int y1 = bgline->y1;
+			int x2 = bgline->x2;
+			int y2 = bgline->y2;
 
 			if (i == 1) {
 				DrawLine(x1, y1, x2, y2, color);

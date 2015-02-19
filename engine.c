@@ -2865,7 +2865,7 @@ void BlitNonAmbientEnemies()
 void RenderGame(int renderStatus)
 {
 	if (modern_background) {
-		BlitBackground(ship_cur_screen); // blit background
+		BlitBackground(game->world, ship_cur_screen); // blit background
 		BlitLevelOutlines(ship_cur_screen);
 		BlitEnemyOutlines(); // draw moving objects' outlines (shadows)
 	} else {
