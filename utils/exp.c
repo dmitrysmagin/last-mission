@@ -10,45 +10,11 @@
 #include <string.h>
 
 #include "../m_scr.c"
-#include "../m_scr_lines.c"
+#include "screenlines/m_scr_lines.c"
 #include "../video.h"
-#include "../sprites.h"
 #include "../m_data.c"
 #include "../room.h"
 #include "../world.c"
-
-#define NumBackgrounds 13
-
-static ScreenDrawInfo data[NumBackgrounds] = {
-	{ RGB( 56, 56, 56), RGB( 32, 32, 32), RGB( 44, 64, 64), RGB( 44, 52, 64) },
-	{ RGB(113,  0,  0), RGB( 64,  0,  0), RGB(113, 28,  0), RGB(  0,  0,  0) },
-	{ RGB( 56, 56, 13), RGB( 32, 32, 64), RGB( 56, 68,113), RGB( 44, 52, 64) },
-	{ RGB(113, 89, 80), RGB( 64, 48, 44), RGB(113,105, 80), RGB(113, 80, 80) },
-	{ RGB(113, 56,  0), RGB( 64, 32,  0), RGB(113, 85,  0), RGB(113,  0, 28) },
-	{ RGB(  0, 56, 13), RGB(  0, 32, 64), RGB( 56, 85,113), RGB( 44, 52, 64) },
-	{ RGB( 80, 80,113), RGB( 44, 44, 64), RGB( 80, 97,113), RGB( 44, 64, 64) },
-	{ RGB( 56, 68,113), RGB( 32, 40, 64), RGB( 56, 85,113), RGB( 44, 52, 64) },
-	{ RGB(113, 56,  0), RGB( 64, 32,  0), RGB(113, 85,  0), RGB(113, 28,  0) },
-	{ RGB(  0,113, 56), RGB(  0, 64, 32), RGB(  0,  0,  0), RGB( 32, 64, 56) },
-	{ RGB(113, 28,  0), RGB( 64, 16,  0), RGB(113, 85,  0), RGB(113,  0, 28) },
-	{ 0, 0 },
-	{ RGB( 44, 44, 44), RGB( 32, 32, 32), RGB( 44, 64, 64), RGB( 44, 52, 64) },
-};
-
-ScreenDrawInfo *GetScreenDrawInfo(int screen)
-{
-
-	static const int screens[NumBackgrounds] = {
-		8, 15, 22, 29, 36, 43, 50, 55, 62, 69, 70, 92, 999
-	};
-
-	for (int i = 0; i < NumBackgrounds; ++i) {
-		if (screens[i] > screen)
-			return (ScreenDrawInfo*)data + i;
-	}
-
-	return (ScreenDrawInfo*)data;
-}
 
 WORLD *world;
 
