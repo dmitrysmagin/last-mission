@@ -43,7 +43,7 @@ void UnpackLevel(WORLD *world, int room)
 		int yPos = pattern->y;
 
 		PATTERNSET *patternset = world->patternset + pattern->index;
-		unsigned char *ps = patternset->data;
+		unsigned char *ps = (unsigned char *)patternset->data;
 		unsigned char *pd = (unsigned char *)&ScreenTilesBuffer[yPos * ROOM_WIDTH + xPos];
 
 		int dy = patternset->ys;
