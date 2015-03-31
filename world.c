@@ -33,6 +33,10 @@
 #define DPRINTF(...)
 #endif
 
+#if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
+#error Big-endian host not supported for .dat files, FIX LATER
+#endif
+
 typedef struct {
 	char id[4];
 	int size;
