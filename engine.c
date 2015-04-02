@@ -20,6 +20,7 @@
 #include "input.h"
 #include "sound.h"
 #include "sprites.h"
+#include "enemies.h"
 #include "engine.h"
 #include "room.h"
 
@@ -44,7 +45,6 @@ int UpdateAnimation(int f);
 int UpdateMoveSpeed(int f);
 void DoEnemy(int f);
 void InitShip();
-int GetFreeEnemyIndex();
 void InitEnemies();
 void InitNewScreen();
 void InitNewGame();
@@ -76,46 +76,6 @@ void MakeScreenShot();
 
 unsigned char ship_cur_screen = 0;
 
-typedef struct {
-	int regenerate_bonus;
-	int bonus_type;
-} TEXPLOSION;
-
-typedef struct {
-	int x;
-	int y;
-	int i; // Sprite index
-	int state;
-	int cur_frame;
-
-	unsigned char anim_speed_cnt;
-	unsigned char move_speed_cnt;
-	unsigned char ai_update_cnt;
-
-	int dx;
-	int dy;
-
-	unsigned char min_frame;
-	unsigned char max_frame;
-	unsigned char anim_speed;
-	unsigned char move_speed;
-	unsigned char ai_type;
-
-	// AI-type specific data. Just to make code a bit more readable.
-	union {
-		int parent; // used by something shot by a cannon
-		int just_created; // used by AI_SHOT, AI_HOMING_SHOT and AI_BFG_SHOT
-		int ticks_passed; // used by AI_HOMING_SHOT
-		int garage_inactive; // used by AI_GARAGE
-		int garage_index; // used by AI_SPARE_SHIP
-		TEXPLOSION explosion; // used by AI_BONUS & AI_EXPLOSION
-	};
-} TSHIP;
-
-#define SHIPS_NUMBER 32
-
-TSHIP Ships[SHIPS_NUMBER];
-
 // Actual garage data, valid for current game.
 int garage_data[MAX_GARAGES][2];
 // Garage data of the last game start. Will be restored if player is dead.
@@ -136,7 +96,6 @@ typedef struct {
 TBFGTARGET BfgTargets[MAX_BFG_TARGETS];
 int bfg_on = 0;
 
-TSHIP *PrepareFreeShip();
 void BestPositionInGarage(TSHIP *ship, int *x, int *y);
 
 unsigned char player_attached = 0;
@@ -1131,7 +1090,7 @@ void DoMachineGun()
 			if (!FacingLeft(i) && !FacingRight(i))
 				return;
 
-			TSHIP *j = PrepareFreeShip();
+			TSHIP *j = gObj_CreateObject();
 			j->state = SH_ACTIVE;
 			j->i = 50;
 			j->x = i->x + (FacingRight(i) ? 32 : -8);
@@ -1171,7 +1130,7 @@ void DoBFG()
 			if (!FacingLeft(i) && !FacingRight(i))
 				return;
 
-			TSHIP *j = PrepareFreeShip();
+			TSHIP *j = gObj_CreateObject();
 			j->state = SH_ACTIVE;
 			j->i = 56;
 			j->x = i->x + (FacingRight(i) ? 16 : -11);
@@ -1213,7 +1172,7 @@ void DoRocketLauncher()
 			if (!FacingLeft(i) && !FacingRight(i))
 				return;
 
-			TSHIP *j = PrepareFreeShip();
+			TSHIP *j = gObj_CreateObject();
 			j->state = SH_ACTIVE;
 			j->i = 54;
 			j->y = i->y + 1;
@@ -1403,7 +1362,7 @@ int UpdateMoveSpeed(int f)
 void CreateExplosion(int index)
 {
 	TSHIP *i = &Ships[index];
-	TSHIP *j = PrepareFreeShip();
+	TSHIP *j = gObj_CreateObject();
 	j->state = SH_ACTIVE;
 	j->i = 2;
 	j->x = i->x;
@@ -1454,7 +1413,7 @@ void AddBfgTarget(int index, int bfgIndex)
 
 void CreateWallExplosion(int x, int y)
 {
-	TSHIP *j = PrepareFreeShip();
+	TSHIP *j = gObj_CreateObject();
 	j->state = SH_ACTIVE;
 	j->i = 7;
 	j->x = x;
@@ -1477,7 +1436,7 @@ void DoSmoke()
 	smoke_counter = 60;
 
 	TSHIP *i = &Ships[0];
-	TSHIP *j = PrepareFreeShip();
+	TSHIP *j = gObj_CreateObject();
 
 	j->state = SH_ACTIVE;
 	j->i = 46;
@@ -1606,7 +1565,7 @@ _random_move_ai:
 			i->dx = 1;
 
 			// spawn a new enemy
-			TSHIP *j = PrepareFreeShip();
+			TSHIP *j = gObj_CreateObject();
 			j->state = SH_ACTIVE;
 			j->i = 34;
 			j->x = i->x;
@@ -1656,7 +1615,7 @@ _random_move_ai:
 		}
 
 		if ((RandomInt() & 255) > 252) {
-			TSHIP *j = PrepareFreeShip();
+			TSHIP *j = gObj_CreateObject();
 			if (j->state == SH_DEAD) {
 				j->state = SH_ACTIVE;
 				j->i = 43;
@@ -2066,7 +2025,7 @@ _random_move_ai:
 
 						// now i is invalid, because InitNewScreen reenables enemies
 						// spawn new elevator
-						i = PrepareFreeShip();
+						i = gObj_CreateObject();
 						i->state = SH_ACTIVE;
 						i->i = 21;
 						i->x = Ships[1].x - 4;
@@ -2168,24 +2127,6 @@ void InitShip()
 	Ships[0].cur_frame = ((game_level & 1) == 0 ? Ships[0].max_frame : Ships[0].min_frame);
 	Ships[0].anim_speed = 1;
 	Ships[0].anim_speed_cnt = 1;
-}
-
-int GetFreeEnemyIndex()
-{
-	for (int i = 2; i <= SHIPS_NUMBER-1; i++) {
-		if (Ships[i].state == SH_DEAD)
-			return i; // and ai_type should be zero!
-	}
-
-	return SHIPS_NUMBER-1;
-}
-
-TSHIP *PrepareFreeShip()
-{
-	TSHIP *ship = Ships + GetFreeEnemyIndex();
-	memset(ship, 0, sizeof(TSHIP));
-
-	return ship;
 }
 
 void BestPositionInGarage(TSHIP *ship, int *x, int *y)
@@ -2316,7 +2257,7 @@ void InitEnemies()
 				continue;
 		}
 
-		TSHIP *en = PrepareFreeShip();
+		TSHIP *en = gObj_CreateObject();
 
 		en->state = SH_ACTIVE;
 		en->i = object->index;
@@ -2338,7 +2279,7 @@ void InitEnemies()
 			if (iShip != -1) {
 				// Find which type of the ship is supposed to be here,
 				// create the ship in the best position inside it.
-				TSHIP *ship = PrepareFreeShip();
+				TSHIP *ship = gObj_CreateObject();
 				ship->state = SH_ACTIVE;
 				ship->i = iShip;
 				ship->ai_type = AI_SPARE_SHIP;
