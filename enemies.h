@@ -74,9 +74,12 @@ typedef struct {
 	};
 } TSHIP;
 
+/* FIXME: Make this local to enemies.c in future */
 #define SHIPS_NUMBER 32
-
 extern TSHIP Ships[SHIPS_NUMBER];
+
+TSHIP *gObj_Base();
+TSHIP *gObj_Ship();
 
 TSHIP *gObj_CreateObject();
 void gObj_DestroyObject(TSHIP *i);

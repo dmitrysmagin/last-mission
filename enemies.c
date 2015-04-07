@@ -16,6 +16,9 @@
 
 TSHIP Ships[SHIPS_NUMBER];
 
+TSHIP *gObj_Ship() { return &Ships[0]; }
+TSHIP *gObj_Base() { return &Ships[1]; }
+
 static int GetFreeEnemyIndex()
 {
 	for (int i = 2; i < SHIPS_NUMBER; i++) {
