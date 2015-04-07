@@ -1759,35 +1759,34 @@ _random_move_ai:
 		    (ship->y + h < i->y + GARAGE_HEIGHT)) {
 			// Player ship is inside the garage, lets
 			// change the ship if possible.
-			TSHIP *r = NULL;
-			for (int n = 2; n < SHIPS_NUMBER; ++n)
-				if (Ships[n].ai_type == AI_SPARE_SHIP &&
-				    Ships[n].state == SH_ACTIVE) {
-					r = Ships + n;
-					break;
-				}
+			TSHIP *spare = gObj_First(2);
 
-			if (r) {
+			for (; spare; spare = gObj_Next()) {
+				if (spare->ai_type == AI_SPARE_SHIP)
+					break;
+			}
+
+			if (spare) {
 				// Swap data of the player ship and
 				// the spare ship.
 				/* FIXME: Rework this ugly code */
 				TSHIP tmp;
 				tmp = *ship;
-				*ship = *r;
-				*r = tmp;
+				*ship = *spare;
+				*spare = tmp;
 
 				TSHIP *garage = (TSHIP *)ship->garage;
 
 				garage->garage_inactive = 1;
 
-				SetGarageShipIndex(Ships[f].i, r->i);
+				SetGarageShipIndex(i->i, spare->i);
 				SetGarageShipIndex(garage->i, -1);
 
 				ship->ai_type = 0;
 				ship->garage = NULL;
 
-				r->ai_type = AI_SPARE_SHIP;
-				r->garage = (void *)i;
+				spare->ai_type = AI_SPARE_SHIP;
+				spare->garage = (void *)i;
 
 				// restore HP
 				game->health = 3;
@@ -2684,51 +2683,54 @@ void BlitBfg()
 
 void BlitEnemies()
 {
-	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
-		if (Ships[i].ai_type == AI_GARAGE) {
+	TSHIP *gobj = gObj_First(0);
+
+	for (; gobj; gobj = gObj_Next()) {
+		if (gobj->ai_type == AI_GARAGE) {
 #ifdef _DEBUG
 			DrawRect(
-				Ships[i].x, Ships[i].y,
+				gobj->x, gobj->y,
 				GARAGE_WIDTH, GARAGE_HEIGHT,
-				Ships[i].garage_inactive ? 10 : 28);
+				gobj->garage_inactive ? 10 : 28);
 #endif
-		} else if (Ships[i].ai_type == AI_HIDDEN_AREA_ACCESS) {
+		} else if (gobj->ai_type == AI_HIDDEN_AREA_ACCESS) {
 #ifdef _DEBUG
-			if (Ships[i].state == SH_ACTIVE) {
+			if (gobj->state == SH_ACTIVE) {
 				DrawRect(
-					Ships[i].x, Ships[i].y,
-					Ships[i].dx, Ships[i].dy,
+					gobj->x, gobj->y,
+					gobj->dx, gobj->dy,
 					10);
 			}
 #endif
-		} else if (Ships[i].state != SH_DEAD && Ships[i].ai_type != AI_BRIDGE) {
-			PutSpriteI(Ships[i].x, Ships[i].y, Ships[i].i, Ships[i].cur_frame);
+		} else if (gobj->state != SH_DEAD && gobj->ai_type != AI_BRIDGE) {
+			PutSpriteI(gobj->x, gobj->y, gobj->i, gobj->cur_frame);
 		}
 	}
 }
 
 void BlitEnemyOutlines(WORLD *world)
 {
+	TSHIP *gobj = gObj_First(0);
 	unsigned int shadow = (world->room + ship_cur_screen)->shadow;
 
-	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
-		if (Ships[i].ai_type == AI_BRIDGE && !player_attached)
+	for (; gobj; gobj = gObj_Next()) {
+		if (gobj->ai_type == AI_BRIDGE && !player_attached)
 			continue;
 
-		if (Ships[i].state == SH_DEAD ||
-			Ships[i].ai_type == AI_EXPLOSION ||
-			Ships[i].ai_type == AI_GARAGE ||
-			Ships[i].ai_type == AI_SMOKE ||
-			Ships[i].ai_type == AI_SHOT ||
-			Ships[i].ai_type == AI_BFG_SHOT ||
-			Ships[i].ai_type == AI_HIDDEN_AREA_ACCESS)
+		if (gobj->state == SH_DEAD ||
+			gobj->ai_type == AI_EXPLOSION ||
+			gobj->ai_type == AI_GARAGE ||
+			gobj->ai_type == AI_SMOKE ||
+			gobj->ai_type == AI_SHOT ||
+			gobj->ai_type == AI_BFG_SHOT ||
+			gobj->ai_type == AI_HIDDEN_AREA_ACCESS)
 			continue;
 
-		if ((Ships[i].ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
-			Ships[i].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL) && Ships[i].i != 11)
+		if ((gobj->ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
+			gobj->ai_type == AI_ELECTRIC_SPARKLE_VERTICAL) && gobj->i != 11)
 		   continue;
 
-		PutSpriteS(Ships[i].x, Ships[i].y, Ships[i].i, Ships[i].cur_frame, shadow);
+		PutSpriteS(gobj->x, gobj->y, gobj->i, gobj->cur_frame, shadow);
 	}
 }
 
@@ -2806,16 +2808,18 @@ void CastLights()
 
 void BlitNonAmbientEnemies()
 {
-	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
-		if (Ships[i].state != SH_DEAD &&
-		    Ships[i].ai_type != AI_BRIDGE &&
-		    Ships[i].ai_type != AI_ELECTRIC_SPARKLE_HORIZONTAL &&
-		    Ships[i].ai_type != AI_ELECTRIC_SPARKLE_VERTICAL &&
-		    Ships[i].ai_type != AI_SMOKE &&
-		    Ships[i].ai_type != AI_GARAGE &&
-		    Ships[i].ai_type != AI_HIDDEN_AREA_ACCESS &&
-		    Ships[i].ai_type != AI_EXPLOSION)
-			PutSpriteI(Ships[i].x, Ships[i].y, Ships[i].i, Ships[i].cur_frame);
+	TSHIP *gobj = gObj_First(0);
+
+	for (; gobj; gobj = gObj_Next()) {
+		if (gobj->state != SH_DEAD &&
+		    gobj->ai_type != AI_BRIDGE &&
+		    gobj->ai_type != AI_ELECTRIC_SPARKLE_HORIZONTAL &&
+		    gobj->ai_type != AI_ELECTRIC_SPARKLE_VERTICAL &&
+		    gobj->ai_type != AI_SMOKE &&
+		    gobj->ai_type != AI_GARAGE &&
+		    gobj->ai_type != AI_HIDDEN_AREA_ACCESS &&
+		    gobj->ai_type != AI_EXPLOSION)
+			PutSpriteI(gobj->x, gobj->y, gobj->i, gobj->cur_frame);
 	}
 }
 

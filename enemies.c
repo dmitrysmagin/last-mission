@@ -19,6 +19,32 @@ TSHIP Ships[SHIPS_NUMBER];
 TSHIP *gObj_Ship() { return &Ships[0]; }
 TSHIP *gObj_Base() { return &Ships[1]; }
 
+static int search_index;
+
+/* FIXME: Later remove the parameter */
+TSHIP *gObj_First(int i)
+{
+	search_index = i; /* should be the start of gobj list */
+
+	for (; search_index < SHIPS_NUMBER; search_index++) {
+		if (Ships[search_index].state == SH_ACTIVE)
+			return &Ships[search_index];
+		search_index++;
+	}
+
+	return NULL;
+}
+
+TSHIP *gObj_Next()
+{
+	for (; ++search_index < SHIPS_NUMBER; ) {
+		if (Ships[search_index].state == SH_ACTIVE)
+			return &Ships[search_index];
+	}
+
+	return NULL;
+}
+
 static int GetFreeEnemyIndex()
 {
 	for (int i = 2; i < SHIPS_NUMBER; i++) {
