@@ -238,12 +238,6 @@ int ShipBaseOffset()
 	return (xb - xs) / 2;
 }
 
-/* FIXME: Rework this */
-int IndexOf(TSHIP *ship)
-{
-	return ship - &Ships[0];
-}
-
 int FacingLeft(TSHIP *i)
 {
 	return i->cur_frame == i->max_frame;
@@ -1782,18 +1776,18 @@ _random_move_ai:
 				*ship = *r;
 				*r = tmp;
 
-				int otherGarage = ship->garage_index;
+				TSHIP *garage = (TSHIP *)ship->garage;
 
-				Ships[otherGarage].garage_inactive = 1;
+				garage->garage_inactive = 1;
 
 				SetGarageShipIndex(Ships[f].i, r->i);
-				SetGarageShipIndex(Ships[otherGarage].i, -1);
+				SetGarageShipIndex(garage->i, -1);
 
 				ship->ai_type = 0;
-				ship->garage_index = -1;
+				ship->garage = NULL;
 
 				r->ai_type = AI_SPARE_SHIP;
-				r->garage_index = f;
+				r->garage = (void *)i;
 
 				// restore HP
 				game->health = 3;
@@ -2137,12 +2131,12 @@ void BestPositionInGarage(TSHIP *ship, int *x, int *y)
 	int cxShip, cyShip;
 	GetCurrentSpriteDimensions(ship, &cxShip, &cyShip);
 
-	if (ship->garage_index < 0 || ship->garage_index >= SHIPS_NUMBER) {
+	if (ship->garage == NULL) {
 		// actually, should not happen.
 		*x = ship->x;
 		*y = ship->y;
 	} else {
-		TSHIP *garage = &Ships[ship->garage_index];
+		TSHIP *garage = (TSHIP *)ship->garage;
 		*x = garage->x + ((GARAGE_WIDTH - cxShip) >> 1);
 		*y = garage->y + ((GARAGE_HEIGHT - cyShip) >> 1);
 	}
@@ -2287,7 +2281,7 @@ void InitEnemies()
 				ship->state = SH_ACTIVE;
 				ship->i = iShip;
 				ship->ai_type = AI_SPARE_SHIP;
-				ship->garage_index = IndexOf(en);
+				ship->garage = (void *)en;
 
 				switch (iShip) {
 				case SHIP_TYPE_LASER:

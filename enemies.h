@@ -69,9 +69,10 @@ typedef struct {
 		int just_created; // used by AI_SHOT, AI_HOMING_SHOT and AI_BFG_SHOT
 		int ticks_passed; // used by AI_HOMING_SHOT
 		int garage_inactive; // used by AI_GARAGE
-		int garage_index; // used by AI_SPARE_SHIP
 		TEXPLOSION explosion; // used by AI_BONUS & AI_EXPLOSION
 	};
+
+	void *garage; /* FIXME: recursive TSHIP *garage; */
 } TSHIP;
 
 /* FIXME: Make this local to enemies.c in future */
