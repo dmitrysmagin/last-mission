@@ -905,8 +905,8 @@ void BlowUpEnemy(int i)
 		player_attached = 0;
 
 	// reactivate parent cannon
-	if (gobj->i == 34)
-		Ships[gobj->parent].dx = 0;
+	if (gobj->i == 34 && gobj->parent)
+		((TSHIP *)gobj->parent)->dx = 0;
 
 	// special procedures for breakable walls
 	if (gobj->i == 6) {
@@ -1568,7 +1568,7 @@ _random_move_ai:
 			j->anim_speed_cnt = j->anim_speed;
 			j->max_frame = 3;
 			j->ai_type = AI_KAMIKADZE;
-			j->parent = f;
+			j->parent = (void *)i;
 			PlaySoundEffect(SND_CANNON_SHOOT);
 		}
 		break;
@@ -1634,7 +1634,7 @@ _random_move_ai:
 				j->anim_speed = 4;
 				j->anim_speed_cnt = j->anim_speed;
 				j->ai_type = AI_BULLET;
-				j->parent = f;
+				j->parent = (void *)i;
 			}
 		}
 		break;
@@ -1832,9 +1832,9 @@ _random_move_ai:
 		break;
 
 	case AI_BULLET: // bullet
-
 		// random exploding
-		if (i->y + 16 < Ships[i->parent].y && (RandomInt() & 63) == 1) {
+		if (i->parent)
+		if (i->y + 16 < ((TSHIP *)i->parent)->y && (RandomInt() & 63) == 1) {
 			BlowUpEnemy(f);
 			return;
 		}

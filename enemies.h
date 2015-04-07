@@ -65,13 +65,13 @@ typedef struct {
 
 	// AI-type specific data. Just to make code a bit more readable.
 	union {
-		int parent; // used by something shot by a cannon
 		int just_created; // used by AI_SHOT, AI_HOMING_SHOT and AI_BFG_SHOT
 		int ticks_passed; // used by AI_HOMING_SHOT
 		int garage_inactive; // used by AI_GARAGE
 		TEXPLOSION explosion; // used by AI_BONUS & AI_EXPLOSION
 	};
 
+	void *parent; /* Used by AI_CEILING_CANNON and AI_CANNON */
 	void *garage; /* FIXME: recursive TSHIP *garage; */
 } TSHIP;
 
