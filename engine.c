@@ -29,7 +29,7 @@
 //#define GOD_MODE
 
 unsigned char ChangeScreen(int flag);
-int IsHurt(int x, int y, int index, int index2);
+int IsHurt(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
 unsigned char IsTouch(int x, int y, int index);
 int UpdateFuel();
 void DoShip();
@@ -299,47 +299,44 @@ int IsOverlap(TSHIP *i, TSHIP *j)
 	return 0;
 }
 
-int IsHurt(int x, int y, int index, int index2)
+int IsHurt(int x, int y, TSHIP *gobj1, TSHIP *gobj2)
 {
 	int xs, ys, xs2, ys2;
 
-	TSHIP *i = &Ships[index];
-	TSHIP *j = &Ships[index2];
-
-	if (index == 1 && ship_cur_screen != base_cur_screen)
+	if (gobj1 == gObj_Base() && ship_cur_screen != base_cur_screen)
 		return 0;
 
-	if (j->state == SH_DEAD)
+	if (gobj2->state == SH_DEAD)
 		return 0;
 
 	// ignore not-dangerous objects:
 	// bridge, smoke, explosions and elevator
-	if (j->ai_type == AI_BRIDGE ||
-	    j->ai_type == AI_EXPLOSION ||
-	    j->ai_type == AI_SMOKE ||
-	    j->ai_type == AI_ELEVATOR ||
-	    j->ai_type == AI_GARAGE)
+	if (gobj2->ai_type == AI_BRIDGE ||
+	    gobj2->ai_type == AI_EXPLOSION ||
+	    gobj2->ai_type == AI_SMOKE ||
+	    gobj2->ai_type == AI_ELEVATOR ||
+	    gobj2->ai_type == AI_GARAGE)
 		return 0;
 
-	GetCurrentSpriteDimensions(i, &xs, &ys);
-	GetCurrentSpriteDimensions(j, &xs2, &ys2);
+	GetCurrentSpriteDimensions(gobj1, &xs, &ys);
+	GetCurrentSpriteDimensions(gobj2, &xs2, &ys2);
 
 	ys += y;
 	xs += x;
 
-	ys2 += j->y;
-	xs2 += j->x;
+	ys2 += gobj2->y;
+	xs2 += gobj2->x;
 
 	// Return 1 if rectangles do intersect.
-	if (x < j->x)
-		if (xs > j->x)
+	if (x < gobj2->x)
+		if (xs > gobj2->x)
 			goto _wdw2;
 
-	if (x >= j->x) {
+	if (x >= gobj2->x) {
 		if (xs2 > x) {
 		_wdw2:
-			if ((y < j->y && ys > j->y) ||
-			    (y >= j->y && ys2 > y))
+			if ((y < gobj2->y && ys > gobj2->y) ||
+			    (y >= gobj2->y && ys2 > y))
 				return 1;
 		}
 	}
@@ -401,12 +398,12 @@ void HandleShipsContact(int i, int j)
 unsigned char IsTouch(int x, int y, int index)
 {
 	int xs, ys;
-	TSHIP *i = &Ships[index];
+	TSHIP *gobj = &Ships[index];
 
 	if (x < 0 || y < 0)
 		return 1;
 
-	GetCurrentSpriteDimensions(i, &xs, &ys);
+	GetCurrentSpriteDimensions(gobj, &xs, &ys);
 
 	ys += y;
 	xs += x;
@@ -419,7 +416,7 @@ unsigned char IsTouch(int x, int y, int index)
 		for (int f = 0; f < SHIPS_NUMBER; f++) {
 			if (f != index && Ships[f].state != SH_DEAD) {
 				// don't compare with itself or with dead one!
-				if (IsHurt(x, y, index, f)) {
+				if (IsHurt(x, y, gobj, &Ships[f])) {
 					HandleShipsContact(index, f);
 
 					return 1;
@@ -448,7 +445,7 @@ unsigned char IsTouch(int x, int y, int index)
 					break;
 			}
 
-			if (IsHurt(x, y, index, f)) {
+			if (IsHurt(x, y, gobj, &Ships[f])) {
 				HandleShipsContact(f, index);
 
 				if (Ships[index].ai_type == AI_BFG_SHOT)
@@ -469,7 +466,7 @@ unsigned char IsTouch(int x, int y, int index)
 			// All tiles are solid.
 			if (index == 0 && b >= 246) {
 				// ship dies from touching certain tiles
-				BlowUpEnemy(i);
+				BlowUpEnemy(gobj);
 			}
 
 			return 1;
@@ -1712,7 +1709,7 @@ _random_move_ai:
 			}
 
 			i->state = SH_DEAD;
-			if (f == 0)
+			if (i == ship)
 				RestartLevel();
 
 			return;
@@ -1926,28 +1923,26 @@ _random_move_ai:
 			i->dx = -2;
 
 		// Calculate hit objects.
-		{
-			for (int n = 0; n < MAX_BFG_TARGETS; ++n)
-				BfgTargets[n].hit_now = 0;
+		for (int n = 0; n < MAX_BFG_TARGETS; ++n)
+			BfgTargets[n].hit_now = 0;
 
-			for (int n = 2; n < SHIPS_NUMBER; ++n) {
-				if (Ships[n].ai_type == AI_KAMIKADZE ||
-				    Ships[n].ai_type == AI_RANDOM_MOVE) {
-					if (ShipsDistance(i, Ships + n) < BFG_KILL_DISTANCE) {
-						AddBfgTarget(n, f);
-					}
+		for (int n = 2; n < SHIPS_NUMBER; ++n) {
+			if (Ships[n].ai_type == AI_KAMIKADZE ||
+			    Ships[n].ai_type == AI_RANDOM_MOVE) {
+				if (ShipsDistance(i, Ships + n) < BFG_KILL_DISTANCE) {
+					AddBfgTarget(n, f);
 				}
 			}
+		}
 
-			for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
-				if (BfgTargets[n].hit_count) {
-					if (BfgTargets[n].hit_now) {
-						if (BfgTargets[n].hit_count > BFG_KILL_TIME) {
-							BlowUpEnemy(&Ships[BfgTargets[n].ship]);
-						}
-					} else {
-						memset(BfgTargets + n, 0, sizeof(TBFGTARGET));
+		for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
+			if (BfgTargets[n].hit_count) {
+				if (BfgTargets[n].hit_now) {
+					if (BfgTargets[n].hit_count > BFG_KILL_TIME) {
+						BlowUpEnemy(&Ships[BfgTargets[n].ship]);
 					}
+				} else {
+					memset(BfgTargets + n, 0, sizeof(TBFGTARGET));
 				}
 			}
 		}
