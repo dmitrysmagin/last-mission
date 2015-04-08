@@ -30,7 +30,7 @@
 
 unsigned char ChangeScreen(int flag);
 int IsHurt(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
-unsigned char IsTouch(int x, int y, int index);
+unsigned char IsTouch(int x, int y, TSHIP *gobj);
 int UpdateFuel();
 void DoShip();
 void ReEnableBase();
@@ -344,61 +344,66 @@ int IsHurt(int x, int y, TSHIP *gobj1, TSHIP *gobj2)
 	return 0;
 }
 
-void HandleShipsContact(int i, int j)
+void HandleShipsContact(TSHIP *gobj1, TSHIP *gobj2)
 {
-	if (i < 2 && j < 2) {
-		// Both objects are player controlled.
-		return;
-	}
+	int i, j; /* FIXME: 1 if controlled object */
 
-	if (i > 1 && j > 1) {
-		// Bot objects are NPC.
-		if (Ships[i].ai_type != AI_SHOT &&
-		    Ships[j].ai_type != AI_SHOT &&
-		    Ships[i].ai_type != AI_HOMING_SHOT &&
-		    Ships[j].ai_type != AI_HOMING_SHOT &&
-		    Ships[i].ai_type != AI_BFG_SHOT &&
-		    Ships[j].ai_type != AI_BFG_SHOT) {
+	i = (gobj1 == gObj_Ship() || gobj1 == gObj_Base()) ? 1 : 0;
+	j = (gobj2 == gObj_Ship() || gobj2 == gObj_Base()) ? 1 : 0;
+
+	// i == 1, j == 1
+	/* Both objects are player controlled. */
+	if (i && j)
+		return;
+
+	// i == 0, j == 0
+	/* Both objects are NPC. */
+	if (!i && !j) {
+		if (gobj1->ai_type != AI_SHOT &&
+		    gobj2->ai_type != AI_SHOT &&
+		    gobj1->ai_type != AI_HOMING_SHOT &&
+		    gobj2->ai_type != AI_HOMING_SHOT &&
+		    gobj1->ai_type != AI_BFG_SHOT &&
+		    gobj2->ai_type != AI_BFG_SHOT) {
 			return;
 		}
 	}
 
-	if ((Ships[i].ai_type == AI_SPARE_SHIP && j < 2) ||
-		(Ships[j].ai_type == AI_SPARE_SHIP && i < 2)) {
+	if ((gobj1->ai_type == AI_SPARE_SHIP && j) || // j == 1
+		(gobj2->ai_type == AI_SPARE_SHIP && i)) { // i == 1
 		return;
 	}
 
-	if (Ships[i].ai_type == AI_BFG_SHOT) {
-		BlowUpEnemy(&Ships[j]);
-	} else if (Ships[j].ai_type == AI_BFG_SHOT) {
-		BlowUpEnemy(&Ships[i]);
-	} else if (Ships[i].ai_type == AI_BONUS) {
-		if (j > 1) {
-			// Bonus hit by a bullet. Swap bonus.
-			Ships[i].explosion.regenerate_bonus = 1;
+	if (gobj1->ai_type == AI_BFG_SHOT) {
+		BlowUpEnemy(gobj2);
+	} else if (gobj2->ai_type == AI_BFG_SHOT) {
+		BlowUpEnemy(gobj1);
+	} else if (gobj1->ai_type == AI_BONUS) {
+		/* Bonus hit by a bullet. Swap bonus. */
+		if (!j) { // j == 0
+			gobj1->explosion.regenerate_bonus = 1;
 		}
 
-		BlowUpEnemy(&Ships[i]);
-	} else if (Ships[j].ai_type == AI_BONUS) {
-		if (i > 1) {
-			// Bonus hit by a bullet. Swap bonus.
-			Ships[i].explosion.regenerate_bonus = 1;
+		BlowUpEnemy(gobj1);
+	} else if (gobj2->ai_type == AI_BONUS) {
+		/* Bonus hit by a bullet. Swap bonus. */
+		if (!i) { // i == 0
+			gobj1->explosion.regenerate_bonus = 1;
 		}
 
-		BlowUpEnemy(&Ships[j]);
+		BlowUpEnemy(gobj2);
 	} else {
-		if (j > 1 || game->easy_mode || i < 2)
-			BlowUpEnemy(&Ships[i]);
+		if (!j || game->easy_mode || i) // i == 1, j == 0
+			BlowUpEnemy(gobj1);
 
-		if (i > 1 || game->easy_mode || j < 2)
-			BlowUpEnemy(&Ships[j]);
+		if (!i || game->easy_mode || j) // i == 0, j == 1
+			BlowUpEnemy(gobj2);
 	}
 }
 
-unsigned char IsTouch(int x, int y, int index)
+unsigned char IsTouch(int x, int y, TSHIP *gobj)
 {
 	int xs, ys;
-	TSHIP *gobj = &Ships[index];
 
 	if (x < 0 || y < 0)
 		return 1;
@@ -411,48 +416,35 @@ unsigned char IsTouch(int x, int y, int index)
 	if (xs > SCREEN_WIDTH || ys > ACTION_SCREEN_HEIGHT)
 		return 1;
 
-	if (index <= 1) {
-		// Player ship or base.
-		for (int f = 0; f < SHIPS_NUMBER; f++) {
-			if (f != index && Ships[f].state != SH_DEAD) {
-				// don't compare with itself or with dead one!
-				if (IsHurt(x, y, gobj, &Ships[f])) {
-					HandleShipsContact(index, f);
+	TSHIP *en = gObj_First(0);
 
-					return 1;
-				}
-			}
+	for (; en; en = gObj_Next()) {
+		if (en == gobj || en->state == SH_DEAD) {
+			// don't compare with itself or with dead one!
+			continue;
 		}
-	} else {
-		// Any other ship (non player-controlled).
-		for (int f = 0; f < SHIPS_NUMBER; f++) {
-			if (f == index || Ships[f].state == SH_DEAD) {
-				// don't compare with itself or with dead one!
-				continue;
-			}
 
-			// ignore sparkles
-			if (Ships[f].ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
-			    Ships[f].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
-			    Ships[f].ai_type == AI_HOMING_MISSLE ||
-			    Ships[f].ai_type == AI_BRIDGE ||
-			    Ships[f].ai_type == AI_BULLET)
-				continue;
+		// ignore sparkles
+		if (en->ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
+		    en->ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
+		    en->ai_type == AI_HOMING_MISSLE ||
+		    en->ai_type == AI_BRIDGE ||
+		    en->ai_type == AI_BULLET)
+			continue;
 
-			if (Ships[index].ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
-			    Ships[index].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL) {
-				if (f > 1)
-					break;
-			}
+		if (gobj->ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
+		    gobj->ai_type == AI_ELECTRIC_SPARKLE_VERTICAL) {
+			if (en != gObj_Ship() && en != gObj_Base())
+				break;
+		}
 
-			if (IsHurt(x, y, gobj, &Ships[f])) {
-				HandleShipsContact(f, index);
+		if (IsHurt(x, y, gobj, en)) {
+			HandleShipsContact(gobj, en);
 
-				if (Ships[index].ai_type == AI_BFG_SHOT)
-					return 0;
+			if (gobj->ai_type == AI_BFG_SHOT)
+				return 0;
 
-				return 1;
-			}
+			return 1;
 		}
 	}
 
@@ -464,7 +456,7 @@ unsigned char IsTouch(int x, int y, int index)
 				continue;
 
 			// All tiles are solid.
-			if (index == 0 && b >= 246) {
+			if (gobj == gObj_Ship() && b >= 246) {
 				// ship dies from touching certain tiles
 				BlowUpEnemy(gobj);
 			}
@@ -543,7 +535,7 @@ void DoShip()
 
 	if (GKeys[KEY_RIGHT] == 1) {
 		if (FacingRight(ship)) {
-			if (IsTouch(ship->x + 2, ship->y, 0) == 0) {
+			if (IsTouch(ship->x + 2, ship->y, ship) == 0) {
 				ship->x += 2;
 			} else {
 				if (ship->x == MaxRightPos(ship) && ChangeScreen(F_RIGHT) == 1) {
@@ -563,7 +555,7 @@ void DoShip()
 
 	if (GKeys[KEY_LEFT] == 1) {
 		if (FacingLeft(ship)) {
-			if (IsTouch(ship->x - 2, ship->y, 0) == 0) {
+			if (IsTouch(ship->x - 2, ship->y, ship) == 0) {
 				ship->x -= 2;
 			} else {
 				if (ship->x == 0 && ChangeScreen(F_LEFT) == 1) {
@@ -587,7 +579,7 @@ void DoShip()
 		else
 			dy = 2;
 
-		if (IsTouch(ship->x, ship->y - dy, 0) == 0) {
+		if (IsTouch(ship->x, ship->y - dy, ship) == 0) {
 			ship->y -= dy;
 		} else {
 			if (ship->y == 0 && ChangeScreen(F_UP) == 1) {
@@ -602,7 +594,7 @@ void DoShip()
 			else
 				dy = 2;
 
-			if (IsTouch(ship->x, ship->y + dy, 0) == 0) {
+			if (IsTouch(ship->x, ship->y + dy, ship) == 0) {
 				ship->y += dy;
 			} else {
 				if (ship->y == MaxBottomPos(ship) && ChangeScreen(F_DOWN) == 1) {
@@ -612,7 +604,7 @@ void DoShip()
 			}
 		} else {
 			if (fallflag == 0) {
-				if (IsTouch(ship->x, ship->y + 1, 0) == 0)
+				if (IsTouch(ship->x, ship->y + 1, ship) == 0)
 					ship->y += 1;
 
 				fallflag = 1;
@@ -678,7 +670,7 @@ void DoBase()
 				base->cur_frame ^= 1;
 				playMoveSound = 1;
 
-				if (IsTouch(ship->x + 2, ship->y, 0) + IsTouch(base->x + 2, base->y, 1) == 0) {
+				if (IsTouch(ship->x + 2, ship->y, ship) + IsTouch(base->x + 2, base->y, base) == 0) {
 					if (GetTileI((base->x + 40) >> 3, (base->y + 16) >> 3)) {
 						ship->x += 2;
 						base->x += 2;
@@ -706,7 +698,7 @@ void DoBase()
 				base->cur_frame ^= 1;
 				playMoveSound = 1;
 
-				if (IsTouch(ship->x - 2, ship->y, 0) + IsTouch(base->x - 2, base->y, 1) == 0) {
+				if (IsTouch(ship->x - 2, ship->y, ship) + IsTouch(base->x - 2, base->y, base) == 0) {
 					if (GetTileI((base->x - 2) >> 3, (base->y + 16) >> 3)) {
 						ship->x -= 2;
 						base->x -= 2;
@@ -1481,12 +1473,12 @@ _random_move_ai:
 				i->ai_update_cnt -= 1;
 			}
 		_optimize1:
-			if (IsTouch(i->x + i->dx, i->y, f) == 0)
+			if (IsTouch(i->x + i->dx, i->y, i) == 0)
 				i->x += i->dx;
 			else
 				i->ai_update_cnt = 0;
 
-			if (IsTouch(i->x, i->y + i->dy, f) == 0)
+			if (IsTouch(i->x, i->y + i->dy, i) == 0)
 				i->y += i->dy;
 			else
 				i->ai_update_cnt = 0;
@@ -1533,7 +1525,7 @@ _random_move_ai:
 		if (UpdateMoveSpeed(i) == 1) {
 			if (i->dy == 0)
 				i->dy = 1;
-			if (IsTouch(i->x, i->y + i->dy, f) == 0)
+			if (IsTouch(i->x, i->y + i->dy, i) == 0)
 				i->y += i->dy;
 			else
 				i->dy = -i->dy;
@@ -1567,7 +1559,7 @@ _random_move_ai:
 
 		if (i->x > 0) {
 			i->x -= 2;
-			IsTouch(i->x, i->y, f);
+			IsTouch(i->x, i->y, i);
 			if (i->x < ship->x)
 				return;
 
@@ -1634,7 +1626,7 @@ _random_move_ai:
 		if (UpdateMoveSpeed(i) == 1) {
 			if (i->dx == 0)
 				i->dx = 1;
-			if (IsTouch(i->x + i->dx, i->y, f) == 0)
+			if (IsTouch(i->x + i->dx, i->y, i) == 0)
 				i->x += i->dx;
 			else
 				i->dx = -i->dx;
@@ -1841,7 +1833,7 @@ _random_move_ai:
 
 	case AI_HOMING_SHOT: // missle shot by player.
 		if (i->just_created == 1) {
-			if (IsTouch(i->x, i->y, f)) {
+			if (IsTouch(i->x, i->y, i)) {
 				BlowUpEnemy(i);
 				return;
 			}
@@ -1903,7 +1895,7 @@ _random_move_ai:
 		    i->x + i->dx >= SCREEN_WIDTH ||
 		    i->y < 0 ||
 		    i->y >= SCREEN_HEIGHT ||*/
-		    IsTouch(i->x, i->y, f)) {
+		    IsTouch(i->x, i->y, i)) {
 			i->state = SH_DEAD;
 			return;
 		}
@@ -1950,7 +1942,7 @@ _random_move_ai:
 	case AI_SHOT: // bullet shot by a player
 		if (i->just_created) {
 			i->just_created = 0;
-			if (IsTouch(i->x, i->y, f)) {
+			if (IsTouch(i->x, i->y, i)) {
 				BlowUpEnemy(i);
 				return;
 			}
@@ -1963,7 +1955,7 @@ _random_move_ai:
 		    i->x + i->dx >= SCREEN_WIDTH ||
 		    i->y < 0 ||
 		    i->y >= SCREEN_HEIGHT ||
-		    IsTouch(i->x, i->y, f)) {
+		    IsTouch(i->x, i->y, i)) {
 			BlowUpEnemy(i);
 			return;
 		}
