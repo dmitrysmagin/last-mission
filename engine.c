@@ -415,10 +415,9 @@ unsigned char IsTouch(int x, int y, TSHIP *gobj)
 	if (xs > SCREEN_WIDTH || ys > ACTION_SCREEN_HEIGHT)
 		return 1;
 
-	int iter;
-	TSHIP *en = gObj_First(0, &iter);
+	TSHIP *en = gObj_First(0);
 
-	for (; en; en = gObj_Next(&iter)) {
+	for (; en; en = gObj_Next(en)) {
 		if (en == gobj || en->state == SH_DEAD) {
 			// don't compare with itself or with dead one!
 			continue;
@@ -918,10 +917,9 @@ void BlowUpEnemy(TSHIP *gobj)
 		// this ship is the last one on the screen.
 		if (cur_screen_bonus) {
 			int alive_ship = 0;
-			int iter;
-			TSHIP *last_alive = gObj_First(2, &iter);
+			TSHIP *last_alive = gObj_First(2);
 
-			for (; last_alive; last_alive = gObj_Next(&iter)) {
+			for (; last_alive; last_alive = gObj_Next(last_alive)) {
 				if (last_alive != gobj &&
 				    last_alive->state == SH_ACTIVE &&
 				    (last_alive->ai_type == AI_RANDOM_MOVE ||
@@ -988,10 +986,9 @@ int IsLaserHit2(int x_start, int x_end, int y)
 	if (GetTileI(x_end >> 3, y >> 3))
 		return_value = 1;
 
-	int iter;
-	TSHIP *gobj = gObj_First(1, &iter);
+	TSHIP *gobj = gObj_First(1);
 
-	for (; gobj; gobj = gObj_Next(&iter)) {
+	for (; gobj; gobj = gObj_Next(gobj)) {
 		if (gobj->state != SH_DEAD) {
 			// exclude non-hittable objects
 			if (gobj->ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
@@ -1737,10 +1734,9 @@ _random_move_ai:
 		    (ship->y + h < gobj->y + GARAGE_HEIGHT)) {
 			// Player ship is inside the garage, lets
 			// change the ship if possible.
-			int iter;
-			TSHIP *spare = gObj_First(2, &iter);
+			TSHIP *spare = gObj_First(2);
 
-			for (; spare; spare = gObj_Next(&iter)) {
+			for (; spare; spare = gObj_Next(spare)) {
 				if (spare->ai_type == AI_SPARE_SHIP)
 					break;
 			}
@@ -2608,9 +2604,8 @@ void DoWinScreen()
 
 		DoShip();
 
-		int iter;
-		TSHIP *gobj = gObj_First(2, &iter);
-		for (; gobj; gobj = gObj_Next(&iter))
+		TSHIP *gobj = gObj_First(2);
+		for (; gobj; gobj = gObj_Next(gobj))
 			UpdateAnimation(gobj);
 
 		if (!frame_skip)
@@ -2662,10 +2657,9 @@ void BlitBfg()
 
 void BlitEnemies()
 {
-	int iter;
-	TSHIP *gobj = gObj_First(0, &iter);
+	TSHIP *gobj = gObj_First(0);
 
-	for (; gobj; gobj = gObj_Next(&iter)) {
+	for (; gobj; gobj = gObj_Next(gobj)) {
 		if (gobj->ai_type == AI_GARAGE) {
 #ifdef _DEBUG
 			DrawRect(
@@ -2690,11 +2684,10 @@ void BlitEnemies()
 
 void BlitEnemyOutlines(WORLD *world)
 {
-	int iter;
-	TSHIP *gobj = gObj_First(0, &iter);
+	TSHIP *gobj = gObj_First(0);
 	unsigned int shadow = (world->room + ship_cur_screen)->shadow;
 
-	for (; gobj; gobj = gObj_Next(&iter)) {
+	for (; gobj; gobj = gObj_Next(gobj)) {
 		if (gobj->ai_type == AI_BRIDGE && !player_attached)
 			continue;
 
@@ -2789,10 +2782,9 @@ void CastLights()
 
 void BlitNonAmbientEnemies()
 {
-	int iter;
-	TSHIP *gobj = gObj_First(0, &iter);
+	TSHIP *gobj = gObj_First(0);
 
-	for (; gobj; gobj = gObj_Next(&iter)) {
+	for (; gobj; gobj = gObj_Next(gobj)) {
 		if (gobj->state != SH_DEAD &&
 		    gobj->ai_type != AI_BRIDGE &&
 		    gobj->ai_type != AI_ELECTRIC_SPARKLE_HORIZONTAL &&
@@ -2891,8 +2883,7 @@ void DoGame()
 		}
 
 		// do enemies
-		int iter;
-		for (TSHIP *gobj = gObj_First(2, &iter); gobj; gobj = gObj_Next(&iter))
+		for (TSHIP *gobj = gObj_First(2); gobj; gobj = gObj_Next(gobj))
 			DoEnemy(gobj);
 
 		DoShip();

@@ -20,23 +20,23 @@ TSHIP *gObj_Ship() { return &Ships[0]; }
 TSHIP *gObj_Base() { return &Ships[1]; }
 
 /* FIXME: Later remove the first parameter */
-TSHIP *gObj_First(int i, int *iterator)
+TSHIP *gObj_First(int i)
 {
-	*iterator = i; /* should be the start of gobj list */
+	TSHIP *obj = &Ships[i]; /* should be the start of gobj list */
 
-	for (; *iterator < SHIPS_NUMBER; (*iterator)++) {
-		if (Ships[*iterator].state == SH_ACTIVE)
-			return &Ships[*iterator];
+	for (; obj < &Ships[SHIPS_NUMBER]; obj++) {
+		if (obj->state == SH_ACTIVE)
+			return obj;
 	}
 
 	return NULL;
 }
 
-TSHIP *gObj_Next(int *iterator)
+TSHIP *gObj_Next(TSHIP *obj)
 {
-	for (; ++(*iterator) < SHIPS_NUMBER; ) {
-		if (Ships[*iterator].state == SH_ACTIVE)
-			return &Ships[*iterator];
+	for (; ++obj < &Ships[SHIPS_NUMBER]; ) {
+		if (obj->state == SH_ACTIVE)
+			return obj;
 	}
 
 	return NULL;
