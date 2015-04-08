@@ -43,7 +43,7 @@ void DoBFG();
 void DoRocketLauncher();
 int UpdateAnimation(TSHIP *gobj);
 int UpdateMoveSpeed(TSHIP *gobj);
-void DoEnemy(int f);
+void DoEnemy(TSHIP *gobj);
 void InitShip();
 void InitEnemies();
 void InitNewScreen();
@@ -502,7 +502,7 @@ void DoShip()
 
 
 	if (ship->ai_type == AI_EXPLOSION) {
-		DoEnemy(0);
+		DoEnemy(ship);
 
 		return;
 	}
@@ -656,7 +656,7 @@ void DoBase()
 
 	// if exploding
 	if (base->ai_type == AI_EXPLOSION) {
-		DoEnemy(1);
+		DoEnemy(base);
 
 		return;
 	}
@@ -1357,15 +1357,14 @@ int ShipsDistance(TSHIP *i, TSHIP *j)
 	return (int)sqrt((float)(x*x + y*y));
 }
 
-void AddBfgTarget(int index, int bfgIndex)
+void AddBfgTarget(int index, TSHIP *bfg)
 {
-	TSHIP *i = Ships + index;
-	TSHIP *bfg = Ships + bfgIndex;
+	TSHIP *gobj = Ships + index;
 
 	TBFGTARGET *t = NULL;
 	for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
 		if (BfgTargets[n].ship == index &&
-		    BfgTargets[n].ship_i == i->i) {
+		    BfgTargets[n].ship_i == gobj->i) {
 			t = &BfgTargets[n];
 			break;
 		} else if (!t && !BfgTargets[n].ship) {
@@ -1379,12 +1378,12 @@ void AddBfgTarget(int index, int bfgIndex)
 	++t->hit_count;
 	t->hit_now = 1;
 	t->ship = index;
-	t->ship_i = i->i;
+	t->ship_i = gobj->i;
 
 	t->xc = bfg->x + 5;
 	t->yc = bfg->y + 5;
-	t->xt = i->x + 8;
-	t->yt = i->y + 8;
+	t->xt = gobj->x + 8;
+	t->yt = gobj->y + 8;
 }
 
 void CreateWallExplosion(int x, int y)
@@ -1428,60 +1427,59 @@ void DoSmoke()
 	j->ai_type = AI_SMOKE;
 }
 
-void DoEnemy(int f)
+void DoEnemy(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
 	TSHIP *base = gObj_Base();
-	TSHIP *i = &Ships[f];
 
-	if (i->state == SH_DEAD)
+	if (gobj->state == SH_DEAD)
 		return;
 
 	// if main ship is exploding, freeze other enemies except bridge and garage
 	// it's not safe but ship dies after all and enemy data is reinitialized then
-	if (i != ship && ship->ai_type == AI_EXPLOSION) {
-		if(i->ai_type != AI_BRIDGE &&
-		   i->ai_type != AI_GARAGE &&
-		   i->ai_type != AI_HIDDEN_AREA_ACCESS &&
-		   i->ai_type != AI_SPARE_SHIP) {
-			i->ai_type = AI_STATIC; // don't affect ship itself
+	if (gobj != ship && ship->ai_type == AI_EXPLOSION) {
+		if(gobj->ai_type != AI_BRIDGE &&
+		   gobj->ai_type != AI_GARAGE &&
+		   gobj->ai_type != AI_HIDDEN_AREA_ACCESS &&
+		   gobj->ai_type != AI_SPARE_SHIP) {
+			gobj->ai_type = AI_STATIC; // don't affect ship itself
 		}
 	}
 
 	// do different ai types
-	switch (i->ai_type) {
+	switch (gobj->ai_type) {
 	case AI_STATIC: // breakable wall or non-moving enemy
-		UpdateAnimation(i);
+		UpdateAnimation(gobj);
 		break;
 
 	case AI_RANDOM_MOVE:
 _random_move_ai:
-		UpdateAnimation(i);
-		if (UpdateMoveSpeed(i) == 1) {
-			if (i->ai_update_cnt == 0) {
-				i->dx = RandomInt() & 3;
-				if (i->dx >= 2)
-					i->dx = -1;
+		UpdateAnimation(gobj);
+		if (UpdateMoveSpeed(gobj) == 1) {
+			if (gobj->ai_update_cnt == 0) {
+				gobj->dx = RandomInt() & 3;
+				if (gobj->dx >= 2)
+					gobj->dx = -1;
 
-				i->dy = RandomInt() & 3;
-				if (i->dy >= 2)
-					i->dy = -1;
+				gobj->dy = RandomInt() & 3;
+				if (gobj->dy >= 2)
+					gobj->dy = -1;
 
-				i->ai_update_cnt = RandomInt() & 0x1f;
-				if(i->ai_update_cnt < 15) i->ai_update_cnt = 15;
+				gobj->ai_update_cnt = RandomInt() & 0x1f;
+				if(gobj->ai_update_cnt < 15) gobj->ai_update_cnt = 15;
 			} else {
-				i->ai_update_cnt -= 1;
+				gobj->ai_update_cnt -= 1;
 			}
 		_optimize1:
-			if (IsTouch(i->x + i->dx, i->y, i) == 0)
-				i->x += i->dx;
+			if (IsTouch(gobj->x + gobj->dx, gobj->y, gobj) == 0)
+				gobj->x += gobj->dx;
 			else
-				i->ai_update_cnt = 0;
+				gobj->ai_update_cnt = 0;
 
-			if (IsTouch(i->x, i->y + i->dy, i) == 0)
-				i->y += i->dy;
+			if (IsTouch(gobj->x, gobj->y + gobj->dy, gobj) == 0)
+				gobj->y += gobj->dy;
 			else
-				i->ai_update_cnt = 0;
+				gobj->ai_update_cnt = 0;
 
 		}
 		break;
@@ -1490,30 +1488,30 @@ _random_move_ai:
 		if (ship->i == SHIP_TYPE_OBSERVER)
 			goto _random_move_ai;
 
-		UpdateAnimation(i);
-		if (UpdateMoveSpeed(i) == 1) {
-			if (i->ai_update_cnt == 0) {
-				if (i->x > ship->x) {
-					i->dx = -1;
+		UpdateAnimation(gobj);
+		if (UpdateMoveSpeed(gobj) == 1) {
+			if (gobj->ai_update_cnt == 0) {
+				if (gobj->x > ship->x) {
+					gobj->dx = -1;
 				} else {
-					if (i->x < ship->x)
-						i->dx = 1;
+					if (gobj->x < ship->x)
+						gobj->dx = 1;
 					else
-						i->dx = 0;
+						gobj->dx = 0;
 				}
 
-				if (i->y > ship->y) {
-					i->dy = -1;
+				if (gobj->y > ship->y) {
+					gobj->dy = -1;
 				} else {
-					if (i->y < ship->y)
-						i->dy = 1;
+					if (gobj->y < ship->y)
+						gobj->dy = 1;
 					else
-						i->dy = 0;
+						gobj->dy = 0;
 				}
 
-				i->ai_update_cnt = 15;
+				gobj->ai_update_cnt = 15;
 			} else {
-				i->ai_update_cnt -= 1;
+				gobj->ai_update_cnt -= 1;
 			}
 
 			goto _optimize1;
@@ -1521,73 +1519,73 @@ _random_move_ai:
 		break;
 
 	case AI_ELECTRIC_SPARKLE_VERTICAL:
-		UpdateAnimation(i);
-		if (UpdateMoveSpeed(i) == 1) {
-			if (i->dy == 0)
-				i->dy = 1;
-			if (IsTouch(i->x, i->y + i->dy, i) == 0)
-				i->y += i->dy;
+		UpdateAnimation(gobj);
+		if (UpdateMoveSpeed(gobj) == 1) {
+			if (gobj->dy == 0)
+				gobj->dy = 1;
+			if (IsTouch(gobj->x, gobj->y + gobj->dy, gobj) == 0)
+				gobj->y += gobj->dy;
 			else
-				i->dy = -i->dy;
+				gobj->dy = -gobj->dy;
 		}
 		break;
 
 	case AI_CEILING_CANNON: // ceiling cannon spawning kamikazes
 		// if object is spawned - do nothig
-		if (i->dx == 1)
+		if (gobj->dx == 1)
 			return;
 
-		if (UpdateAnimation(i) == 1) {
-			i->dx = 1;
+		if (UpdateAnimation(gobj) == 1) {
+			gobj->dx = 1;
 
 			// spawn a new enemy
 			TSHIP *j = gObj_CreateObject();
 			j->state = SH_ACTIVE;
 			j->i = 34;
-			j->x = i->x;
-			j->y = i->y + 16;
+			j->x = gobj->x;
+			j->y = gobj->y + 16;
 			j->anim_speed = 4;
 			j->anim_speed_cnt = j->anim_speed;
 			j->max_frame = 3;
 			j->ai_type = AI_KAMIKADZE;
-			j->parent = (void *)i;
+			j->parent = (void *)gobj;
 			PlaySoundEffect(SND_CANNON_SHOOT);
 		}
 		break;
 	case AI_HOMING_MISSLE:
-		UpdateAnimation(i);
+		UpdateAnimation(gobj);
 
-		if (i->x > 0) {
-			i->x -= 2;
-			IsTouch(i->x, i->y, i);
-			if (i->x < ship->x)
+		if (gobj->x > 0) {
+			gobj->x -= 2;
+			IsTouch(gobj->x, gobj->y, gobj);
+			if (gobj->x < ship->x)
 				return;
 
-			if (i->y > ship->y)
-				i->y -= 1;
+			if (gobj->y > ship->y)
+				gobj->y -= 1;
 
-			if (i->y < ship->y && i->y < 63) {
+			if (gobj->y < ship->y && gobj->y < 63) {
 				if ((RandomInt() & 1) == 1)
-					i->y += 1;
+					gobj->y += 1;
 			}
 		} else {
-			i->x = 296;
-			i->y = RandomInt() & 63;
-			if (i->i == 40)
-				i->i = 41;
+			gobj->x = 296;
+			gobj->y = RandomInt() & 63;
+			if (gobj->i == 40)
+				gobj->i = 41;
 			else
-				i->i = 40;
+				gobj->i = 40;
 		}
 		break;
 
 	case AI_CANNON:
-		if (i->x - 40 > ship->x) {
-			i->cur_frame = 0;
+		if (gobj->x - 40 > ship->x) {
+			gobj->cur_frame = 0;
 		} else {
-			if (i->x + 40 < ship->x)
-				i->cur_frame = 2;
+			if (gobj->x + 40 < ship->x)
+				gobj->cur_frame = 2;
 			else
-				i->cur_frame = 1;
+				gobj->cur_frame = 1;
 		}
 
 		if ((RandomInt() & 255) > 252) {
@@ -1595,96 +1593,96 @@ _random_move_ai:
 			if (j->state == SH_DEAD) {
 				j->state = SH_ACTIVE;
 				j->i = 43;
-				if (i->cur_frame == 0) {
-					j->x = i->x - 4;
-					j->y = i->y + 4;
+				if (gobj->cur_frame == 0) {
+					j->x = gobj->x - 4;
+					j->y = gobj->y + 4;
 					j->dx = -1;
 					j->dy = -1;
 				}
-				if (i->cur_frame == 1) {
-					j->x = i->x + 6;
-					j->y = i->y - 4;
+				if (gobj->cur_frame == 1) {
+					j->x = gobj->x + 6;
+					j->y = gobj->y - 4;
 					j->dx = 0;
 					j->dy = -1;
 				}
-				if (i->cur_frame == 2) {
-					j->x = i->x + 16;
-					j->y = i->y + 4;
+				if (gobj->cur_frame == 2) {
+					j->x = gobj->x + 16;
+					j->y = gobj->y + 4;
 					j->dx = 1;
 					j->dy = -1;
 				}
 				j->anim_speed = 4;
 				j->anim_speed_cnt = j->anim_speed;
 				j->ai_type = AI_BULLET;
-				j->parent = (void *)i;
+				j->parent = (void *)gobj;
 			}
 		}
 		break;
 
 	case AI_ELECTRIC_SPARKLE_HORIZONTAL:
-		UpdateAnimation(i);
-		if (UpdateMoveSpeed(i) == 1) {
-			if (i->dx == 0)
-				i->dx = 1;
-			if (IsTouch(i->x + i->dx, i->y, i) == 0)
-				i->x += i->dx;
+		UpdateAnimation(gobj);
+		if (UpdateMoveSpeed(gobj) == 1) {
+			if (gobj->dx == 0)
+				gobj->dx = 1;
+			if (IsTouch(gobj->x + gobj->dx, gobj->y, gobj) == 0)
+				gobj->x += gobj->dx;
 			else
-				i->dx = -i->dx;
+				gobj->dx = -gobj->dx;
 		}
 		break;
 
 	case AI_BONUS:
-		if (UpdateAnimation(i) == 1) {
+		if (UpdateAnimation(gobj) == 1) {
 			static int yOffset[] = {
 				-1, -1, -2, -2, -1, 1, 1, 2, 2, 1
 			};
 
-			i->y += yOffset[i->dy];
-			i->dy = (i->dy + 1) % (sizeof(yOffset) / sizeof(yOffset[0]));
+			gobj->y += yOffset[gobj->dy];
+			gobj->dy = (gobj->dy + 1) % (sizeof(yOffset) / sizeof(yOffset[0]));
 		}
 		break;
 
 	case AI_SMOKE:
-		if (UpdateAnimation(i) == 1) {
-			i->state = SH_DEAD;
-		} else if (i->cur_frame % 2) {
-			i->x += i->dx;
-			i->y += i->dy;
+		if (UpdateAnimation(gobj) == 1) {
+			gobj->state = SH_DEAD;
+		} else if (gobj->cur_frame % 2) {
+			gobj->x += gobj->dx;
+			gobj->y += gobj->dy;
 		}
 		break;
 
 	case AI_EXPLOSION: // explosion, do one animation cycle and deactivate enemy entry
-		if (UpdateAnimation(i) == 1) {
-			if (i->explosion.bonus_type) {
-				if (i->explosion.regenerate_bonus) {
+		if (UpdateAnimation(gobj) == 1) {
+			if (gobj->explosion.bonus_type) {
+				if (gobj->explosion.regenerate_bonus) {
 					// Hit with laser, restore the other bonus.
-					i->ai_type = AI_BONUS;
-					i->state = SH_ACTIVE;
-					switch (i->explosion.bonus_type) {
+					gobj->ai_type = AI_BONUS;
+					gobj->state = SH_ACTIVE;
+					switch (gobj->explosion.bonus_type) {
 					case BONUS_FACEBOOK:
-						i->i = BONUS_TWITTER;
+						gobj->i = BONUS_TWITTER;
 						break;
 					case BONUS_TWITTER:
-						i->i = BONUS_FACEBOOK;
+						gobj->i = BONUS_FACEBOOK;
 						break;
 					default:
-						i->i = i->explosion.bonus_type;
+						gobj->i = gobj->explosion.bonus_type;
 						break;
 					}
 
-					i->explosion.bonus_type = 0;
-					i->explosion.regenerate_bonus = 0;
-					i->dx = 0;
-					i->dy = 0;
-					i->max_frame = 0;
-					i->cur_frame = 0;
-					i->min_frame = 0;
-					i->anim_speed = 4;
+					gobj->explosion.bonus_type = 0;
+					gobj->explosion.regenerate_bonus = 0;
+					gobj->dx = 0;
+					gobj->dy = 0;
+					gobj->max_frame = 0;
+					gobj->cur_frame = 0;
+					gobj->min_frame = 0;
+					gobj->anim_speed = 4;
 					return;
 				} else {
 					PlaySoundEffect(SND_BONUS);
 
-					switch (i->explosion.bonus_type) {
+					switch (gobj->explosion.bonus_type) {
 					case BONUS_HP:
 						// add HP
 						++game->health;
@@ -1694,14 +1692,14 @@ _random_move_ai:
 
 					case BONUS_FACEBOOK:
 					case BONUS_TWITTER:
-						HitTheBonus(i->explosion.bonus_type);
+						HitTheBonus(gobj->explosion.bonus_type);
 						break;
 					}
 				}
 			}
 
-			i->state = SH_DEAD;
-			if (i == ship)
+			gobj->state = SH_DEAD;
+			if (gobj == ship)
 				RestartLevel();
 
 			return;
@@ -1717,7 +1715,7 @@ _random_move_ai:
 
 			// seal or unseal the floor
 			for (int f = 0; f <= 4; f++) {
-				SetTileI((i->x >> 3) + f, i->y >> 3, a);
+				SetTileI((gobj->x >> 3) + f, gobj->y >> 3, a);
 			}
 		}
 		break;
@@ -1727,18 +1725,18 @@ _random_move_ai:
 			ship->ai_type == AI_EXPLOSION)
 			break;
 
-		if (GarageShipIndex(i->i) != -1) {
+		if (GarageShipIndex(gobj->i) != -1) {
 			break;
 		}
 
 		int w, h;
 		GetCurrentSpriteDimensions(ship, &w, &h);
 
-		if (!i->garage_inactive &&
-		    (ship->x >= i->x) &&
-		    (ship->x + w < i->x + GARAGE_WIDTH) &&
-		    (ship->y >= i->y) &&
-		    (ship->y + h < i->y + GARAGE_HEIGHT)) {
+		if (!gobj->garage_inactive &&
+		    (ship->x >= gobj->x) &&
+		    (ship->x + w < gobj->x + GARAGE_WIDTH) &&
+		    (ship->y >= gobj->y) &&
+		    (ship->y + h < gobj->y + GARAGE_HEIGHT)) {
 			// Player ship is inside the garage, lets
 			// change the ship if possible.
 			TSHIP *spare = gObj_First(2);
@@ -1761,23 +1759,23 @@ _random_move_ai:
 
 				garage->garage_inactive = 1;
 
-				SetGarageShipIndex(i->i, spare->i);
+				SetGarageShipIndex(gobj->i, spare->i);
 				SetGarageShipIndex(garage->i, -1);
 
 				ship->ai_type = 0;
 				ship->garage = NULL;
 
 				spare->ai_type = AI_SPARE_SHIP;
-				spare->garage = (void *)i;
+				spare->garage = (void *)gobj;
 
 				// restore HP
 				game->health = 3;
 
 				PlaySoundEffect(SND_CONTACT);
 			}
-		} else if (i->garage_inactive) {
-			if (!IsOverlap(ship, i)) {
-				i->garage_inactive = 0;
+		} else if (gobj->garage_inactive) {
+			if (!IsOverlap(ship, gobj)) {
+				gobj->garage_inactive = 0;
 			}
 		}
 		break;
@@ -1786,63 +1784,63 @@ _random_move_ai:
 		{
 			const int speed = 1;
 			int x, y;
-			BestPositionInGarage(i, &x, &y);
+			BestPositionInGarage(gobj, &x, &y);
 
-			if (x > i->x) {
-				i->x += speed;
+			if (x > gobj->x) {
+				gobj->x += speed;
 			} else {
-				if (x < i->x)
-					i->x -= speed;
+				if (x < gobj->x)
+					gobj->x -= speed;
 			}
 
-			if (y > i->y) {
-				i->y += speed;
+			if (y > gobj->y) {
+				gobj->y += speed;
 			} else {
-				if (y < i->y)
-					i->y -= speed;
+				if (y < gobj->y)
+					gobj->y -= speed;
 			}
 
-			int middle_frame = (i->max_frame + i->min_frame) / 2;
+			int middle_frame = (gobj->max_frame + gobj->min_frame) / 2;
 
-			if (i->cur_frame > i->min_frame && i->cur_frame <= middle_frame)
-				--(i->cur_frame);
+			if (gobj->cur_frame > gobj->min_frame && gobj->cur_frame <= middle_frame)
+				--(gobj->cur_frame);
 			else
-				if (i->cur_frame > middle_frame && i->cur_frame < i->max_frame)
-					++(i->cur_frame);
+				if (gobj->cur_frame > middle_frame && gobj->cur_frame < gobj->max_frame)
+					++(gobj->cur_frame);
 		}
 		break;
 
 	case AI_BULLET: // bullet
 		// random exploding
-		if (i->parent)
-		if (i->y + 16 < ((TSHIP *)i->parent)->y && (RandomInt() & 63) == 1) {
-			BlowUpEnemy(i);
+		if (gobj->parent)
+		if (gobj->y + 16 < ((TSHIP *)gobj->parent)->y && (RandomInt() & 63) == 1) {
+			BlowUpEnemy(gobj);
 			return;
 		}
 
-		i->x += i->dx;
-		if (i->x < 0 || i->x > SCREEN_WIDTH) {
-			BlowUpEnemy(i);
+		gobj->x += gobj->dx;
+		if (gobj->x < 0 || gobj->x > SCREEN_WIDTH) {
+			BlowUpEnemy(gobj);
 			return;
 		}
 
-		i->y += i->dy;
-		if (i->y < 0)
-			BlowUpEnemy(i);
+		gobj->y += gobj->dy;
+		if (gobj->y < 0)
+			BlowUpEnemy(gobj);
 		break;
 
 	case AI_HOMING_SHOT: // missle shot by player.
-		if (i->just_created == 1) {
-			if (IsTouch(i->x, i->y, i)) {
-				BlowUpEnemy(i);
+		if (gobj->just_created == 1) {
+			if (IsTouch(gobj->x, gobj->y, gobj)) {
+				BlowUpEnemy(gobj);
 				return;
 			}
 		}
 
 		// Calculate vertical speed.
-		i->dy = 0;
+		gobj->dy = 0;
 
-		if (++i->ticks_passed > 10) {
+		if (++gobj->ticks_passed > 10) {
 			int best = -1;
 			int dx_best = 0;
 
@@ -1855,9 +1853,9 @@ _random_move_ai:
 				if (Ships[n].i == 11)
 					continue;
 
-				int dx = Ships[n].x - i->x;
+				int dx = Ships[n].x - gobj->x;
 
-				if (i->cur_frame < 2) {
+				if (gobj->cur_frame < 2) {
 					// moving left.
 					if (dx > 10 || dx < -110)
 						continue;
@@ -1877,42 +1875,42 @@ _random_move_ai:
 			}
 
 			if (best != -1) {
-				int dy = Ships[best].y - i->y;
+				int dy = Ships[best].y - gobj->y;
 
 				if (dy < 0)
-					i->dy = -1;
+					gobj->dy = -1;
 				if (dy > 0)
-					i->dy = 1;
+					gobj->dy = 1;
 			}
 		}
 
-		UpdateAnimation(i);
+		UpdateAnimation(gobj);
 
-		i->x += i->dx;
-		i->y += i->dy;
+		gobj->x += gobj->dx;
+		gobj->y += gobj->dy;
 
-		if (/*i->x + i->dx < 0 ||
-		    i->x + i->dx >= SCREEN_WIDTH ||
-		    i->y < 0 ||
-		    i->y >= SCREEN_HEIGHT ||*/
-		    IsTouch(i->x, i->y, i)) {
-			i->state = SH_DEAD;
+		if (/*gobj->x + gobj->dx < 0 ||
+		    gobj->x + gobj->dx >= SCREEN_WIDTH ||
+		    gobj->y < 0 ||
+		    gobj->y >= SCREEN_HEIGHT ||*/
+		    IsTouch(gobj->x, gobj->y, gobj)) {
+			gobj->state = SH_DEAD;
 			return;
 		}
 
 		break;
 
 	case AI_BFG_SHOT:
-		UpdateAnimation(i);
+		UpdateAnimation(gobj);
 
-		if (i->dx == 2)
-			i->dx = 3;
-		else if (i->dx == -2)
-			i->dx = -3;
-		else if (i->dx == 3)
-			i->dx = 2;
-		else if (i->dx == -3)
-			i->dx = -2;
+		if (gobj->dx == 2)
+			gobj->dx = 3;
+		else if (gobj->dx == -2)
+			gobj->dx = -3;
+		else if (gobj->dx == 3)
+			gobj->dx = 2;
+		else if (gobj->dx == -3)
+			gobj->dx = -2;
 
 		// Calculate hit objects.
 		for (int n = 0; n < MAX_BFG_TARGETS; ++n)
@@ -1921,8 +1919,8 @@ _random_move_ai:
 		for (int n = 2; n < SHIPS_NUMBER; ++n) {
 			if (Ships[n].ai_type == AI_KAMIKADZE ||
 			    Ships[n].ai_type == AI_RANDOM_MOVE) {
-				if (ShipsDistance(i, Ships + n) < BFG_KILL_DISTANCE) {
-					AddBfgTarget(n, f);
+				if (ShipsDistance(gobj, Ships + n) < BFG_KILL_DISTANCE) {
+					AddBfgTarget(n, gobj);
 				}
 			}
 		}
@@ -1940,23 +1938,23 @@ _random_move_ai:
 		}
 
 	case AI_SHOT: // bullet shot by a player
-		if (i->just_created) {
-			i->just_created = 0;
-			if (IsTouch(i->x, i->y, i)) {
-				BlowUpEnemy(i);
+		if (gobj->just_created) {
+			gobj->just_created = 0;
+			if (IsTouch(gobj->x, gobj->y, gobj)) {
+				BlowUpEnemy(gobj);
 				return;
 			}
 		}
 
-		i->x += i->dx;
-		i->y += i->dy;
+		gobj->x += gobj->dx;
+		gobj->y += gobj->dy;
 
-		if (i->x + i->dx < 0 ||
-		    i->x + i->dx >= SCREEN_WIDTH ||
-		    i->y < 0 ||
-		    i->y >= SCREEN_HEIGHT ||
-		    IsTouch(i->x, i->y, i)) {
-			BlowUpEnemy(i);
+		if (gobj->x + gobj->dx < 0 ||
+		    gobj->x + gobj->dx >= SCREEN_WIDTH ||
+		    gobj->y < 0 ||
+		    gobj->y >= SCREEN_HEIGHT ||
+		    IsTouch(gobj->x, gobj->y, gobj)) {
+			BlowUpEnemy(gobj);
 			return;
 		}
 		break;
@@ -1965,8 +1963,8 @@ _random_move_ai:
 		if (player_attached == 1) {
 			// start to lift only when ship and base are standing on the elevator
 			// ugly, improve in future
-			//if ((i->x == 256 && base->x >= 260) || (i->x == 16 && base->x <= 20))
-			if (i->x == base->x - 4) {
+			//if ((gobj->x == 256 && base->x >= 260) || (gobj->x == 16 && base->x <= 20))
+			if (gobj->x == base->x - 4) {
 				static int el_phase = 0;
 
 				elevator_flag = 1;
@@ -1974,10 +1972,10 @@ _random_move_ai:
 				if (el_phase == 0) {
 					// when starting to lift up - unseal the floor
 					// ugly, maybe change in future
-					if (i->y == 120) {
+					if (gobj->y == 120) {
 						// unseal the floor
 						for (int j = 0; j <= 5; j++) {
-							SetTileI((i->x >> 3) + j, i->y >> 3, 0);
+							SetTileI((gobj->x >> 3) + j, gobj->y >> 3, 0);
 						}
 					}
 
@@ -1997,12 +1995,12 @@ _random_move_ai:
 
 						// now i is invalid, because InitNewScreen reenables enemies
 						// spawn new elevator
-						i = gObj_CreateObject();
-						i->state = SH_ACTIVE;
-						i->i = 21;
-						i->x = base->x - 4;
-						i->y = 128;
-						i->ai_type = AI_ELEVATOR;
+						gobj = gObj_CreateObject();
+						gobj->state = SH_ACTIVE;
+						gobj->i = 21;
+						gobj->x = base->x - 4;
+						gobj->y = 128;
+						gobj->ai_type = AI_ELEVATOR;
 						goto _here;
 					}
 				} else {
@@ -2041,7 +2039,7 @@ _random_move_ai:
 
 				ship->y -= 1;
 				base->y -= 1;
-				i->y -= 1;
+				gobj->y -= 1;
 
 			_here:
 				if (elevator_flag)
@@ -2890,8 +2888,8 @@ void DoGame()
 		}
 
 		// do enemies
-		for (int i = 2; i <= SHIPS_NUMBER-1; i++)
-			DoEnemy(i);
+		for (TSHIP *gobj = gObj_First(2); gobj; gobj = gObj_Next())
+			DoEnemy(gobj);
 
 		DoShip();
 		DoBase();
