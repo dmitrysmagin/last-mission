@@ -41,8 +41,8 @@ void DoLaser();
 void DoMachineGun();
 void DoBFG();
 void DoRocketLauncher();
-int UpdateAnimation(int f);
-int UpdateMoveSpeed(int f);
+int UpdateAnimation(TSHIP *gobj);
+int UpdateMoveSpeed(TSHIP *gobj);
 void DoEnemy(int f);
 void InitShip();
 void InitEnemies();
@@ -1317,38 +1317,31 @@ void DoLaser()
 
 // update animation counters
 // returns 1 if reached the end of animation cycle
-int UpdateAnimation(int f)
+int UpdateAnimation(TSHIP *gobj)
 {
-	TSHIP *i;
-
-	i = &Ships[f];
-
 	// do animation counters
-	if (i->anim_speed_cnt == 0) {
-		i->anim_speed_cnt = i->anim_speed;
-		i->cur_frame += 1;
-		if (i->cur_frame > i->max_frame) {
-			i->cur_frame = i->min_frame;
+	if (gobj->anim_speed_cnt == 0) {
+		gobj->anim_speed_cnt = gobj->anim_speed;
+		gobj->cur_frame += 1;
+		if (gobj->cur_frame > gobj->max_frame) {
+			gobj->cur_frame = gobj->min_frame;
 			return 1;
 		}
 	} else {
-		i->anim_speed_cnt -= 1;
+		gobj->anim_speed_cnt -= 1;
 	}
 
 	return 0;
 }
 
 // returns 1 if reached the end of move-wait cycle
-int UpdateMoveSpeed(int f)
+int UpdateMoveSpeed(TSHIP *gobj)
 {
-	TSHIP *i;
-
-	i = &Ships[f];
-	if (i->move_speed_cnt == 0) {
-		i->move_speed_cnt = i->move_speed;
+	if (gobj->move_speed_cnt == 0) {
+		gobj->move_speed_cnt = gobj->move_speed;
 		return 1;
 	} else {
-		i->move_speed_cnt -= 1;
+		gobj->move_speed_cnt -= 1;
 	}
 
 	return 0;
@@ -1457,7 +1450,7 @@ void DoEnemy(int f)
 
 	// if main ship is exploding, freeze other enemies except bridge and garage
 	// it's not safe but ship dies after all and enemy data is reinitialized then
-	if (f != 0 && ship->ai_type == AI_EXPLOSION) {
+	if (i != ship && ship->ai_type == AI_EXPLOSION) {
 		if(i->ai_type != AI_BRIDGE &&
 		   i->ai_type != AI_GARAGE &&
 		   i->ai_type != AI_HIDDEN_AREA_ACCESS &&
@@ -1469,13 +1462,13 @@ void DoEnemy(int f)
 	// do different ai types
 	switch (i->ai_type) {
 	case AI_STATIC: // breakable wall or non-moving enemy
-		UpdateAnimation(f);
+		UpdateAnimation(i);
 		break;
 
 	case AI_RANDOM_MOVE:
 _random_move_ai:
-		UpdateAnimation(f);
-		if (UpdateMoveSpeed(f) == 1) {
+		UpdateAnimation(i);
+		if (UpdateMoveSpeed(i) == 1) {
 			if (i->ai_update_cnt == 0) {
 				i->dx = RandomInt() & 3;
 				if (i->dx >= 2)
@@ -1508,8 +1501,8 @@ _random_move_ai:
 		if (ship->i == SHIP_TYPE_OBSERVER)
 			goto _random_move_ai;
 
-		UpdateAnimation(f);
-		if (UpdateMoveSpeed(f) == 1) {
+		UpdateAnimation(i);
+		if (UpdateMoveSpeed(i) == 1) {
 			if (i->ai_update_cnt == 0) {
 				if (i->x > ship->x) {
 					i->dx = -1;
@@ -1539,8 +1532,8 @@ _random_move_ai:
 		break;
 
 	case AI_ELECTRIC_SPARKLE_VERTICAL:
-		UpdateAnimation(f);
-		if (UpdateMoveSpeed(f) == 1) {
+		UpdateAnimation(i);
+		if (UpdateMoveSpeed(i) == 1) {
 			if (i->dy == 0)
 				i->dy = 1;
 			if (IsTouch(i->x, i->y + i->dy, f) == 0)
@@ -1555,7 +1548,7 @@ _random_move_ai:
 		if (i->dx == 1)
 			return;
 
-		if (UpdateAnimation(f) == 1) {
+		if (UpdateAnimation(i) == 1) {
 			i->dx = 1;
 
 			// spawn a new enemy
@@ -1573,7 +1566,7 @@ _random_move_ai:
 		}
 		break;
 	case AI_HOMING_MISSLE:
-		UpdateAnimation(f);
+		UpdateAnimation(i);
 
 		if (i->x > 0) {
 			i->x -= 2;
@@ -1640,8 +1633,8 @@ _random_move_ai:
 		break;
 
 	case AI_ELECTRIC_SPARKLE_HORIZONTAL:
-		UpdateAnimation(f);
-		if (UpdateMoveSpeed(f) == 1) {
+		UpdateAnimation(i);
+		if (UpdateMoveSpeed(i) == 1) {
 			if (i->dx == 0)
 				i->dx = 1;
 			if (IsTouch(i->x + i->dx, i->y, f) == 0)
@@ -1652,7 +1645,7 @@ _random_move_ai:
 		break;
 
 	case AI_BONUS:
-		if (UpdateAnimation(f) == 1) {
+		if (UpdateAnimation(i) == 1) {
 			static int yOffset[] = {
 				-1, -1, -2, -2, -1, 1, 1, 2, 2, 1
 			};
@@ -1663,7 +1656,7 @@ _random_move_ai:
 		break;
 
 	case AI_SMOKE:
-		if (UpdateAnimation(f) == 1) {
+		if (UpdateAnimation(i) == 1) {
 			i->state = SH_DEAD;
 		} else if (i->cur_frame % 2) {
 			i->x += i->dx;
@@ -1672,7 +1665,7 @@ _random_move_ai:
 		break;
 
 	case AI_EXPLOSION: // explosion, do one animation cycle and deactivate enemy entry
-		if (UpdateAnimation(f) == 1) {
+		if (UpdateAnimation(i) == 1) {
 			if (i->explosion.bonus_type) {
 				if (i->explosion.regenerate_bonus) {
 					// Hit with laser, restore the other bonus.
@@ -1904,7 +1897,7 @@ _random_move_ai:
 			}
 		}
 
-		UpdateAnimation(f);
+		UpdateAnimation(i);
 
 		i->x += i->dx;
 		i->y += i->dy;
@@ -1921,7 +1914,7 @@ _random_move_ai:
 		break;
 
 	case AI_BFG_SHOT:
-		UpdateAnimation(f);
+		UpdateAnimation(i);
 
 		if (i->dx == 2)
 			i->dx = 3;
@@ -2631,8 +2624,9 @@ void DoWinScreen()
 
 		DoShip();
 
-		for (int i = 2; i <= SHIPS_NUMBER-1; i++)
-			UpdateAnimation(i);
+		TSHIP *gobj = gObj_First(2);
+		for (; gobj; gobj = gObj_Next())
+			UpdateAnimation(gobj);
 
 		if (!frame_skip)
 			RenderGame(0);
