@@ -79,8 +79,8 @@ typedef struct {
 #define SHIPS_NUMBER 32
 extern TSHIP Ships[SHIPS_NUMBER];
 
-TSHIP *gObj_First(int i);
-TSHIP *gObj_Next();
+TSHIP *gObj_First(int i, int *iterator);
+TSHIP *gObj_Next(int *iterator);
 
 TSHIP *gObj_Base();
 TSHIP *gObj_Ship();
