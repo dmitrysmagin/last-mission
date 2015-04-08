@@ -1836,41 +1836,42 @@ _random_move_ai:
 		gobj->dy = 0;
 
 		if (++gobj->ticks_passed > 10) {
-			int best = -1;
+			TSHIP *trg = gObj_First(2);
+			TSHIP *best = NULL;
 			int dx_best = 0;
 
-			for (int n = 2; n < SHIPS_NUMBER; ++n) {
-				if (Ships[n].state != SH_ACTIVE ||
-				    (Ships[n].ai_type != AI_RANDOM_MOVE &&
-				     Ships[n].ai_type != AI_KAMIKADZE))
+			for (; trg; trg = gObj_Next(trg)) {
+				if (trg->state != SH_ACTIVE ||
+				    (trg->ai_type != AI_RANDOM_MOVE &&
+				     trg->ai_type != AI_KAMIKADZE))
 					continue;
 
-				if (Ships[n].i == 11)
+				if (trg->i == 11)
 					continue;
 
-				int dx = Ships[n].x - gobj->x;
+				int dx = trg->x - gobj->x;
 
 				if (gobj->cur_frame < 2) {
 					// moving left.
 					if (dx > 10 || dx < -110)
 						continue;
-					if (best == -1 || dx > dx_best) {
-						best = n;
+					if (!best || dx > dx_best) {
+						best = trg;
 						dx_best = dx;
 					}
 				} else {
 					// moving right.
 					if (dx < 10 || dx > 110)
 						continue;
-					if (best == -1 || dx < dx_best) {
-						best = n;
+					if (!best || dx > dx_best) {
+						best = trg;
 						dx_best = dx;
 					}
 				}
 			}
 
-			if (best != -1) {
-				int dy = Ships[best].y - gobj->y;
+			if (best) {
+				int dy = best->y - gobj->y;
 
 				if (dy < 0)
 					gobj->dy = -1;
