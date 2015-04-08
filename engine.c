@@ -77,8 +77,7 @@ int main_garage_data[MAX_GARAGES][2];
 typedef struct {
 	int xc, yc;
 	int xt, yt;
-	int ship;
-	int ship_i;
+	TSHIP *ship;
 	int hit_now;
 	int hit_count;
 } TBFGTARGET;
@@ -1360,14 +1359,11 @@ int ShipsDistance(TSHIP *i, TSHIP *j)
 	return (int)sqrt((float)(x*x + y*y));
 }
 
-void AddBfgTarget(int index, TSHIP *bfg)
+void AddBfgTarget(TSHIP *gobj, TSHIP *bfg)
 {
-	TSHIP *gobj = Ships + index;
-
 	TBFGTARGET *t = NULL;
 	for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
-		if (BfgTargets[n].ship == index &&
-		    BfgTargets[n].ship_i == gobj->i) {
+		if (BfgTargets[n].ship == gobj) {
 			t = &BfgTargets[n];
 			break;
 		} else if (!t && !BfgTargets[n].ship) {
@@ -1380,8 +1376,7 @@ void AddBfgTarget(int index, TSHIP *bfg)
 
 	++t->hit_count;
 	t->hit_now = 1;
-	t->ship = index;
-	t->ship_i = gobj->i;
+	t->ship = gobj;
 
 	t->xc = bfg->x + 5;
 	t->yc = bfg->y + 5;
@@ -1924,7 +1919,7 @@ _random_move_ai:
 			if (Ships[n].ai_type == AI_KAMIKADZE ||
 			    Ships[n].ai_type == AI_RANDOM_MOVE) {
 				if (ShipsDistance(gobj, Ships + n) < BFG_KILL_DISTANCE) {
-					AddBfgTarget(n, gobj);
+					AddBfgTarget(&Ships[n], gobj);
 				}
 			}
 		}
@@ -1933,7 +1928,7 @@ _random_move_ai:
 			if (BfgTargets[n].hit_count) {
 				if (BfgTargets[n].hit_now) {
 					if (BfgTargets[n].hit_count > BFG_KILL_TIME) {
-						BlowUpEnemy(&Ships[BfgTargets[n].ship]);
+						BlowUpEnemy(BfgTargets[n].ship);
 					}
 				} else {
 					memset(BfgTargets + n, 0, sizeof(TBFGTARGET));
