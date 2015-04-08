@@ -35,7 +35,7 @@ int UpdateFuel();
 void DoShip();
 void ReEnableBase();
 void DoBase();
-void BlowUpEnemy(int i);
+void BlowUpEnemy(TSHIP *gobj);
 int UpdateLaser(int i);
 void DoLaser();
 void DoMachineGun();
@@ -54,7 +54,7 @@ void BlitStatus();
 void DoTitle();
 void DoWinScreen();
 void DoGame();
-void CreateExplosion(int index);
+void CreateExplosion(TSHIP *gobj);
 void CreateWallExplosion(int x, int y);
 void RenderGame(int renderStatus);
 void InitGaragesForNewGame();
@@ -372,29 +372,29 @@ void HandleShipsContact(int i, int j)
 	}
 
 	if (Ships[i].ai_type == AI_BFG_SHOT) {
-		BlowUpEnemy(j);
+		BlowUpEnemy(&Ships[j]);
 	} else if (Ships[j].ai_type == AI_BFG_SHOT) {
-		BlowUpEnemy(i);
+		BlowUpEnemy(&Ships[i]);
 	} else if (Ships[i].ai_type == AI_BONUS) {
 		if (j > 1) {
 			// Bonus hit by a bullet. Swap bonus.
 			Ships[i].explosion.regenerate_bonus = 1;
 		}
 
-		BlowUpEnemy(i);
+		BlowUpEnemy(&Ships[i]);
 	} else if (Ships[j].ai_type == AI_BONUS) {
 		if (i > 1) {
 			// Bonus hit by a bullet. Swap bonus.
 			Ships[i].explosion.regenerate_bonus = 1;
 		}
 
-		BlowUpEnemy(j);
+		BlowUpEnemy(&Ships[j]);
 	} else {
 		if (j > 1 || game->easy_mode || i < 2)
-			BlowUpEnemy(i);
+			BlowUpEnemy(&Ships[i]);
 
 		if (i > 1 || game->easy_mode || j < 2)
-			BlowUpEnemy(j);
+			BlowUpEnemy(&Ships[j]);
 	}
 }
 
@@ -469,7 +469,7 @@ unsigned char IsTouch(int x, int y, int index)
 			// All tiles are solid.
 			if (index == 0 && b >= 246) {
 				// ship dies from touching certain tiles
-				BlowUpEnemy(index);
+				BlowUpEnemy(i);
 			}
 
 			return 1;
@@ -770,12 +770,12 @@ void AddScore(int update)
 	game->lives += (livesAfter - livesBefore);
 }
 
-void UpdateScoreWithShip(int i)
+void UpdateScoreWithShip(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
-	TSHIP *gobj = &Ships[i];
 
-	if (i > 1 &&
+	if (gobj != ship &&
+	    gobj != gObj_Base() &&
 	    gobj->ai_type != AI_BULLET &&
 	    gobj->ai_type != AI_SHOT &&
 	    gobj->ai_type != AI_BFG_SHOT &&
@@ -820,10 +820,8 @@ void DestroyHiddenAreaAccess(TSHIP *i, int playEffects)
 	i->state = SH_DEAD;
 }
 
-void BlowUpEnemy(int i)
+void BlowUpEnemy(TSHIP *gobj)
 {
-	TSHIP *gobj = &Ships[i];
-
 #ifdef GOD_MODE
 	if (gobj == gObj_Ship() || gobj == gObj_Base()) {
 		// You cannot hurt a god.
@@ -885,7 +883,7 @@ void BlowUpEnemy(int i)
 	// some corrections for homing missiles
 	if (gobj->i == 40 || gobj->i == 41) {
 		if (game->easy_mode) {
-			CreateExplosion(i);
+			CreateExplosion(gobj);
 			gobj->x += SCREEN_WIDTH;
 			PlaySoundEffect(SND_EXPLODE);
 		}
@@ -898,7 +896,7 @@ void BlowUpEnemy(int i)
 		return;
 
 	// update score with the killed ship data.
-	UpdateScoreWithShip(i);
+	UpdateScoreWithShip(gobj);
 
 	// if blowing base - zero player_attached
 	if (gobj == gObj_Base())
@@ -931,12 +929,13 @@ void BlowUpEnemy(int i)
 		// this ship is the last one on the screen.
 		if (cur_screen_bonus) {
 			int alive_ship = 0;
+			TSHIP *last_alive = gObj_First(2);
 
-			for (int n = 2; n < SHIPS_NUMBER; ++n) {
-				if (n != i &&
-				    Ships[n].state == SH_ACTIVE &&
-				    (Ships[n].ai_type == AI_RANDOM_MOVE ||
-				     Ships[n].ai_type == AI_KAMIKADZE)) {
+			for (; last_alive; last_alive = gObj_Next()) {
+				if (last_alive != gobj &&
+				    last_alive->state == SH_ACTIVE &&
+				    (last_alive->ai_type == AI_RANDOM_MOVE ||
+				     last_alive->ai_type == AI_KAMIKADZE)) {
 					alive_ship = 1;
 					break;
 				}
@@ -999,44 +998,46 @@ int IsLaserHit2(int x_start, int x_end, int y)
 	if (GetTileI(x_end >> 3, y >> 3))
 		return_value = 1;
 
-	for (int f = 1; f <= SHIPS_NUMBER-1; f++) {
-		if (Ships[f].state != SH_DEAD) {
+	TSHIP *gobj = gObj_First(1);
+
+	for (; gobj; gobj = gObj_Next()) {
+		if (gobj->state != SH_DEAD) {
 			// exclude non-hittable objects
-			if (Ships[f].ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
-			    Ships[f].ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
-			    Ships[f].ai_type == AI_BRIDGE ||
-			    Ships[f].ai_type == AI_BULLET ||
-			    Ships[f].ai_type == AI_SHOT ||
-			    Ships[f].ai_type == AI_BFG_SHOT ||
-			    Ships[f].ai_type == AI_HOMING_SHOT ||
-			    Ships[f].ai_type == AI_GARAGE ||
-			    Ships[f].ai_type == AI_ELEVATOR) {
+			if (gobj->ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
+			    gobj->ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
+			    gobj->ai_type == AI_BRIDGE ||
+			    gobj->ai_type == AI_BULLET ||
+			    gobj->ai_type == AI_SHOT ||
+			    gobj->ai_type == AI_BFG_SHOT ||
+			    gobj->ai_type == AI_HOMING_SHOT ||
+			    gobj->ai_type == AI_GARAGE ||
+			    gobj->ai_type == AI_ELEVATOR) {
 				continue;
 			}
 
 			int cx, cy;
-			GetCurrentSpriteDimensions(Ships + f, &cx, &cy);
+			GetCurrentSpriteDimensions(gobj, &cx, &cy);
 
-			xs2 = Ships[f].x + cx;
-			ys2 = Ships[f].y + cy;
+			xs2 = gobj->x + cx;
+			ys2 = gobj->y + cy;
 
-			if (y >= Ships[f].y && y < ys2) {
-				if (x_start < Ships[f].x && x_end >= xs2) {
-					if (Ships[f].ai_type == AI_BONUS) {
-						Ships[f].explosion.regenerate_bonus = 1;
+			if (y >= gobj->y && y < ys2) {
+				if (x_start < gobj->x && x_end >= xs2) {
+					if (gobj->ai_type == AI_BONUS) {
+						gobj->explosion.regenerate_bonus = 1;
 					}
 
-					BlowUpEnemy(f);
+					BlowUpEnemy(gobj);
 					continue;
 				}
 
 				for (int dx = x_start; dx <= x_end; dx++) {
-					if (dx >= Ships[f].x && dx < xs2) {
-						if (Ships[f].ai_type == AI_BONUS) {
-							Ships[f].explosion.regenerate_bonus = 1;
+					if (dx >= gobj->x && dx < xs2) {
+						if (gobj->ai_type == AI_BONUS) {
+							gobj->explosion.regenerate_bonus = 1;
 						}
 
-						BlowUpEnemy(f);
+						BlowUpEnemy(gobj);
 						return 1;
 					}
 				}
@@ -1070,7 +1071,7 @@ void DoMachineGun()
 
 	if (GKeys[KEY_FIRE] == 1) {
 		if (UpdateLaser(1) == 1) {
-			BlowUpEnemy(0);
+			BlowUpEnemy(&Ships[0]);
 			LM_ResetKeys();
 			return;
 		}
@@ -1214,7 +1215,7 @@ void DoLaser()
 
 	int fireOn = (GKeys[KEY_FIRE] == 1) && (ship->i == SHIP_TYPE_LASER);
 	if (fireOn) {
-		if(UpdateLaser(1) == 1) {BlowUpEnemy(0); LM_ResetKeys(); return;}
+		if(UpdateLaser(1) == 1) {BlowUpEnemy(ship); LM_ResetKeys(); return;}
 	} else {
 		UpdateLaser(-1);
 	}
@@ -1353,14 +1354,13 @@ int UpdateMoveSpeed(int f)
 	return 0;
 }
 
-void CreateExplosion(int index)
+void CreateExplosion(TSHIP *gobj)
 {
-	TSHIP *i = &Ships[index];
 	TSHIP *j = gObj_CreateObject();
 	j->state = SH_ACTIVE;
 	j->i = 2;
-	j->x = i->x;
-	j->y = i->y;
+	j->x = gobj->x;
+	j->y = gobj->y;
 	j->anim_speed = 6;
 	j->anim_speed_cnt = 6;
 	j->max_frame = 2;
@@ -1834,25 +1834,25 @@ _random_move_ai:
 		// random exploding
 		if (i->parent)
 		if (i->y + 16 < ((TSHIP *)i->parent)->y && (RandomInt() & 63) == 1) {
-			BlowUpEnemy(f);
+			BlowUpEnemy(i);
 			return;
 		}
 
 		i->x += i->dx;
 		if (i->x < 0 || i->x > SCREEN_WIDTH) {
-			BlowUpEnemy(f);
+			BlowUpEnemy(i);
 			return;
 		}
 
 		i->y += i->dy;
 		if (i->y < 0)
-			BlowUpEnemy(f);
+			BlowUpEnemy(i);
 		break;
 
 	case AI_HOMING_SHOT: // missle shot by player.
 		if (i->just_created == 1) {
 			if (IsTouch(i->x, i->y, f)) {
-				BlowUpEnemy(f);
+				BlowUpEnemy(i);
 				return;
 			}
 		}
@@ -1950,7 +1950,7 @@ _random_move_ai:
 				if (BfgTargets[n].hit_count) {
 					if (BfgTargets[n].hit_now) {
 						if (BfgTargets[n].hit_count > BFG_KILL_TIME) {
-							BlowUpEnemy(BfgTargets[n].ship);
+							BlowUpEnemy(&Ships[BfgTargets[n].ship]);
 						}
 					} else {
 						memset(BfgTargets + n, 0, sizeof(TBFGTARGET));
@@ -1963,7 +1963,7 @@ _random_move_ai:
 		if (i->just_created) {
 			i->just_created = 0;
 			if (IsTouch(i->x, i->y, f)) {
-				BlowUpEnemy(f);
+				BlowUpEnemy(i);
 				return;
 			}
 		}
@@ -1976,7 +1976,7 @@ _random_move_ai:
 		    i->y < 0 ||
 		    i->y >= SCREEN_HEIGHT ||
 		    IsTouch(i->x, i->y, f)) {
-			BlowUpEnemy(f);
+			BlowUpEnemy(i);
 			return;
 		}
 		break;

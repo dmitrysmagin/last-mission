@@ -29,7 +29,6 @@ TSHIP *gObj_First(int i)
 	for (; search_index < SHIPS_NUMBER; search_index++) {
 		if (Ships[search_index].state == SH_ACTIVE)
 			return &Ships[search_index];
-		search_index++;
 	}
 
 	return NULL;
