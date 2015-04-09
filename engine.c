@@ -420,6 +420,25 @@ unsigned char IsTouch(int x, int y, TSHIP *gobj)
 			continue;
 		}
 
+		/* Ignore your weapons */
+		if (en->ai_type == AI_SHOT && gobj->ai_type == AI_SHIP)
+			continue;
+
+		if (en->ai_type == AI_SHIP && gobj->ai_type == AI_SHOT)
+			continue;
+
+		if (en->ai_type == AI_BFG_SHOT && gobj->ai_type == AI_SHIP)
+			continue;
+
+		if (en->ai_type == AI_SHIP && gobj->ai_type == AI_BFG_SHOT)
+			continue;
+
+		if (en->ai_type == AI_HOMING_SHOT && gobj->ai_type == AI_SHIP)
+			continue;
+
+		if (en->ai_type == AI_SHIP && gobj->ai_type == AI_HOMING_SHOT)
+			continue;
+
 		// ignore sparkles
 		if (en->ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
 		    en->ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
@@ -620,6 +639,20 @@ void ReEnableBase()
 {
 	TSHIP *base = gObj_Base();
 
+	/* if exploded previously, reenable base at level start */
+	if (base->ai_type == AI_EXPLOSION) {
+		base_cur_screen = base_level_start;
+		base->x = 160;
+		base->y = 104;
+		base->i = 1;
+		base->min_frame = 0;
+		base->cur_frame = 0;
+		base->max_frame = 1;
+		base->anim_speed = 0;
+		base->anim_speed_cnt = 0;
+		base->ai_type = AI_BASE;
+	}
+
 	if(base_cur_screen != ship_cur_screen) {
 		base->state = SH_DEAD;
 	} else {
@@ -631,31 +664,6 @@ void DoBase()
 {
 	TSHIP *ship = gObj_Ship();
 	TSHIP *base = gObj_Base();
-
-	if (base->state == SH_DEAD) {
-		// if exploded previously, reenable base at level start
-		if(base->ai_type == AI_EXPLOSION) {
-			base_cur_screen = base_level_start;
-			base->x = 160;
-			base->y = 104;
-			base->i = 1;
-			base->min_frame = 0;
-			base->cur_frame = 0;
-			base->max_frame = 1;
-			base->anim_speed = 0;
-			base->anim_speed_cnt = 0;
-			base->ai_type = 0;
-		}
-
-		return;
-	}
-
-	// if exploding
-	if (base->ai_type == AI_EXPLOSION) {
-		DoEnemy(base);
-
-		return;
-	}
 
 	// do smth if attach mode ON
 	int playMoveSound = 0;
@@ -1424,6 +1432,12 @@ void DoEnemy(TSHIP *gobj)
 
 	// do different ai types
 	switch (gobj->ai_type) {
+	case AI_SHIP:
+		DoShip();
+		break;
+	case AI_BASE:
+		DoBase();
+		break;
 	case AI_STATIC: // breakable wall or non-moving enemy
 		UpdateAnimation(gobj);
 		break;
@@ -1734,7 +1748,7 @@ _random_move_ai:
 				SetGarageShipIndex(gobj->i, spare->i);
 				SetGarageShipIndex(garage->i, -1);
 
-				ship->ai_type = 0;
+				ship->ai_type = AI_SHIP;
 				ship->garage = NULL;
 
 				spare->ai_type = AI_SPARE_SHIP;
@@ -2045,6 +2059,7 @@ void InitShip()
 	base->max_frame = 1;
 	base->anim_speed = 0;
 	base->anim_speed_cnt = 0;
+	base->ai_type = AI_BASE;
 
 	// flying ship data
 	ship->state = SH_ACTIVE;
@@ -2074,6 +2089,7 @@ void InitShip()
 	ship->cur_frame = ((game_level & 1) == 0 ? ship->max_frame : ship->min_frame);
 	ship->anim_speed = 1;
 	ship->anim_speed_cnt = 1;
+	ship->ai_type = AI_SHIP;
 }
 
 void BestPositionInGarage(TSHIP *ship, int *x, int *y)
@@ -2851,11 +2867,9 @@ void DoGame()
 		}
 
 		// do enemies
-		for (TSHIP *gobj = gObj_First(2); gobj; gobj = gObj_Next(gobj))
+		for (TSHIP *gobj = gObj_First(0); gobj; gobj = gObj_Next(gobj))
 			DoEnemy(gobj);
 
-		DoShip();
-		DoBase();
 		DoSmoke();
 
 		/* FIXME: Rework this later */
@@ -2871,10 +2885,10 @@ void DoGame()
 			case SHIP_TYPE_BFG:
 				DoBFG();
 				break;
+			case SHIP_TYPE_LASER:
+				DoLaser();
+				break;
 			}
-
-			// Always do laser.
-			DoLaser();
 		}
 
 		if (!frame_skip)

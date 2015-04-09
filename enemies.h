@@ -24,6 +24,8 @@
 #define AI_HOMING_SHOT			17
 #define AI_HIDDEN_AREA_ACCESS		18
 #define AI_BFG_SHOT			19
+#define AI_SHIP				20
+#define AI_BASE				21
 
 #define GARAGE_WIDTH 48
 #define GARAGE_HEIGHT 18
