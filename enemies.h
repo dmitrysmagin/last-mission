@@ -75,9 +75,6 @@ typedef struct {
 	void *garage; /* FIXME: recursive TSHIP *garage; */
 } TSHIP;
 
-/* FIXME: Make this local to enemies.c in future */
-#define SHIPS_NUMBER 32
-extern TSHIP Ships[SHIPS_NUMBER];
 
 TSHIP *gObj_First(int i);
 TSHIP *gObj_Next(TSHIP *obj);
@@ -87,5 +84,6 @@ TSHIP *gObj_Ship();
 
 TSHIP *gObj_CreateObject();
 void gObj_DestroyObject(TSHIP *i);
+void gObj_DestroyAll(int i);
 
 #endif /* _ENEMIES_H_ */

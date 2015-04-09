@@ -14,7 +14,8 @@
 #include "engine.h"
 #include "room.h"
 
-TSHIP Ships[SHIPS_NUMBER];
+#define SHIPS_NUMBER 32
+static TSHIP Ships[SHIPS_NUMBER];
 
 TSHIP *gObj_Ship() { return &Ships[0]; }
 TSHIP *gObj_Base() { return &Ships[1]; }
@@ -62,4 +63,9 @@ TSHIP *gObj_CreateObject()
 
 void gObj_DestroyObject(TSHIP *i)
 {
+}
+
+void gObj_DestroyAll(int i)
+{
+	memset(&Ships[i], 0, sizeof(TSHIP) * (SHIPS_NUMBER - i));
 }

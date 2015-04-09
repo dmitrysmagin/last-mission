@@ -1053,21 +1053,20 @@ int UpdateLaser(int i)
 
 void DoMachineGun()
 {
+	TSHIP *ship = gObj_Ship();
 	static int mg_timeout = 0;
 	if (--mg_timeout < 0)
 		mg_timeout = 0;
 
 	if (GKeys[KEY_FIRE] == 1) {
 		if (UpdateLaser(1) == 1) {
-			BlowUpEnemy(&Ships[0]);
+			BlowUpEnemy(ship);
 			LM_ResetKeys();
 			return;
 		}
 
 		if (!mg_timeout) {
 			// Create a new bullet.
-			TSHIP *ship = gObj_Ship();
-
 			//if ship is not facing right or left, then exit.
 			if (!FacingLeft(ship) && !FacingRight(ship))
 				return;
@@ -1912,11 +1911,12 @@ _random_move_ai:
 		for (int n = 0; n < MAX_BFG_TARGETS; ++n)
 			BfgTargets[n].hit_now = 0;
 
-		for (int n = 2; n < SHIPS_NUMBER; ++n) {
-			if (Ships[n].ai_type == AI_KAMIKADZE ||
-			    Ships[n].ai_type == AI_RANDOM_MOVE) {
-				if (ShipsDistance(gobj, Ships + n) < BFG_KILL_DISTANCE) {
-					AddBfgTarget(&Ships[n], gobj);
+		TSHIP *trg = gObj_First(2);
+		for (; trg; trg = gObj_Next(trg)) {
+			if (trg->ai_type == AI_KAMIKADZE ||
+			    trg->ai_type == AI_RANDOM_MOVE) {
+				if (ShipsDistance(gobj, trg) < BFG_KILL_DISTANCE) {
+					AddBfgTarget(trg, gobj);
 				}
 			}
 		}
@@ -2020,9 +2020,10 @@ _random_move_ai:
 						// destroy elevator or it will roll forever
 						// but if not screen 69
 						if (base_cur_screen != 69) {
-							for (int j = 2; j <= SHIPS_NUMBER-2; j++) {
-								if(Ships[j].ai_type == AI_ELEVATOR)
-									Ships[j].state = SH_DEAD;
+							TSHIP *lift = gObj_First(2);
+							for (; lift; lift = gObj_Next(lift)) {
+								if(lift->ai_type == AI_ELEVATOR)
+									lift->state = SH_DEAD;
 							}
 						}
 
@@ -2056,7 +2057,7 @@ void InitShip()
 	memcpy(garage_data, main_garage_data, sizeof(garage_data));
 
 	/* FIXME: Clear all game objects and init object queue */
-	memset(Ships, 0, sizeof(TSHIP) * SHIPS_NUMBER);
+	gObj_DestroyAll(0);
 
 	// base data
 	base->state = SH_ACTIVE;
@@ -2215,8 +2216,7 @@ void InitEnemies()
 	OBJECT *object = room->object;
 	int count = room->object_num;
 
-	/* FIXME: This should clear up all enemy objects */
-	memset(&Ships[2] , 0, sizeof(TSHIP) * (SHIPS_NUMBER - 2));
+	gObj_DestroyAll(2);
 
 	screen_procedure = room->procedure;
 	cur_screen_bonus = room->bonus;
@@ -2742,39 +2742,40 @@ void CastLights()
 	}
 
 	// Enemies.
-	for (int i = 0; i <= SHIPS_NUMBER-1; i++) {
-		if (Ships[i].state != SH_DEAD && Ships[i].ai_type != AI_BRIDGE) {
-			switch (Ships[i].ai_type) {
+	TSHIP *obj = gObj_First(0);
+	for (; obj; obj = gObj_Next(obj)) {
+		if (obj->state != SH_DEAD && obj->ai_type != AI_BRIDGE) {
+			switch (obj->ai_type) {
 			case AI_ELECTRIC_SPARKLE_HORIZONTAL:
 			case AI_ELECTRIC_SPARKLE_VERTICAL:
-				AddLight(Ships[i].x + 8, Ships[i].y + 8, 50, 200, 50, 50);
+				AddLight(obj->x + 8, obj->y + 8, 50, 200, 50, 50);
 				break;
 
 			case AI_SHOT:
-				AddLight(Ships[i].x + 2, Ships[i].y, 20, 100, 50, 50);
+				AddLight(obj->x + 2, obj->y, 20, 100, 50, 50);
 				break;
 
 			case AI_BFG_SHOT:
-				AddLight(Ships[i].x + 5, Ships[i].y + 5, 16, 90, 200, 90);
+				AddLight(obj->x + 5, obj->y + 5, 16, 90, 200, 90);
 				break;
 
 			case AI_HOMING_SHOT:
-				if (Ships[i].cur_frame < 2)
-					AddLight(Ships[i].x + 14, Ships[i].y + 4, 20, 150, 110, 100);
+				if (obj->cur_frame < 2)
+					AddLight(obj->x + 14, obj->y + 4, 20, 150, 110, 100);
 				else
-					AddLight(Ships[i].x, Ships[i].y + 4, 20, 150, 110, 100);
+					AddLight(obj->x, obj->y + 4, 20, 150, 110, 100);
 				break;
 
 			case AI_EXPLOSION:
-				AddLight(Ships[i].x + 10, Ships[i].y + 10, ExplosionRadius(&Ships[i], 80), 240, 100, 0);
+				AddLight(obj->x + 10, obj->y + 10, ExplosionRadius(obj, 80), 240, 100, 0);
 				break;
 
 			case AI_BONUS:
-				if (Ships[i].i == BONUS_HP) AddLight(Ships[i].x + 5, Ships[i].y + 5, 25, 200, 80, 80);
+				if (obj->i == BONUS_HP) AddLight(obj->x + 5, obj->y + 5, 25, 200, 80, 80);
 				break;
 
 			case AI_SMOKE:
-				AddLight(Ships[i].x + 8, Ships[i].y + 8, ExplosionRadius(&Ships[i], 40), 100, 70, 0);
+				AddLight(obj->x + 8, obj->y + 8, ExplosionRadius(obj, 40), 100, 70, 0);
 				break;
 			}
 		}
