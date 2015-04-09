@@ -305,9 +305,6 @@ int IsHurt(int x, int y, TSHIP *gobj1, TSHIP *gobj2)
 	if (gobj1 == gObj_Base() && ship_cur_screen != base_cur_screen)
 		return 0;
 
-	if (gobj2->state == SH_DEAD)
-		return 0;
-
 	// ignore not-dangerous objects:
 	// bridge, smoke, explosions and elevator
 	if (gobj2->ai_type == AI_BRIDGE ||
@@ -418,7 +415,7 @@ unsigned char IsTouch(int x, int y, TSHIP *gobj)
 	TSHIP *en = gObj_First(0);
 
 	for (; en; en = gObj_Next(en)) {
-		if (en == gobj || en->state == SH_DEAD) {
+		if (en == gobj) {
 			// don't compare with itself or with dead one!
 			continue;
 		}
@@ -805,7 +802,7 @@ void DestroyHiddenAreaAccess(TSHIP *i, int playEffects)
 		PlaySoundEffect(SND_EXPLODE);
 	}
 
-	i->state = SH_DEAD;
+	gObj_DestroyObject(i);
 }
 
 void BlowUpEnemy(TSHIP *gobj)
@@ -848,16 +845,15 @@ void BlowUpEnemy(TSHIP *gobj)
 	if (gobj->ai_type == AI_SMOKE)
 		return;
 
-	if (gobj->ai_type == AI_SHOT ||
-	    gobj->ai_type == AI_HOMING_SHOT) {
-		gobj->state = SH_DEAD;
+	if (gobj->ai_type == AI_SHOT || gobj->ai_type == AI_HOMING_SHOT) {
+		gObj_DestroyObject(gobj);
 
 		return;
 	}
 
 	if (gobj->ai_type == AI_BFG_SHOT) {
 		CleanupBfg();
-		gobj->state = SH_DEAD;
+		gObj_DestroyObject(gobj);
 
 		return;
 	}
@@ -921,7 +917,6 @@ void BlowUpEnemy(TSHIP *gobj)
 
 			for (; last_alive; last_alive = gObj_Next(last_alive)) {
 				if (last_alive != gobj &&
-				    last_alive->state == SH_ACTIVE &&
 				    (last_alive->ai_type == AI_RANDOM_MOVE ||
 				     last_alive->ai_type == AI_KAMIKADZE)) {
 					alive_ship = 1;
@@ -987,47 +982,44 @@ int IsLaserHit2(int x_start, int x_end, int y)
 		return_value = 1;
 
 	TSHIP *gobj = gObj_First(1);
-
 	for (; gobj; gobj = gObj_Next(gobj)) {
-		if (gobj->state != SH_DEAD) {
-			// exclude non-hittable objects
-			if (gobj->ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
-			    gobj->ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
-			    gobj->ai_type == AI_BRIDGE ||
-			    gobj->ai_type == AI_BULLET ||
-			    gobj->ai_type == AI_SHOT ||
-			    gobj->ai_type == AI_BFG_SHOT ||
-			    gobj->ai_type == AI_HOMING_SHOT ||
-			    gobj->ai_type == AI_GARAGE ||
-			    gobj->ai_type == AI_ELEVATOR) {
+		// exclude non-hittable objects
+		if (gobj->ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
+		    gobj->ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
+		    gobj->ai_type == AI_BRIDGE ||
+		    gobj->ai_type == AI_BULLET ||
+		    gobj->ai_type == AI_SHOT ||
+		    gobj->ai_type == AI_BFG_SHOT ||
+		    gobj->ai_type == AI_HOMING_SHOT ||
+		    gobj->ai_type == AI_GARAGE ||
+		    gobj->ai_type == AI_ELEVATOR) {
+			continue;
+		}
+
+		int cx, cy;
+		GetCurrentSpriteDimensions(gobj, &cx, &cy);
+
+		xs2 = gobj->x + cx;
+		ys2 = gobj->y + cy;
+
+		if (y >= gobj->y && y < ys2) {
+			if (x_start < gobj->x && x_end >= xs2) {
+				if (gobj->ai_type == AI_BONUS) {
+					gobj->explosion.regenerate_bonus = 1;
+				}
+
+				BlowUpEnemy(gobj);
 				continue;
 			}
 
-			int cx, cy;
-			GetCurrentSpriteDimensions(gobj, &cx, &cy);
-
-			xs2 = gobj->x + cx;
-			ys2 = gobj->y + cy;
-
-			if (y >= gobj->y && y < ys2) {
-				if (x_start < gobj->x && x_end >= xs2) {
+			for (int dx = x_start; dx <= x_end; dx++) {
+				if (dx >= gobj->x && dx < xs2) {
 					if (gobj->ai_type == AI_BONUS) {
 						gobj->explosion.regenerate_bonus = 1;
 					}
 
 					BlowUpEnemy(gobj);
-					continue;
-				}
-
-				for (int dx = x_start; dx <= x_end; dx++) {
-					if (dx >= gobj->x && dx < xs2) {
-						if (gobj->ai_type == AI_BONUS) {
-							gobj->explosion.regenerate_bonus = 1;
-						}
-
-						BlowUpEnemy(gobj);
-						return 1;
-					}
+					return 1;
 				}
 			}
 		}
@@ -1072,7 +1064,6 @@ void DoMachineGun()
 				return;
 
 			TSHIP *bullet = gObj_CreateObject();
-			bullet->state = SH_ACTIVE;
 			bullet->i = 50;
 			bullet->x = ship->x + (FacingRight(ship) ? 32 : -8);
 			bullet->y = ship->y + 5;
@@ -1112,7 +1103,6 @@ void DoBFG()
 				return;
 
 			TSHIP *bullet = gObj_CreateObject();
-			bullet->state = SH_ACTIVE;
 			bullet->i = 56;
 			bullet->x = ship->x + (FacingRight(ship) ? 16 : -11);
 			bullet->y = ship->y + 5;
@@ -1154,7 +1144,6 @@ void DoRocketLauncher()
 				return;
 
 			TSHIP *bullet = gObj_CreateObject();
-			bullet->state = SH_ACTIVE;
 			bullet->i = 54;
 			bullet->y = ship->y + 1;
 			bullet->dy = 0;
@@ -1337,7 +1326,6 @@ int UpdateMoveSpeed(TSHIP *gobj)
 void CreateExplosion(TSHIP *gobj)
 {
 	TSHIP *j = gObj_CreateObject();
-	j->state = SH_ACTIVE;
 	j->i = 2;
 	j->x = gobj->x;
 	j->y = gobj->y;
@@ -1383,7 +1371,6 @@ void AddBfgTarget(TSHIP *gobj, TSHIP *bfg)
 void CreateWallExplosion(int x, int y)
 {
 	TSHIP *j = gObj_CreateObject();
-	j->state = SH_ACTIVE;
 	j->i = 7;
 	j->x = x;
 	j->y = y;
@@ -1406,8 +1393,6 @@ void DoSmoke()
 
 	TSHIP *i = gObj_Ship();
 	TSHIP *j = gObj_CreateObject();
-
-	j->state = SH_ACTIVE;
 	j->i = 46;
 	j->x = i->x + 8;
 	j->y = i->y - 8;
@@ -1425,9 +1410,6 @@ void DoEnemy(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
 	TSHIP *base = gObj_Base();
-
-	if (gobj->state == SH_DEAD)
-		return;
 
 	// if main ship is exploding, freeze other enemies except bridge and garage
 	// it's not safe but ship dies after all and enemy data is reinitialized then
@@ -1534,7 +1516,6 @@ _random_move_ai:
 
 			// spawn a new enemy
 			TSHIP *j = gObj_CreateObject();
-			j->state = SH_ACTIVE;
 			j->i = 34;
 			j->x = gobj->x;
 			j->y = gobj->y + 16;
@@ -1583,32 +1564,31 @@ _random_move_ai:
 		}
 
 		if ((RandomInt() & 255) > 252) {
-			TSHIP *j = gObj_CreateObject();
-			if (j->state == SH_DEAD) {
-				j->state = SH_ACTIVE;
-				j->i = 43;
+			TSHIP *bullet = gObj_CreateObject();
+			if (bullet) {
+				bullet->i = 43;
 				if (gobj->cur_frame == 0) {
-					j->x = gobj->x - 4;
-					j->y = gobj->y + 4;
-					j->dx = -1;
-					j->dy = -1;
+					bullet->x = gobj->x - 4;
+					bullet->y = gobj->y + 4;
+					bullet->dx = -1;
+					bullet->dy = -1;
 				}
 				if (gobj->cur_frame == 1) {
-					j->x = gobj->x + 6;
-					j->y = gobj->y - 4;
-					j->dx = 0;
-					j->dy = -1;
+					bullet->x = gobj->x + 6;
+					bullet->y = gobj->y - 4;
+					bullet->dx = 0;
+					bullet->dy = -1;
 				}
 				if (gobj->cur_frame == 2) {
-					j->x = gobj->x + 16;
-					j->y = gobj->y + 4;
-					j->dx = 1;
-					j->dy = -1;
+					bullet->x = gobj->x + 16;
+					bullet->y = gobj->y + 4;
+					bullet->dx = 1;
+					bullet->dy = -1;
 				}
-				j->anim_speed = 4;
-				j->anim_speed_cnt = j->anim_speed;
-				j->ai_type = AI_BULLET;
-				j->parent = (void *)gobj;
+				bullet->anim_speed = 4;
+				bullet->anim_speed_cnt = bullet->anim_speed;
+				bullet->ai_type = AI_BULLET;
+				bullet->parent = (void *)gobj;
 			}
 		}
 		break;
@@ -1638,7 +1618,7 @@ _random_move_ai:
 
 	case AI_SMOKE:
 		if (UpdateAnimation(gobj) == 1) {
-			gobj->state = SH_DEAD;
+			gObj_DestroyObject(gobj);
 		} else if (gobj->cur_frame % 2) {
 			gobj->x += gobj->dx;
 			gobj->y += gobj->dy;
@@ -1651,7 +1631,6 @@ _random_move_ai:
 				if (gobj->explosion.regenerate_bonus) {
 					// Hit with laser, restore the other bonus.
 					gobj->ai_type = AI_BONUS;
-					gobj->state = SH_ACTIVE;
 					switch (gobj->explosion.bonus_type) {
 					case BONUS_FACEBOOK:
 						gobj->i = BONUS_TWITTER;
@@ -1692,7 +1671,7 @@ _random_move_ai:
 				}
 			}
 
-			gobj->state = SH_DEAD;
+			gObj_DestroyObject(gobj);
 			if (gobj == ship)
 				RestartLevel();
 
@@ -1715,8 +1694,7 @@ _random_move_ai:
 		break;
 
 	case AI_GARAGE:
-		if (ship->state == SH_DEAD ||
-			ship->ai_type == AI_EXPLOSION)
+		if (ship->ai_type == AI_EXPLOSION)
 			break;
 
 		if (GarageShipIndex(gobj->i) != -1) {
@@ -1840,9 +1818,8 @@ _random_move_ai:
 			int dx_best = 0;
 
 			for (; trg; trg = gObj_Next(trg)) {
-				if (trg->state != SH_ACTIVE ||
-				    (trg->ai_type != AI_RANDOM_MOVE &&
-				     trg->ai_type != AI_KAMIKADZE))
+				if (trg->ai_type != AI_RANDOM_MOVE &&
+				    trg->ai_type != AI_KAMIKADZE)
 					continue;
 
 				if (trg->i == 11)
@@ -1889,7 +1866,7 @@ _random_move_ai:
 		    gobj->y < 0 ||
 		    gobj->y >= SCREEN_HEIGHT ||*/
 		    IsTouch(gobj->x, gobj->y, gobj)) {
-			gobj->state = SH_DEAD;
+			gObj_DestroyObject(gobj);
 			return;
 		}
 
@@ -1992,7 +1969,6 @@ _random_move_ai:
 						// now i is invalid, because InitNewScreen reenables enemies
 						// spawn new elevator
 						gobj = gObj_CreateObject();
-						gobj->state = SH_ACTIVE;
 						gobj->i = 21;
 						gobj->x = base->x - 4;
 						gobj->y = 128;
@@ -2023,7 +1999,7 @@ _random_move_ai:
 							TSHIP *lift = gObj_First(2);
 							for (; lift; lift = gObj_Next(lift)) {
 								if(lift->ai_type == AI_ELEVATOR)
-									lift->state = SH_DEAD;
+									gObj_DestroyObject(lift);
 							}
 						}
 
@@ -2229,8 +2205,6 @@ void InitEnemies()
 		}
 
 		TSHIP *en = gObj_CreateObject();
-
-		en->state = SH_ACTIVE;
 		en->i = object->index;
 		en->x = object->x << 2;
 		en->y = object->y;
@@ -2251,7 +2225,6 @@ void InitEnemies()
 				// Find which type of the ship is supposed to be here,
 				// create the ship in the best position inside it.
 				TSHIP *ship = gObj_CreateObject();
-				ship->state = SH_ACTIVE;
 				ship->i = iShip;
 				ship->ai_type = AI_SPARE_SHIP;
 				ship->garage = (void *)en;
@@ -2670,14 +2643,9 @@ void BlitEnemies()
 #endif
 		} else if (gobj->ai_type == AI_HIDDEN_AREA_ACCESS) {
 #ifdef _DEBUG
-			if (gobj->state == SH_ACTIVE) {
-				DrawRect(
-					gobj->x, gobj->y,
-					gobj->dx, gobj->dy,
-					10);
-			}
+			DrawRect(gobj->x, gobj->y, gobj->dx, gobj->dy, 10);
 #endif
-		} else if (gobj->state != SH_DEAD && gobj->ai_type != AI_BRIDGE) {
+		} else if (gobj->ai_type != AI_BRIDGE) {
 			PutSpriteI(gobj->x, gobj->y, gobj->i, gobj->cur_frame);
 		}
 	}
@@ -2692,13 +2660,12 @@ void BlitEnemyOutlines(WORLD *world)
 		if (gobj->ai_type == AI_BRIDGE && !player_attached)
 			continue;
 
-		if (gobj->state == SH_DEAD ||
-			gobj->ai_type == AI_EXPLOSION ||
-			gobj->ai_type == AI_GARAGE ||
-			gobj->ai_type == AI_SMOKE ||
-			gobj->ai_type == AI_SHOT ||
-			gobj->ai_type == AI_BFG_SHOT ||
-			gobj->ai_type == AI_HIDDEN_AREA_ACCESS)
+		if (gobj->ai_type == AI_EXPLOSION ||
+		    gobj->ai_type == AI_GARAGE ||
+		    gobj->ai_type == AI_SMOKE ||
+		    gobj->ai_type == AI_SHOT ||
+		    gobj->ai_type == AI_BFG_SHOT ||
+		    gobj->ai_type == AI_HIDDEN_AREA_ACCESS)
 			continue;
 
 		if ((gobj->ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL ||
@@ -2744,7 +2711,7 @@ void CastLights()
 	// Enemies.
 	TSHIP *obj = gObj_First(0);
 	for (; obj; obj = gObj_Next(obj)) {
-		if (obj->state != SH_DEAD && obj->ai_type != AI_BRIDGE) {
+		if (obj->ai_type != AI_BRIDGE) {
 			switch (obj->ai_type) {
 			case AI_ELECTRIC_SPARKLE_HORIZONTAL:
 			case AI_ELECTRIC_SPARKLE_VERTICAL:
@@ -2787,8 +2754,7 @@ void BlitNonAmbientEnemies()
 	TSHIP *gobj = gObj_First(0);
 
 	for (; gobj; gobj = gObj_Next(gobj)) {
-		if (gobj->state != SH_DEAD &&
-		    gobj->ai_type != AI_BRIDGE &&
+		if (gobj->ai_type != AI_BRIDGE &&
 		    gobj->ai_type != AI_ELECTRIC_SPARKLE_HORIZONTAL &&
 		    gobj->ai_type != AI_ELECTRIC_SPARKLE_VERTICAL &&
 		    gobj->ai_type != AI_SMOKE &&

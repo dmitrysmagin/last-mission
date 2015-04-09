@@ -55,16 +55,20 @@ static int GetFreeEnemyIndex()
 
 TSHIP *gObj_CreateObject()
 {
-	TSHIP *ship = &Ships[GetFreeEnemyIndex()];
-	memset(ship, 0, sizeof(TSHIP));
+	TSHIP *obj = &Ships[GetFreeEnemyIndex()];
+	memset(obj, 0, sizeof(TSHIP));
 
-	return ship;
+	obj->state = SH_ACTIVE;
+
+	return obj;
 }
 
-void gObj_DestroyObject(TSHIP *i)
+void gObj_DestroyObject(TSHIP *obj)
 {
+	obj->state = SH_DEAD;
 }
 
+/* FIXME: Later remove the parameter */
 void gObj_DestroyAll(int i)
 {
 	memset(&Ships[i], 0, sizeof(TSHIP) * (SHIPS_NUMBER - i));

@@ -83,7 +83,7 @@ TSHIP *gObj_Base();
 TSHIP *gObj_Ship();
 
 TSHIP *gObj_CreateObject();
-void gObj_DestroyObject(TSHIP *i);
+void gObj_DestroyObject(TSHIP *obj);
 void gObj_DestroyAll(int i);
 
 #endif /* _ENEMIES_H_ */
