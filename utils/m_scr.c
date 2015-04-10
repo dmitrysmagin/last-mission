@@ -2278,7 +2278,7 @@ unsigned char *SCREENS[NUM_SCREENS] = {
 unsigned char screeninfo0[] = {
 	 0, 0, 0, 0,
 	 0,
-	 //0, 45, 50, 108,			 4, 0, 0, 0,
+	 //0, 45, 50, 108,		 4, 0, 0, AI_STATIC,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo1[] = {
@@ -2292,396 +2292,396 @@ unsigned char screeninfo1[] = {
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo2[] = {
-	 0, 3, 0, 1,
+	 0, 3, 0, 2,
 	 3,
-	 0, 30, 40, 60,			 4, 0, 5, 2,
-	 0, 3, 30, 40,			 4, 0, 2, 2,
-	 0, 4, 29, 80,			 4, 0, 2, 1,
+	 0, 30, 40, 60,			 4, 0, 5, AI_KAMIKADZE,
+	 0, 3, 30, 40,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 4, 29, 80,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo3[] = {
 	 0, 4, 0, 2,
 	 3,
-	 0, 4, 64, 56,			 4, 0, 2, 1,
-	 0, 5, 29, 80,			 4, 0, 3, 2,
-	 0, 4, 20, 40,			 4, 0, 2, 1,
+	 0, 4, 64, 56,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 5, 29, 80,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 4, 20, 40,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo4[] = {
 	 11, 5, 0, 3,
 	 6,
-	 0, 3, 1, 20,			 4, 0, 2, 2,
-	 0, 6, 54, 64,			 4, 0, 0, 0,
-	 0, 6, 54, 80,			 4, 0, 0, 0,
-	 0, 6, 54, 96,			 4, 0, 0, 0,
-	 0, 13, 68, 48,			 4, 0, 2, 2,
-	 0, 17, 30, 48,			 4, 0, 1, 7,
+	 0, 3, 1, 20,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 6, 54, 64,			 4, 0, 0, AI_STATIC,
+	 0, 6, 54, 80,			 4, 0, 0, AI_STATIC,
+	 0, 6, 54, 96,			 4, 0, 0, AI_STATIC,
+	 0, 13, 68, 48,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 17, 30, 48,			 4, 0, 1, AI_ELECTRIC_SPARKLE_HORIZONTAL,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo5[] = {
 	 0, 6, 0, 4,
 	 3,
-	 0, 8, 18, 64,			 4, 0, 3, 2,
-	 0, 15, 54, 54,			 4, 0, 1, 1,
-	 0, 25, 64, 54,			 4, 0, 5, 1,
+	 0, 8, 18, 64,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 15, 54, 54,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 25, 64, 54,			 4, 0, 5, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo6[] = {
 	 9, 7, 0, 5,
 	 4,
-	 0, 9, 54, 54,			 4, 0, 3, 2,
-	 0, 24, 20, 40,			 4, 0, 3, 1,
-	 0, 26, 36, 64,			 4, 0, 1, 1,
-	 0, 17, 30, 48,			 4, 0, 1, 7,
+	 0, 9, 54, 54,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 24, 20, 40,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 26, 36, 64,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 17, 30, 48,			 4, 0, 1, AI_ELECTRIC_SPARKLE_HORIZONTAL,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo7[] = {
 	 8, 0, 0, 6,
 	 4,
-	 0, 10, 16, 54,			 4, 0, 2, 1,
-	 0, 24, 32, 54,			 4, 0, 3, 2,
-	 0, 10, 54, 54,			 4, 0, 2, 1,
+	 0, 10, 16, 54,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 24, 32, 54,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 10, 54, 54,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, 21, 64, 120,		 1, 0, 0, AI_ELEVATOR,
 	 0, // right elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo8[] = {
 	 0, 0, 7, 9,
 	 1,
-	 0, 47, 33, 40,			 2, 0, 0, 13,
+	 0, 47, 33, 40,			 2, 0, 0, AI_BONUS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo9[] = {
 	 0, 8, 6, 10,
 	 8,
-	 0, 44, 36, 120,			 4, 0, 0, 9,
-	 0, 6, 48, 32,			 4, 1, 1, 0,
-	 0, 6, 48, 48,			 4, 1, 1, 0,
-	 0, 6, 48, 64,			 4, 1, 1, 0,
-	 0, 6, 48, 80,			 4, 1, 1, 0,
-	 0, 6, 48, 96,			 4, 1, 1, 0,
-	 0, 12, 12, 70,			 4, 0, 1, 2,
-	 0, 13, 54, 70,			 4, 0, 2, 2,
+	 0, 44, 36, 120,		 4, 0, 0, AI_BRIDGE,
+	 0, 6, 48, 32,			 4, 1, 1, AI_STATIC,
+	 0, 6, 48, 48,			 4, 1, 1, AI_STATIC,
+	 0, 6, 48, 64,			 4, 1, 1, AI_STATIC,
+	 0, 6, 48, 80,			 4, 1, 1, AI_STATIC,
+	 0, 6, 48, 96,			 4, 1, 1, AI_STATIC,
+	 0, 12, 12, 70,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 13, 54, 70,			 4, 0, 2, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo10[] = {
 	 0, 9, 0, 11,
 	 3,
-	 0, 14, 50, 70,			 4, 0, 1, 1,
-	 0, 19, 30, 70,			 4, 0, 2, 1,
-	 0, 37, 40, 50,			 4, 0, 5, 1,
+	 0, 14, 50, 70,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 19, 30, 70,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 37, 40, 50,			 4, 0, 5, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 BONUS_HP, };
 unsigned char screeninfo11[] = {
 	 0, 10, 4, 12,
 	 4,
-	 0, 44, 36, 120,			 4, 0, 0, 9,
-	 0, 15, 8, 50,			 4, 0, 1, 2,
-	 0, 10, 35, 55,			 4, 0, 3, 1,
-	 0, 30, 45, 65,			 4, 0, 5, 1,
+	 0, 44, 36, 120,		 4, 0, 0, AI_BRIDGE,
+	 0, 15, 8, 50,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 10, 35, 55,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 30, 45, 65,			 4, 0, 5, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo12[] = {
 	 0, 11, 0, 13,
 	 4,
-	 0, 28, 54, 54,			 4, 0, 2, 1,
-	 0, 31, 34, 54,			 4, 0, 2, 2,
-	 0, 29, 44, 96,			 4, 0, 2, 1,
-	 0, 19, 20, 50,			 4, 0, 2, 2,
+	 0, 28, 54, 54,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 31, 34, 54,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 29, 44, 96,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 19, 20, 50,			 4, 0, 2, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo13[] = {
 	 0, 12, 0, 14,
 	 3,
-	 0, 18, 26, 36,			 4, 0, 1, 3,
-	 0, 8, 10, 70,			 4, 0, 3, 1,
-	 0, 11, 40, 60,			 4, 0, 3, 1,
+	 0, 18, 26, 36,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 8, 10, 70,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 11, 40, 60,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo14[] = {
 	 15, 13, 0, 0,
 	 5,
-	 0, 12, 10, 70,			 4, 0, 1, 2,
-	 0, 13, 24, 40,			 4, 0, 2, 1,
-	 0, 10, 35, 50,			 4, 0, 2, 2,
-	 0, 16, 50, 96,			 4, 0, 1, 1,
+	 0, 12, 10, 70,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 13, 24, 40,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 10, 35, 50,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 16, 50, 96,			 4, 0, 1, AI_RANDOM_MOVE,
 	 0, 21, 4, 120,			 1, 0, 0, AI_ELEVATOR,
 	 0, // left elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo15[] = {
 	 0, 16, 14, 0,
 	 1,
-	 0, 47, 40, 22,			 2, 0, 0, 13,
+	 0, 47, 40, 22,			 2, 0, 0, AI_BONUS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo16[] = {
 	 0, 17, 0, 15,
 	 4,
-	 0, 32, 56, 8,			 4, 0, 5, 4,
-	 0, 18, 16, 24,			 4, 0, 1, 3,
-	 0, 18, 62, 104,			 4, 0, 1, 3,
-	 0, 33, 30, 80,			 4, 0, 2, 1,
+	 0, 32, 56, 8,			 4, 0, 5, AI_CEILING_CANNON,
+	 0, 18, 16, 24,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 18, 62, 104,		 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 33, 30, 80,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo17[] = {
 	 26, 18, 0, 16,
 	 4,
-	 0, 6, 54, 64,			 4, 0, 0, 0,
-	 0, 6, 54, 80,			 4, 0, 0, 0,
-	 0, 6, 54, 96,			 4, 0, 0, 0,
-	 0, 16, 20, 20,			 4, 0, 1, 2,
+	 0, 6, 54, 64,			 4, 0, 0, AI_STATIC,
+	 0, 6, 54, 80,			 4, 0, 0, AI_STATIC,
+	 0, 6, 54, 96,			 4, 0, 0, AI_STATIC,
+	 0, 16, 20, 20,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo18[] = {
 	 0, 19, 0, 17,
 	 3,
-	 0, 15, 30, 40,			 4, 0, 1, 1,
-	 0, 13, 60, 40,			 4, 0, 2, 2,
-	 0, 13, 30, 96,			 4, 0, 2, 1,
+	 0, 15, 30, 40,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 13, 60, 40,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 13, 30, 96,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo19[] = {
 	 24, 20, 0, 18,
 	 3,
-	 0, 17, 32, 56,			 4, 0, 1, 7,
-	 0, 4, 30, 70,			 4, 0, 2, 1,
-	 0, 22, 50, 75,			 4, 0, 3, 2,
+	 0, 17, 32, 56,			 4, 0, 1, AI_ELECTRIC_SPARKLE_HORIZONTAL,
+	 0, 4, 30, 70,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 22, 50, 75,			 4, 0, 3, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo20[] = {
 	 0, 21, 0, 19,
 	 4,
-	 0, 14, 8, 16,			 4, 0, 1, 1,
-	 0, 16, 26, 60,			 4, 0, 1, 2,
-	 0, 26, 40, 60,			 4, 0, 1, 1,
-	 0, 5, 60, 60,			 4, 0, 2, 1,
+	 0, 14, 8, 16,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 16, 26, 60,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 26, 40, 60,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 5, 60, 60,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo21[] = {
 	 22, 0, 0, 20,
 	 5,
-	 0, 32, 12, 8,			 4, 0, 5, 4,
-	 0, 25, 40, 60,			 4, 0, 5, 1,
-	 0, 28, 50, 60,			 4, 0, 3, 2,
-	 0, 19, 30, 40,			 4, 0, 2, 1,
+	 0, 32, 12, 8,			 4, 0, 5, AI_CEILING_CANNON,
+	 0, 25, 40, 60,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 28, 50, 60,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 19, 30, 40,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, 21, 64, 120,		 1, 0, 0, AI_ELEVATOR,
 	 0, // right elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo22[] = {
 	 0, 0, 21, 23,
 	 1,
-	 0, 47, 31, 20,			 2, 0, 0, 13,
+	 0, 47, 31, 20,			 2, 0, 0, AI_BONUS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo23[] = {
 	 0, 22, 0, 24,
 	 4,
-	 0, 32, 22, 8,			 4, 0, 5, 4,
-	 0, 22, 10, 96,			 4, 0, 3, 1,
-	 0, 9, 40, 70,			 4, 0, 2, 1,
-	 0, 10, 70, 25,			 4, 0, 2, 2,
+	 0, 32, 22, 8,			 4, 0, 5, AI_CEILING_CANNON,
+	 0, 22, 10, 96,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 9, 40, 70,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 10, 70, 25,			 4, 0, 2, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo24[] = {
 	 0, 23, 19, 25,
 	 7,
-	 0, 44, 36, 120,			 4, 0, 0, 9,
-	 0, 6, 48, 32,			 4, 1, 1, 0,
-	 0, 6, 48, 48,			 4, 1, 1, 0,
-	 0, 6, 48, 64,			 4, 1, 1, 0,
-	 0, 6, 48, 80,			 4, 1, 1, 0,
-	 0, 6, 48, 96,			 4, 1, 1, 0,
-	 0, 11, 10, 60,			 4, 0, 3, 1,
+	 0, 44, 36, 120,		 4, 0, 0, AI_BRIDGE,
+	 0, 6, 48, 32,			 4, 1, 1, AI_STATIC,
+	 0, 6, 48, 48,			 4, 1, 1, AI_STATIC,
+	 0, 6, 48, 64,			 4, 1, 1, AI_STATIC,
+	 0, 6, 48, 80,			 4, 1, 1, AI_STATIC,
+	 0, 6, 48, 96,			 4, 1, 1, AI_STATIC,
+	 0, 11, 10, 60,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo25[] = {
 	 0, 24, 0, 26,
 	 3,
-	 0, 4, 18, 72,			 4, 0, 2, 2,
-	 0, 36, 40, 70,			 4, 0, 2, 1,
-	 0, 4, 58, 48,			 4, 0, 2, 1,
+	 0, 4, 18, 72,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 36, 40, 70,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 4, 58, 48,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 BONUS_HP, };
 unsigned char screeninfo26[] = {
 	 31, 25, 17, 27,
 	 4,
-	 0, 44, 36, 120,			 4, 0, 0, 9,
-	 0, 37, 55, 60,			 4, 0, 5, 1,
-	 0, 5, 34, 32,			 4, 0, 3, 2,
-	 0, 13, 20, 50,			 4, 0, 2, 1,
+	 0, 44, 36, 120,		 4, 0, 0, AI_BRIDGE,
+	 0, 37, 55, 60,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 5, 34, 32,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 13, 20, 50,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo27[] = {
 	 0, 26, 0, 28,
 	 4,
-	 0, 26, 10, 40,			 4, 0, 1, 2,
-	 0, 36, 70, 30,			 4, 0, 3, 1,
-	 0, 19, 40, 80,			 4, 0, 2, 1,
-	 0, 10, 30, 80,			 4, 0, 2, 2,
+	 0, 26, 10, 40,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 36, 70, 30,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 19, 40, 80,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 10, 30, 80,			 4, 0, 2, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo28[] = {
 	 29, 27, 0, 0,
 	 4,
-	 0, 12, 40, 40,			 4, 0, 1, 2,
-	 0, 8, 40, 60,			 4, 0, 3, 1,
-	 0, 11, 40, 80,			 4, 0, 3, 1,
+	 0, 12, 40, 40,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 8, 40, 60,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 11, 40, 80,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, 21, 4, 120,			 1, 0, 0, AI_ELEVATOR,
 	 0, // left elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo29[] = {
 	 0, 30, 28, 0,
 	 1,
-	 0, 47, 15, 30,			 2, 0, 0, 13,
+	 0, 47, 15, 30,			 2, 0, 0, AI_BONUS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo30[] = {
 	 0, 31, 0, 29,
 	 6,
-	 0, 6, 38, 64,			 4, 0, 0, 0,
-	 0, 6, 38, 80,			 4, 0, 0, 0,
-	 0, 6, 38, 96,			 4, 0, 0, 0,
-	 0, 30, 20, 60,			 4, 0, 5, 1,
-	 0, 26, 10, 40,			 4, 0, 1, 2,
-	 0, 31, 60, 60,			 4, 0, 3, 1,
+	 0, 6, 38, 64,			 4, 0, 0, AI_STATIC,
+	 0, 6, 38, 80,			 4, 0, 0, AI_STATIC,
+	 0, 6, 38, 96,			 4, 0, 0, AI_STATIC,
+	 0, 30, 20, 60,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 26, 10, 40,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 31, 60, 60,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo31[] = {
 	 0, 32, 26, 30,
 	 4,
-	 0, 44, 52, 120,			 4, 0, 0, 9,
-	 0, 5, 38, 40,			 4, 0, 3, 0,
-	 0, 33, 28, 56,			 4, 0, 3, 2,
-	 0, 29, 48, 56,			 4, 0, 3, 1,
+	 0, 44, 52, 120,		 4, 0, 0, AI_BRIDGE,
+	 0, 5, 38, 40,			 4, 0, 3, AI_STATIC,
+	 0, 33, 28, 56,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 29, 48, 56,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo32[] = {
 	 0, 33, 0, 31,
 	 3,
-	 0, 15, 30, 40,			 4, 0, 1, 1,
-	 0, 13, 60, 40,			 4, 0, 2, 2,
-	 0, 13, 38, 96,			 4, 0, 2, 1,
+	 0, 15, 30, 40,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 13, 60, 40,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 13, 38, 96,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 BONUS_HP, };
 unsigned char screeninfo33[] = {
 	 38, 34, 0, 32,
 	 5,
-	 0, 6, 50, 64,			 4, 0, 0, 0,
-	 0, 6, 50, 80,			 4, 0, 0, 0,
-	 0, 6, 50, 96,			 4, 0, 0, 0,
-	 0, 17, 30, 48,			 4, 0, 1, 7,
-	 0, 11, 60, 72,			 4, 0, 3, 1,
+	 0, 6, 50, 64,			 4, 0, 0, AI_STATIC,
+	 0, 6, 50, 80,			 4, 0, 0, AI_STATIC,
+	 0, 6, 50, 96,			 4, 0, 0, AI_STATIC,
+	 0, 17, 30, 48,			 4, 0, 1, AI_ELECTRIC_SPARKLE_HORIZONTAL,
+	 0, 11, 60, 72,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo34[] = {
 	 37, 35, 0, 33,
 	 5,
-	 0, 6, 46, 72,			 4, 0, 0, 0,
-	 0, 6, 46, 88,			 4, 0, 0, 0,
-	 0, 6, 46, 104,			 4, 0, 0, 0,
-	 0, 12, 60, 50,			 4, 0, 1, 2,
-	 0, 10, 30, 70,			 4, 0, 2, 2,
+	 0, 6, 46, 72,			 4, 0, 0, AI_STATIC,
+	 0, 6, 46, 88,			 4, 0, 0, AI_STATIC,
+	 0, 6, 46, 104,			 4, 0, 0, AI_STATIC,
+	 0, 12, 60, 50,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 10, 30, 70,			 4, 0, 2, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo35[] = {
 	 36, 0, 0, 34,
 	 4,
-	 0, 36, 8, 56,			 4, 0, 2, 1,
-	 0, 24, 32, 88,			 4, 0, 2, 2,
-	 0, 10, 54, 54,			 4, 0, 2, 1,
+	 0, 36, 8, 56,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 24, 32, 88,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 10, 54, 54,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, 21, 64, 120,		 1, 0, 0, AI_ELEVATOR,
 	 0, // right elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo36[] = {
 	 0, 0, 35, 37,
 	 1,
-	 0, 47, 32, 35,			 2, 0, 0, 13,
+	 0, 47, 32, 35,			 2, 0, 0, AI_BONUS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo37[] = {
 	 0, 36, 34, 38,
 	 5,
-	 0, 44, 34, 120,			 4, 0, 0, 9,
-	 0, 32, 2, 8,			 4, 0, 5, 4,
-	 0, 25, 40, 70,			 4, 0, 5, 1,
-	 0, 14, 15, 50,			 4, 0, 1, 1,
-	 0, 26, 65, 50,			 4, 0, 1, 2,
+	 0, 44, 34, 120,		 4, 0, 0, AI_BRIDGE,
+	 0, 32, 2, 8,			 4, 0, 5, AI_CEILING_CANNON,
+	 0, 25, 40, 70,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 14, 15, 50,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 26, 65, 50,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo38[] = {
 	 0, 37, 33, 39,
 	 4,
-	 0, 44, 34, 120,			 4, 0, 0, 9,
-	 0, 37, 40, 70,			 4, 0, 5, 1,
-	 0, 5, 15, 60,			 4, 0, 3, 2,
-	 0, 11, 65, 60,			 4, 0, 3, 1,
+	 0, 44, 34, 120,		 4, 0, 0, AI_BRIDGE,
+	 0, 37, 40, 70,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 5, 15, 60,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 11, 65, 60,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo39[] = {
 	 0, 38, 0, 40,
 	 3,
-	 0, 18, 26, 56,			 4, 0, 1, 3,
-	 0, 13, 40, 50,			 4, 0, 2, 1,
-	 0, 8, 72, 48,			 4, 0, 3, 2,
+	 0, 18, 26, 56,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 13, 40, 50,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 8, 72, 48,			 4, 0, 3, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo40[] = {
 	 45, 39, 0, 41,
 	 4,
-	 0, 11, 28, 40,			 4, 0, 3, 7,
-	 0, 10, 8, 60,			 4, 0, 2, 1,
-	 0, 28, 37, 60,			 4, 0, 2, 1,
-	 0, 10, 64, 60,			 4, 0, 2, 1,
+	 0, 11, 28, 40,			 4, 0, 3, AI_ELECTRIC_SPARKLE_HORIZONTAL,
+	 0, 10, 8, 60,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 28, 37, 60,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 10, 64, 60,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo41[] = {
 	 0, 40, 0, 42,
 	 3,
-	 0, 30, 60, 70,			 4, 0, 5, 1,
-	 0, 14, 50, 70,			 4, 0, 1, 1,
-	 0, 19, 30, 70,			 4, 0, 2, 1,
+	 0, 30, 60, 70,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 14, 50, 70,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 19, 30, 70,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo42[] = {
 	 43, 41, 0, 0,
 	 8,
-	 0, 6, 16, 72,			 4, 1, 1, 0,
-	 0, 6, 16, 88,			 4, 1, 1, 0,
-	 0, 6, 16, 104,			 4, 1, 1, 0,
-	 0, 18, 54, 32,			 4, 0, 1, 3,
-	 0, 29, 38, 32,			 4, 0, 3, 1,
-	 0, 33, 64, 40,			 4, 0, 3, 1,
-	 0, 5, 22, 70,			 4, 0, 3, 2,
+	 0, 6, 16, 72,			 4, 1, 1, AI_STATIC,
+	 0, 6, 16, 88,			 4, 1, 1, AI_STATIC,
+	 0, 6, 16, 104,			 4, 1, 1, AI_STATIC,
+	 0, 18, 54, 32,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 29, 38, 32,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 33, 64, 40,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 5, 22, 70,			 4, 0, 3, AI_KAMIKADZE,
 	 0, 21, 4, 120,			 1, 0, 0, AI_ELEVATOR,
 	 0, // left elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo43[] = {
 	 0, 44, 42, 0,
 	 1,
-	 0, 47, 47, 43,			 2, 0, 0, 13,
+	 0, 47, 47, 43,			 2, 0, 0, AI_BONUS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo44[] = {
 	 0, 45, 0, 43,
 	 4,
-	 0, 32, 16, 8,			 4, 0, 5, 4,
-	 0, 4, 40, 70,			 4, 0, 2, 2,
-	 0, 19, 64, 96,			 4, 0, 2, 1,
-	 0, 13, 4, 48,			 4, 0, 2, 1,
+	 0, 32, 16, 8,			 4, 0, 5, AI_CEILING_CANNON,
+	 0, 4, 40, 70,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 19, 64, 96,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 13, 4, 48,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo45[] = {
 	 0, 46, 40, 44,
 	 4,
-	 0, 44, 34, 120,			 4, 0, 0, 9,
-	 0, 25, 40, 70,			 4, 0, 5, 1,
-	 0, 5, 2, 8,			 4, 0, 3, 2,
-	 0, 22, 70, 8,			 4, 0, 3, 1,
+	 0, 44, 34, 120,		 4, 0, 0, AI_BRIDGE,
+	 0, 25, 40, 70,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 5, 2, 8,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 22, 70, 8,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 BONUS_HP, /* No bonus */ };
 unsigned char screeninfo46[] = {
 	 0, 47, 0, 45,
 	 3,
-	 0, 11, 37, 56,			 2, 0, 3, 3,
+	 0, 11, 37, 56,			 2, 0, 3, AI_ELECTRIC_SPARKLE_VERTICAL,
 	 110, 0, 2, 15, 0, 0, 0, AI_GARAGE,
 	 111, 0, 66, 15, 0, 0, 0, AI_GARAGE,
 	 0, //no screen procedure
@@ -2689,193 +2689,193 @@ unsigned char screeninfo46[] = {
 unsigned char screeninfo47[] = {
 	 0, 48, 0, 46,
 	 3,
-	 0, 37, 40, 80,			 4, 0, 5, 1,
-	 0, 36, 2, 10,			 4, 0, 3, 2,
-	 0, 5, 72, 10,			 4, 0, 3, 1,
+	 0, 37, 40, 80,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 36, 2, 10,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 5, 72, 10,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo48[] = {
 	 0, 49, 0, 47,
 	 4,
-	 0, 32, 38, 40,			 4, 0, 5, 4,
-	 0, 30, 40, 80,			 4, 0, 5, 1,
-	 0, 9, 64, 88,			 4, 0, 3, 1,
-	 0, 9, 54, 88,			 4, 0, 3, 2,
+	 0, 32, 38, 40,			 4, 0, 5, AI_CEILING_CANNON,
+	 0, 30, 40, 80,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 9, 64, 88,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 9, 54, 88,			 4, 0, 3, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo49[] = {
 	 50, 0, 0, 48,
 	 5,
-	 0, 32, 36, 8,			 4, 0, 5, 4,
-	 0, 18, 32, 32,			 4, 0, 1, 3,
-	 0, 12, 22, 32,			 4, 0, 1, 2,
-	 0, 29, 37, 80,			 4, 0, 3, 1,
+	 0, 32, 36, 8,			 4, 0, 5, AI_CEILING_CANNON,
+	 0, 18, 32, 32,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 12, 22, 32,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 29, 37, 80,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, 21, 64, 120,		 1, 0, 0, AI_ELEVATOR,
 	 0, // right elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo50[] = {
 	 0, 0, 49, 51,
 	 1,
-	 0, 47, 26, 49,			 2, 0, 0, 13,
+	 0, 47, 26, 49,			 2, 0, 0, AI_BONUS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo51[] = {
 	 0, 50, 0, 52,
 	 4,
-	 0, 31, 12, 96,			 4, 0, 2, 1,
-	 0, 10, 36, 40,			 4, 0, 2, 2,
-	 0, 29, 54, 54,			 4, 0, 2, 1,
-	 0, 19, 20, 50,			 4, 0, 2, 2,
+	 0, 31, 12, 96,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 10, 36, 40,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 29, 54, 54,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 19, 20, 50,			 4, 0, 2, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo52[] = {
 	 0, 51, 0, 53,
 	 3,
-	 0, 18, 52, 48,			 4, 0, 1, 3,
-	 0, 22, 40, 40,			 4, 0, 3, 2,
-	 0, 20, 20, 96,			 4, 0, 1, 1,
+	 0, 18, 52, 48,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 22, 40, 40,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 20, 20, 96,			 4, 0, 1, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo53[] = {
 	 0, 52, 0, 54,
 	 4,
-	 0, 12, 10, 50,			 4, 0, 1, 2,
-	 0, 13, 20, 60,			 4, 0, 2, 1,
-	 0, 10, 30, 70,			 4, 0, 2, 2,
-	 0, 16, 40, 60,			 4, 0, 1, 1,
+	 0, 12, 10, 50,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 13, 20, 60,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 10, 30, 70,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 16, 40, 60,			 4, 0, 1, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo54[] = {
 	 55, 53, 0, 0,
 	 5,
-	 0, 32, 58, 16,			 4, 0, 5, 4,
-	 0, 4, 20, 70,			 4, 0, 2, 2,
-	 0, 4, 40, 75,			 4, 0, 2, 1,
-	 0, 4, 60, 80,			 4, 0, 2, 1,
+	 0, 32, 58, 16,			 4, 0, 5, AI_CEILING_CANNON,
+	 0, 4, 20, 70,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 4, 40, 75,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 4, 60, 80,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, 21, 4, 120,			 1, 0, 0, AI_ELEVATOR,
 	 0, // left elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo55[] = {
 	 0, 56, 54, 0,
 	 1,
-	 0, 47, 38, 45,			 2, 0, 0, 13,
+	 0, 47, 38, 45,			 2, 0, 0, AI_BONUS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo56[] = {
 	 0, 57, 0, 55,
 	 3,
-	 0, 20, 40, 96,			 4, 0, 1, 1,
-	 0, 26, 40, 60,			 4, 0, 1, 1,
-	 0, 14, 8, 32,			 4, 0, 1, 1,
+	 0, 20, 40, 96,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 26, 40, 60,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 14, 8, 32,			 4, 0, 1, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo57[] = {
 	 0, 58, 0, 56,
 	 3,
-	 0, 17, 32, 56,			 4, 0, 1, 7,
-	 0, 11, 30, 88,			 4, 0, 3, 1,
-	 0, 9, 70, 70,			 4, 0, 2, 2,
+	 0, 17, 32, 56,			 4, 0, 1, AI_ELECTRIC_SPARKLE_HORIZONTAL,
+	 0, 11, 30, 88,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 9, 70, 70,			 4, 0, 2, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo58[] = {
 	 65, 59, 0, 57,
 	 7,
-	 0, 6, 46, 64,			 4, 0, 0, 0,
-	 0, 6, 46, 80,			 4, 0, 0, 0,
-	 0, 6, 46, 96,			 4, 0, 0, 0,
-	 0, 32, 50, 16,			 4, 0, 5, 4,
-	 0, 20, 40, 60,			 4, 0, 1, 1,
-	 0, 15, 20, 60,			 4, 0, 1, 2,
-	 0, 8, 70, 60,			 4, 0, 3, 1,
+	 0, 6, 46, 64,			 4, 0, 0, AI_STATIC,
+	 0, 6, 46, 80,			 4, 0, 0, AI_STATIC,
+	 0, 6, 46, 96,			 4, 0, 0, AI_STATIC,
+	 0, 32, 50, 16,			 4, 0, 5, AI_CEILING_CANNON,
+	 0, 20, 40, 60,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 15, 20, 60,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 8, 70, 60,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo59[] = {
 	 0, 60, 0, 58,
 	 3,
-	 0, 9, 54, 54,			 4, 0, 3, 2,
-	 0, 5, 20, 60,			 4, 0, 3, 1,
-	 0, 12, 38, 96,			 4, 0, 1, 1,
+	 0, 9, 54, 54,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 5, 20, 60,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 12, 38, 96,			 4, 0, 1, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 BONUS_HP, /* No bonus */ };
 unsigned char screeninfo60[] = {
 	 0, 61, 0, 59,
 	 3,
-	 0, 25, 40, 80,			 4, 0, 5, 1,
-	 0, 4, 10, 20,			 4, 0, 2, 1,
-	 0, 10, 70, 20,			 4, 0, 2, 1,
+	 0, 25, 40, 80,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 4, 10, 20,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 10, 70, 20,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo61[] = {
 	 62, 0, 0, 60,
 	 4,
-	 0, 33, 10, 20,			 4, 0, 3, 1,
-	 0, 22, 22, 96,			 4, 0, 3, 1,
-	 0, 36, 38, 96,			 4, 0, 3, 2,
+	 0, 33, 10, 20,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 22, 22, 96,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 36, 38, 96,			 4, 0, 3, AI_KAMIKADZE,
 	 0, 21, 64, 120,		 1, 0, 0, AI_ELEVATOR,
 	 0, // right elevator
 	 0, /* No bonus */ };
 unsigned char screeninfo62[] = {
 	 0, 0, 61, 63,
 	 2,
-	 0, 18, 24, 40,			 4, 0, 1, 3,
-	 0, 47, 60, 49,			 2, 0, 0, 13,
+	 0, 18, 24, 40,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 47, 60, 49,			 2, 0, 0, AI_BONUS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo63[] = {
 	 0, 62, 0, 64,
 	 4,
-	 0, 19, 40, 96,			 4, 0, 2, 1,
-	 0, 13, 20, 96,			 4, 0, 2, 1,
-	 0, 9, 60, 40,			 4, 0, 2, 2,
-	 0, 32, 59, 16,			 4, 0, 5, 4,
+	 0, 19, 40, 96,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 13, 20, 96,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 9, 60, 40,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 32, 59, 16,			 4, 0, 5, AI_CEILING_CANNON,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo64[] = {
 	 0, 63, 0, 65,
 	 4,
-	 0, 32, 16, 16,			 4, 0, 5, 4,
-	 0, 16, 12, 60,			 4, 0, 1, 2,
-	 0, 20, 34, 60,			 4, 0, 1, 1,
-	 0, 19, 62, 60,			 4, 0, 2, 1,
+	 0, 32, 16, 16,			 4, 0, 5, AI_CEILING_CANNON,
+	 0, 16, 12, 60,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 20, 34, 60,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 19, 62, 60,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo65[] = {
 	 0, 64, 58, 66,
 	 3,
-	 0, 44, 18, 120,			 4, 0, 0, 9,
-	 0, 11, 10, 35,			 4, 0, 3, 1,
-	 0, 11, 70, 35,			 4, 0, 3, 1,
+	 0, 44, 18, 120,		 4, 0, 0, AI_BRIDGE,
+	 0, 11, 10, 35,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 11, 70, 35,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo66[] = {
 	 0, 65, 0, 67,
 	 3,
-	 0, 37, 20, 80,			 4, 0, 5, 1,
-	 0, 31, 20, 60,			 4, 0, 3, 2,
-	 0, 22, 60, 60,			 4, 0, 3, 1,
+	 0, 37, 20, 80,			 4, 0, 5, AI_RANDOM_MOVE,
+	 0, 31, 20, 60,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 22, 60, 60,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo67[] = {
 	 0, 66, 0, 68,
 	 5,
-	 0, 5, 30, 60,			 4, 0, 3, 2,
-	 0, 22, 20, 50,			 4, 0, 3, 2,
-	 0, 8, 10, 70,			 4, 0, 3, 2,
-	 0, 13, 2, 80,			 4, 0, 2, 2,
-	 0, 9, 50, 70,			 4, 0, 2, 2,
+	 0, 5, 30, 60,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 22, 20, 50,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 8, 10, 70,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 13, 2, 80,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 9, 50, 70,			 4, 0, 2, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo68[] = {
 	 69, 67, 0, 0,
 	 9,
-	 0, 6, 36, 24,			 4, 0, 0, 0,
-	 0, 6, 36, 40,			 4, 0, 0, 0,
-	 0, 6, 36, 56,			 4, 0, 0, 0,
-	 0, 6, 36, 72,			 4, 0, 0, 0,
-	 0, 6, 36, 88,			 4, 0, 0, 0,
-	 0, 6, 36, 104,			 4, 0, 0, 0,
-	 0, 11, 25, 60,			 4, 0, 3, 2,
-	 0, 11, 40, 60,			 4, 0, 3, 1,
+	 0, 6, 36, 24,			 4, 0, 0, AI_STATIC,
+	 0, 6, 36, 40,			 4, 0, 0, AI_STATIC,
+	 0, 6, 36, 56,			 4, 0, 0, AI_STATIC,
+	 0, 6, 36, 72,			 4, 0, 0, AI_STATIC,
+	 0, 6, 36, 88,			 4, 0, 0, AI_STATIC,
+	 0, 6, 36, 104,			 4, 0, 0, AI_STATIC,
+	 0, 11, 25, 60,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 11, 40, 60,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, 21, 4, 120,			 1, 0, 0, AI_ELEVATOR,
 	 0, // left elevator
 	 0, /* No bonus */ };
@@ -2887,169 +2887,169 @@ unsigned char screeninfo69[] = {
 unsigned char screeninfo70[] = {
 	 0, 71, 69, 0,
 	 1,
-	 0, 47, 20, 20,			 2, 0, 0, 13,
+	 0, 47, 20, 20,			 2, 0, 0, AI_BONUS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo71[] = {
 	 0, 72, 0, 70,
 	 2,
-	 0, 24, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
+	 0, 24, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo72[] = {
 	 0, 73, 0, 71,
 	 2,
-	 0, 29, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
+	 0, 29, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo73[] = {
 	 0, 74, 0, 72,
 	 3,
-	 0, 22, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 39, 36, 72,			 4, 0, 1, 2,
+	 0, 22, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 39, 36, 72,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo74[] = {
 	 0, 75, 0, 73,
 	 3,
-	 0, 10, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 39, 46, 80,			 4, 0, 1, 2,
+	 0, 10, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 39, 46, 80,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo75[] = {
 	 0, 76, 0, 74,
 	 4,
-	 0, 19, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 42, 43, 80,			 10, 0, 3, 6,
-	 0, 42, 31, 96,			 10, 0, 3, 6,
+	 0, 19, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 42, 43, 80,			 10, 0, 3, AI_CANNON,
+	 0, 42, 31, 96,			 10, 0, 3, AI_CANNON,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo76[] = {
 	 0, 77, 0, 75,
 	 4,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 39, 70, 80,			 4, 0, 1, 1,
-	 0, 5, 20, 40,			 4, 0, 3, 2,
-	 0, 39, 60, 88,			 4, 0, 1, 2,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 39, 70, 80,			 4, 0, 1, AI_RANDOM_MOVE,
+	 0, 5, 20, 40,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 39, 60, 88,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo77[] = {
 	 0, 78, 0, 76,
 	 3,
-	 0, 31, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 39, 43, 88,			 4, 0, 1, 2,
+	 0, 31, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 39, 43, 88,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo78[] = {
 	 0, 79, 0, 77,
 	 2,
-	 0, 33, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
+	 0, 33, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo79[] = {
 	 0, 80, 0, 78,
 	 3,
-	 0, 36, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 39, 42, 56,			 4, 0, 1, 2,
+	 0, 36, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 39, 42, 56,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo80[] = {
 	 0, 81, 0, 79,
 	 2,
-	 0, 22, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
+	 0, 22, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo81[] = {
 	 0, 82, 0, 80,
 	 5,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 42, 29, 88,			 10, 0, 3, 6,
-	 0, 42, 58, 72,			 10, 0, 3, 6,
-	 0, 42, 43, 72,			 10, 0, 3, 6,
-	 0, 28, 40, 20,			 4, 0, 3, 2,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 42, 29, 88,			 10, 0, 3, AI_CANNON,
+	 0, 42, 58, 72,			 10, 0, 3, AI_CANNON,
+	 0, 42, 43, 72,			 10, 0, 3, AI_CANNON,
+	 0, 28, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo82[] = {
 	 0, 83, 0, 81,
 	 2,
-	 0, 19, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
+	 0, 19, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo83[] = {
 	 0, 84, 0, 82,
 	 3,
-	 0, 19, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 39, 20, 72,			 4, 0, 1, 2,
+	 0, 19, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 39, 20, 72,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo84[] = {
 	 0, 85, 0, 83,
 	 3,
-	 0, 29, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 39, 44, 88,			 4, 0, 1, 2,
+	 0, 29, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 39, 44, 88,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo85[] = {
 	 0, 86, 0, 84,
 	 2,
-	 0, 28, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
+	 0, 28, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo86[] = {
 	 0, 87, 0, 85,
 	 3,
-	 0, 10, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 39, 30, 56,			 4, 0, 1, 2,
+	 0, 10, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 39, 30, 56,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo87[] = {
 	 0, 88, 0, 86,
 	 2,
-	 0, 24, 40, 20,			 4, 0, 3, 2,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
+	 0, 24, 40, 20,			 4, 0, 3, AI_KAMIKADZE,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo88[] = {
 	 0, 89, 0, 87,
 	 3,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 39, 22, 72,			 4, 0, 1, 2,
-	 0, 38, 60, 88,			 4, 0, 3, 2,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 39, 22, 72,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 38, 60, 88,			 4, 0, 3, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo89[] = {
 	 0, 90, 0, 88,
 	 1,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo90[] = {
 	 0, 91, 0, 89,
 	 4,
-	 0, 40, 70, 32,			 1, 0, 1, 5,
-	 0, 39, 36, 96,			 4, 0, 1, 2,
-	 0, 42, 25, 96,			 10, 0, 3, 6,
-	 0, 42, 45, 96,			 10, 0, 3, 6,
+	 0, 40, 70, 32,			 1, 0, 1, AI_HOMING_MISSLE,
+	 0, 39, 36, 96,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 42, 25, 96,			 10, 0, 3, AI_CANNON,
+	 0, 42, 45, 96,			 10, 0, 3, AI_CANNON,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo91[] = {
 	 0, 0, 0, 90,
 	 1,
-	 0, 49, 40, 100,			 6, 0, 3, 0,
+	 0, 49, 40, 100,		 6, 0, 3, AI_STATIC,
 	 3, // final screen
 	 0, /* No bonus */ };
 unsigned char screeninfo92[] = {
@@ -3060,22 +3060,22 @@ unsigned char screeninfo92[] = {
 unsigned char screeninfo93[] = {
 	 92, 94, 0, 0,
 	 1,
-	 0, 5, 40, 60,			 4, 0, 2, 1,
+	 0, 5, 40, 60,			 4, 0, 2, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo94[] = {
 	 0, 95, 0, 93,
 	 11,
 
-	 0, 6, 34, 16,			 4, 0, 0, 0,
-	 0, 6, 34, 32,			 4, 0, 0, 0,
-	 0, 6, 34, 48,			 4, 0, 0, 0,
-	 0, 6, 46, 16,			 4, 0, 0, 0,
-	 0, 6, 46, 32,			 4, 0, 0, 0,
-	 0, 6, 46, 48,			 4, 0, 0, 0,
-	 0, 6, 58, 16,			 4, 0, 0, 0,
-	 0, 6, 58, 32,			 4, 0, 0, 0,
-	 0, 6, 58, 48,			 4, 0, 0, 0,
+	 0, 6, 34, 16,			 4, 0, 0, AI_STATIC,
+	 0, 6, 34, 32,			 4, 0, 0, AI_STATIC,
+	 0, 6, 34, 48,			 4, 0, 0, AI_STATIC,
+	 0, 6, 46, 16,			 4, 0, 0, AI_STATIC,
+	 0, 6, 46, 32,			 4, 0, 0, AI_STATIC,
+	 0, 6, 46, 48,			 4, 0, 0, AI_STATIC,
+	 0, 6, 58, 16,			 4, 0, 0, AI_STATIC,
+	 0, 6, 58, 32,			 4, 0, 0, AI_STATIC,
+	 0, 6, 58, 48,			 4, 0, 0, AI_STATIC,
 
 
 	 130, 0, 42, 87,		0, 0, 0, AI_GARAGE,
@@ -3085,19 +3085,19 @@ unsigned char screeninfo94[] = {
 unsigned char screeninfo95[] = {
 	 0, 96, 0, 94,
 	 6,
-	 0, 6, 10, 16,			 4, 0, 0, 0,
-	 0, 6, 10, 32,			 4, 0, 0, 0,
-	 0, 6, 10, 48,			 4, 0, 0, 0,
+	 0, 6, 10, 16,			 4, 0, 0, AI_STATIC,
+	 0, 6, 10, 32,			 4, 0, 0, AI_STATIC,
+	 0, 6, 10, 48,			 4, 0, 0, AI_STATIC,
 
-	 0, 18, 54, 80,	4, 0, 1, 3,
-	 0, 18, 38, 52,	4, 0, 1, 3,
-	 0, 18, 22, 62,	4, 0, 1, 3,
+	 0, 18, 54, 80,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 18, 38, 52,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 18, 22, 62,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo96[] = {
 	 0, 97, 0, 95,
 	 6,
-	 0, 8, 50, 40,			 4, 0, 3, 1,
+	 0, 8, 50, 40,			 4, 0, 3, AI_RANDOM_MOVE,
 	 120, 0, 18, 87,		0, 0, 0, AI_GARAGE,
 	 121, 0, 28, 87,		0, 0, 0, AI_GARAGE,
 	 122, 0, 38, 87,		0, 0, 0, AI_GARAGE,
@@ -3108,26 +3108,26 @@ unsigned char screeninfo96[] = {
 unsigned char screeninfo97[] = {
 	 0, 98, 0, 96,
 	 3,
-	 0, 18, 43, 52,	4, 0, 1, 3,
-	 0, 8, 70, 40,			 4, 0, 3, 1,
-	 //0, 8, 20, 98,			 4, 0, 3, 1,
-	 0, 8, 28, 20,			 4, 0, 3, 1,
+	 0, 18, 43, 52,			 4, 0, 1, AI_ELECTRIC_SPARKLE_VERTICAL,
+	 0, 8, 70, 40,			 4, 0, 3, AI_RANDOM_MOVE,
+	 //0, 8, 20, 98,		 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 8, 28, 20,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo98[] = {
 	 0, 99, 0, 97,
 	 3,
-	 0, 14, 50, 70,			 4, 0, 1, 2,
-	 0, 26, 36, 64,			 4, 0, 1, 2,
-	 0, 8, 60, 18,			 4, 0, 3, 1,
+	 0, 14, 50, 70,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 26, 36, 64,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 8, 60, 18,			 4, 0, 3, AI_RANDOM_MOVE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo99[] = {
 	 0, 100, 0, 98,
 	 3,
-	 0, 8, 50, 48,			 4, 0, 3, 1,
-	 0, 8, 40, 68,			 4, 0, 3, 1,
-	 0, 14, 30, 70,			 4, 0, 1, 2,
+	 0, 8, 50, 48,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 8, 40, 68,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 14, 30, 70,			 4, 0, 1, AI_KAMIKADZE,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
  unsigned char screeninfo100[] = {
@@ -3137,18 +3137,18 @@ unsigned char screeninfo99[] = {
 	 191, 0, 16, 15,		0, 0, 0, AI_GARAGE,
 	 190, 0, 32, 15,		0, 0, 0, AI_GARAGE,
 
-	 0, 6, 52, 16,			 4, 1, 0, 0,
-	 0, 6, 52, 32,			 4, 1, 0, 0,
-	 0, 6, 52, 48,			 4, 1, 0, 0,
-	 0, 6, 52, 64,			 4, 1, 0, 0,
-	 0, 6, 52, 80,			 4, 1, 0, 0,
-	 0, 6, 52, 96,			 4, 1, 0, 0,
+	 0, 6, 52, 16,			 4, 1, 0, AI_STATIC,
+	 0, 6, 52, 32,			 4, 1, 0, AI_STATIC,
+	 0, 6, 52, 48,			 4, 1, 0, AI_STATIC,
+	 0, 6, 52, 64,			 4, 1, 0, AI_STATIC,
+	 0, 6, 52, 80,			 4, 1, 0, AI_STATIC,
+	 0, 6, 52, 96,			 4, 1, 0, AI_STATIC,
 
-	 0, 8, 60, 18,			 4, 0, 3, 1,
-	 0, 12, 60, 50,			 4, 0, 1, 2,
-	 0, 13, 65, 90,			 4, 0, 2, 1,
-	 0, 10, 65, 70,			 4, 0, 2, 2,
-	 0, 16, 60, 80,			 4, 0, 1, 1,
+	 0, 8, 60, 18,			 4, 0, 3, AI_RANDOM_MOVE,
+	 0, 12, 60, 50,			 4, 0, 1, AI_KAMIKADZE,
+	 0, 13, 65, 90,			 4, 0, 2, AI_RANDOM_MOVE,
+	 0, 10, 65, 70,			 4, 0, 2, AI_KAMIKADZE,
+	 0, 16, 60, 80,			 4, 0, 1, AI_RANDOM_MOVE,
 
 	 0, //no screen procedure
 	 0, /* No bonus */ };
