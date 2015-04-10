@@ -896,7 +896,7 @@ void BlowUpEnemy(TSHIP *gobj)
 
 	// reactivate parent cannon
 	if (gobj->i == 34 && gobj->parent)
-		((TSHIP *)gobj->parent)->dx = 0;
+		gobj->parent->dx = 0;
 
 	// special procedures for breakable walls
 	if (gobj->i == 6) {
@@ -1537,7 +1537,7 @@ _random_move_ai:
 			j->anim_speed_cnt = j->anim_speed;
 			j->max_frame = 3;
 			j->ai_type = AI_KAMIKADZE;
-			j->parent = (void *)gobj;
+			j->parent = gobj;
 			PlaySoundEffect(SND_CANNON_SHOOT);
 		}
 		break;
@@ -1602,7 +1602,7 @@ _random_move_ai:
 				bullet->anim_speed = 4;
 				bullet->anim_speed_cnt = bullet->anim_speed;
 				bullet->ai_type = AI_BULLET;
-				bullet->parent = (void *)gobj;
+				bullet->parent = gobj;
 			}
 		}
 		break;
@@ -1741,7 +1741,7 @@ _random_move_ai:
 				*ship = *spare;
 				*spare = tmp;
 
-				TSHIP *garage = (TSHIP *)ship->garage;
+				TSHIP *garage = ship->garage;
 
 				garage->garage_inactive = 1;
 
@@ -1752,7 +1752,7 @@ _random_move_ai:
 				ship->garage = NULL;
 
 				spare->ai_type = AI_SPARE_SHIP;
-				spare->garage = (void *)gobj;
+				spare->garage = gobj;
 
 				// restore HP
 				game->health = 3;
@@ -1799,7 +1799,7 @@ _random_move_ai:
 	case AI_BULLET: // bullet
 		// random exploding
 		if (gobj->parent)
-		if (gobj->y + 16 < ((TSHIP *)gobj->parent)->y && (RandomInt() & 63) == 1) {
+		if (gobj->y + 16 < gobj->parent->y && (RandomInt() & 63) == 1) {
 			BlowUpEnemy(gobj);
 			return;
 		}
@@ -2102,7 +2102,7 @@ void BestPositionInGarage(TSHIP *ship, int *x, int *y)
 		*x = ship->x;
 		*y = ship->y;
 	} else {
-		TSHIP *garage = (TSHIP *)ship->garage;
+		TSHIP *garage = ship->garage;
 		*x = garage->x + ((GARAGE_WIDTH - cxShip) >> 1);
 		*y = garage->y + ((GARAGE_HEIGHT - cyShip) >> 1);
 	}
@@ -2243,7 +2243,7 @@ void InitEnemies()
 				TSHIP *ship = gObj_CreateObject();
 				ship->i = iShip;
 				ship->ai_type = AI_SPARE_SHIP;
-				ship->garage = (void *)en;
+				ship->garage = en;
 
 				switch (iShip) {
 				case SHIP_TYPE_LASER:

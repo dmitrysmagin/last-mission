@@ -45,25 +45,27 @@ typedef struct {
 	int bonus_type;
 } TEXPLOSION;
 
-typedef struct {
+typedef struct tship_t TSHIP;
+
+struct tship_t {
 	int x;
 	int y;
 	int i; // Sprite index
 	int state;
 	int cur_frame;
 
-	unsigned char anim_speed_cnt;
-	unsigned char move_speed_cnt;
-	unsigned char ai_update_cnt;
+	int anim_speed_cnt;
+	int move_speed_cnt;
+	int ai_update_cnt;
 
 	int dx;
 	int dy;
 
-	unsigned char min_frame;
-	unsigned char max_frame;
-	unsigned char anim_speed;
-	unsigned char move_speed;
-	unsigned char ai_type;
+	int min_frame;
+	int max_frame;
+	int anim_speed;
+	int move_speed;
+	int ai_type;
 
 	// AI-type specific data. Just to make code a bit more readable.
 	union {
@@ -73,9 +75,9 @@ typedef struct {
 		TEXPLOSION explosion; // used by AI_BONUS & AI_EXPLOSION
 	};
 
-	void *parent; /* Used by AI_CEILING_CANNON and AI_CANNON */
-	void *garage; /* FIXME: recursive TSHIP *garage; */
-} TSHIP;
+	TSHIP *parent; /* Used by AI_CEILING_CANNON and AI_CANNON */
+	TSHIP *garage;
+};
 
 
 TSHIP *gObj_First(int i);
