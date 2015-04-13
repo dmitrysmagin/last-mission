@@ -415,28 +415,12 @@ unsigned char IsTouch(int x, int y, TSHIP *gobj)
 	TSHIP *en = gObj_First(0);
 
 	for (; en; en = gObj_Next(en)) {
-		if (en == gobj) {
-			// don't compare with itself or with dead one!
+		/* don't compare with itself */
+		if (en == gobj)
 			continue;
-		}
 
 		/* Ignore your weapons */
-		if (en->ai_type == AI_SHOT && gobj->ai_type == AI_SHIP)
-			continue;
-
-		if (en->ai_type == AI_SHIP && gobj->ai_type == AI_SHOT)
-			continue;
-
-		if (en->ai_type == AI_BFG_SHOT && gobj->ai_type == AI_SHIP)
-			continue;
-
-		if (en->ai_type == AI_SHIP && gobj->ai_type == AI_BFG_SHOT)
-			continue;
-
-		if (en->ai_type == AI_HOMING_SHOT && gobj->ai_type == AI_SHIP)
-			continue;
-
-		if (en->ai_type == AI_SHIP && gobj->ai_type == AI_HOMING_SHOT)
+		if (en == gobj->parent || en->parent == gobj)
 			continue;
 
 		// ignore sparkles
@@ -1083,6 +1067,7 @@ void DoMachineGun()
 			bullet->cur_frame = FacingRight(ship) ? 0 : 1;
 			bullet->ai_type = AI_SHOT;
 			bullet->just_created = 1;
+			bullet->parent = ship;
 
 			// Reset timeout.
 			mg_timeout = 20;
@@ -1123,6 +1108,7 @@ void DoBFG()
 			bullet->max_frame = 3;
 			bullet->ai_type = AI_BFG_SHOT;
 			bullet->just_created = 1;
+			bullet->parent = ship;
 
 			bfg_on = 1;
 
@@ -1160,6 +1146,7 @@ void DoRocketLauncher()
 			bullet->move_speed_cnt = bullet->move_speed;
 			bullet->ai_type = AI_HOMING_SHOT;
 			bullet->just_created = 1;
+			bullet->parent = ship;
 
 			if (FacingRight(ship)) {
 				// to the right
