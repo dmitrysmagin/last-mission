@@ -42,15 +42,15 @@ int EnemyFlags[] = {
 	[AI_BULLET]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
 	[AI_ELEVATOR]			= GOBJ_SOLID|                        GOBJ_SHADOW|GOBJ_VISIBLE,
 	[AI_SMOKE]			=                                                GOBJ_VISIBLE,
-	[AI_BONUS]			= GOBJ_SOLID|GOBJ_HURTS                         |GOBJ_VISIBLE,
+	[AI_BONUS]			= GOBJ_SOLID                                    |GOBJ_VISIBLE,
 	[AI_SHOT]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
 	[AI_GARAGE]			= 0,
 	[AI_SPARE_SHIP]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
 	[AI_HOMING_SHOT]		=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
-	[AI_HIDDEN_AREA_ACCESS]		= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY,
+	[AI_HIDDEN_AREA_ACCESS]		= GOBJ_SOLID           |GOBJ_DESTROY,
 	[AI_BFG_SHOT]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
-	[AI_SHIP]			= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
-	[AI_BASE]			= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_SHIP]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_BASE]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
 };
 
 unsigned char ChangeScreen(int flag);
@@ -372,6 +372,8 @@ void HandleShipsContact(TSHIP *gobj1, TSHIP *gobj2)
 		}
 
 		BlowUpEnemy(gobj2);
+	} else if (!(gobj1->flags & GOBJ_HURTS) && !(gobj2->flags & GOBJ_HURTS)) {
+		return;
 	} else {
 		if (!j || game->easy_mode || i) // i == 1, j == 0
 			BlowUpEnemy(gobj1);
@@ -408,8 +410,7 @@ int IsTouch(int x, int y, TSHIP *gobj)
 			continue;
 
 		if (IsOverlap(x, y, gobj, en)) {
-			if (en->flags & GOBJ_HURTS)
-				HandleShipsContact(gobj, en);
+			HandleShipsContact(gobj, en);
 
 			if (!(en->flags & GOBJ_SOLID))
 				continue;
@@ -417,7 +418,8 @@ int IsTouch(int x, int y, TSHIP *gobj)
 			if (!(gobj->flags & GOBJ_SOLID))
 				continue;
 
-				if (gobj->ai_type == AI_BFG_SHOT)
+			/* This is to make BFG shot multiple enemies */
+			if (gobj->ai_type == AI_BFG_SHOT)
 				return 0;
 
 			return 1;
@@ -809,7 +811,7 @@ void BlowUpEnemy(TSHIP *gobj)
 	}
 
 	/* Exit if non-killable enemy */
-	if (!(gobj->flags & GOBJ_DESTROY))
+	if (!(gobj->flags & GOBJ_DESTROY) && gobj->ai_type != AI_BONUS) /* HACK for AI_BONUS */
 		return;
 
 	if (gobj->ai_type == AI_SHOT || gobj->ai_type == AI_HOMING_SHOT) {
