@@ -27,6 +27,12 @@
 #define AI_SHIP				20
 #define AI_BASE				21
 
+#define GOBJ_SOLID			1
+#define GOBJ_HURTS			2
+#define GOBJ_DESTROY			4
+#define GOBJ_SHADOW			8
+#define GOBJ_VISIBLE			16
+
 #define GARAGE_WIDTH 48
 #define GARAGE_HEIGHT 18
 
@@ -52,6 +58,7 @@ struct tship_t {
 	int y;
 	int i; // Sprite index
 	int state;
+	int flags;
 	int cur_frame;
 
 	int anim_speed_cnt;
