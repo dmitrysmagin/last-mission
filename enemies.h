@@ -97,4 +97,14 @@ TSHIP *gObj_CreateObject();
 void gObj_DestroyObject(TSHIP *obj);
 void gObj_DestroyAll(int i);
 
+extern int EnemyFlags[];
+
+void Update_Static(TSHIP *gobj);
+void Update_Random(TSHIP *gobj);
+void Update_Kamikaze(TSHIP *gobj);
+void Update_SparkleVertical(TSHIP *gobj);
+void Update_CeilingCannon(TSHIP *gobj);
+void Update_HomingMissile(TSHIP *gobj);
+void Update_SparkleHorizontal(TSHIP *gobj);
+
 #endif /* _ENEMIES_H_ */

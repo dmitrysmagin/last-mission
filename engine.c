@@ -1398,85 +1398,22 @@ void DoEnemy(TSHIP *gobj)
 		DoBase();
 		break;
 	case AI_STATIC: // breakable wall or non-moving enemy
-		UpdateAnimation(gobj);
+		Update_Static(gobj);
 		break;
 
 	case AI_RANDOM_MOVE:
-_random_move_ai:
-		UpdateAnimation(gobj);
-		if (UpdateMoveSpeed(gobj) == 1) {
-			if (gobj->ai_update_cnt == 0) {
-				gobj->dx = RandomInt() & 3;
-				if (gobj->dx >= 2)
-					gobj->dx = -1;
-
-				gobj->dy = RandomInt() & 3;
-				if (gobj->dy >= 2)
-					gobj->dy = -1;
-
-				gobj->ai_update_cnt = RandomInt() & 0x1f;
-				if(gobj->ai_update_cnt < 15) gobj->ai_update_cnt = 15;
-			} else {
-				gobj->ai_update_cnt -= 1;
-			}
-		_optimize1:
-			if (IsTouch(gobj->x + gobj->dx, gobj->y, gobj) == 0)
-				gobj->x += gobj->dx;
-			else
-				gobj->ai_update_cnt = 0;
-
-			if (IsTouch(gobj->x, gobj->y + gobj->dy, gobj) == 0)
-				gobj->y += gobj->dy;
-			else
-				gobj->ai_update_cnt = 0;
-
-		}
+		Update_Random(gobj);
 		break;
 
 	case AI_KAMIKADZE:
 		if (ship->i == SHIP_TYPE_OBSERVER)
-			goto _random_move_ai;
-
-		UpdateAnimation(gobj);
-		if (UpdateMoveSpeed(gobj) == 1) {
-			if (gobj->ai_update_cnt == 0) {
-				if (gobj->x > ship->x) {
-					gobj->dx = -1;
-				} else {
-					if (gobj->x < ship->x)
-						gobj->dx = 1;
-					else
-						gobj->dx = 0;
-				}
-
-				if (gobj->y > ship->y) {
-					gobj->dy = -1;
-				} else {
-					if (gobj->y < ship->y)
-						gobj->dy = 1;
-					else
-						gobj->dy = 0;
-				}
-
-				gobj->ai_update_cnt = 15;
-			} else {
-				gobj->ai_update_cnt -= 1;
-			}
-
-			goto _optimize1;
-		}
+			Update_Random(gobj);
+		else
+			Update_Kamikaze(gobj);
 		break;
 
 	case AI_ELECTRIC_SPARKLE_VERTICAL:
-		UpdateAnimation(gobj);
-		if (UpdateMoveSpeed(gobj) == 1) {
-			if (gobj->dy == 0)
-				gobj->dy = 1;
-			if (IsTouch(gobj->x, gobj->y + gobj->dy, gobj) == 0)
-				gobj->y += gobj->dy;
-			else
-				gobj->dy = -gobj->dy;
-		}
+		Update_SparkleVertical(gobj);
 		break;
 
 	case AI_CEILING_CANNON: // ceiling cannon spawning kamikazes
@@ -1484,47 +1421,10 @@ _random_move_ai:
 		if (gobj->dx == 1)
 			return;
 
-		if (UpdateAnimation(gobj) == 1) {
-			gobj->dx = 1;
-
-			// spawn a new enemy
-			TSHIP *j = gObj_CreateObject();
-			j->i = 34;
-			j->x = gobj->x;
-			j->y = gobj->y + 16;
-			j->anim_speed = 4;
-			j->anim_speed_cnt = j->anim_speed;
-			j->max_frame = 3;
-			j->ai_type = AI_KAMIKADZE;
-			j->flags = EnemyFlags[AI_KAMIKADZE];
-			j->parent = gobj;
-			PlaySoundEffect(SND_CANNON_SHOOT);
-		}
+		Update_CeilingCannon(gobj);
 		break;
 	case AI_HOMING_MISSLE:
-		UpdateAnimation(gobj);
-
-		if (gobj->x > 0) {
-			gobj->x -= 2;
-			IsTouch(gobj->x, gobj->y, gobj);
-			if (gobj->x < ship->x)
-				return;
-
-			if (gobj->y > ship->y)
-				gobj->y -= 1;
-
-			if (gobj->y < ship->y && gobj->y < 63) {
-				if ((RandomInt() & 1) == 1)
-					gobj->y += 1;
-			}
-		} else {
-			gobj->x = 296;
-			gobj->y = RandomInt() & 63;
-			if (gobj->i == 40)
-				gobj->i = 41;
-			else
-				gobj->i = 40;
-		}
+		Update_HomingMissile(gobj);
 		break;
 
 	case AI_CANNON:
@@ -1569,15 +1469,7 @@ _random_move_ai:
 		break;
 
 	case AI_ELECTRIC_SPARKLE_HORIZONTAL:
-		UpdateAnimation(gobj);
-		if (UpdateMoveSpeed(gobj) == 1) {
-			if (gobj->dx == 0)
-				gobj->dx = 1;
-			if (IsTouch(gobj->x + gobj->dx, gobj->y, gobj) == 0)
-				gobj->x += gobj->dx;
-			else
-				gobj->dx = -gobj->dx;
-		}
+		Update_SparkleHorizontal(gobj);
 		break;
 
 	case AI_BONUS:
