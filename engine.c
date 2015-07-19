@@ -2203,10 +2203,6 @@ void InitEnemies()
 		en->move_speed_cnt = 1;
 
 		/* FIXME: Special hack */
-		if (en->i == 11 && (en->ai_type == AI_ELECTRIC_SPARKLE_VERTICAL ||
-				    en->ai_type == AI_ELECTRIC_SPARKLE_HORIZONTAL))
-			en->flags &= ~GOBJ_SHADOW;
-
 		if (en->i == 11 || en->i == 42)
 			en->flags &= ~GOBJ_DESTROY;
 
