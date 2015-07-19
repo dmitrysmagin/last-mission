@@ -899,20 +899,21 @@ void BlowUpEnemy(TSHIP *gobj)
 	gobj->ai_type = AI_EXPLOSION;
 	gobj->flags = EnemyFlags[AI_EXPLOSION];
 
-	if (gobj->i == 6) {
+	switch (gobj->i) {
+	case 6: // special explosion for breakable walls
 		gobj->i = 7;
-	} else {
-		if (gobj->i == 1) {
-			// explosion's sprite is smaller than base's thus a little hack
-			gobj->i = 23;
-			gobj->x += 4;
-			gobj->y += 4;
-		} else {
-			if(gobj->i == 0)
-				gobj->i = 23;
-			else
-				gobj->i = 2;
-		}
+		break;
+	case 1: // explosion's sprite is smaller than base's thus a little hack
+		gobj->x += 4;
+		gobj->y += 4;
+	case 0:  // ship
+	case 51: // machine gun ship
+	case 53: // rocket ship
+		gobj->i = 23;
+		break;
+	default:
+		gobj->i = 2;
+		break;
 	}
 
 	gobj->min_frame = 0;
