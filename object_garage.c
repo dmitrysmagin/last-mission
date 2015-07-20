@@ -245,3 +245,32 @@ void Update_Garage(TSHIP *gobj)
 		}
 	}
 }
+
+void Update_SpareShip(TSHIP *gobj)
+{
+	const int speed = 1;
+	int x, y;
+	BestPositionInGarage(gobj, &x, &y);
+
+	if (x > gobj->x) {
+		gobj->x += speed;
+	} else {
+		if (x < gobj->x)
+			gobj->x -= speed;
+	}
+
+	if (y > gobj->y) {
+		gobj->y += speed;
+	} else {
+		if (y < gobj->y)
+			gobj->y -= speed;
+	}
+
+	int middle_frame = (gobj->max_frame + gobj->min_frame) / 2;
+
+	if (gobj->cur_frame > gobj->min_frame && gobj->cur_frame <= middle_frame)
+		--(gobj->cur_frame);
+	else
+		if (gobj->cur_frame > middle_frame && gobj->cur_frame < gobj->max_frame)
+			++(gobj->cur_frame);
+}
