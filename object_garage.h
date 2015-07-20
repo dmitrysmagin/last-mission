@@ -16,4 +16,6 @@ int GetPlayerShipIndex();
 
 void CreateGarage(TSHIP *en, int garage_id);
 
+void Update_Garage(TSHIP *gobj);
+
 #endif /* _OBJECT_GARAGE_H_ */

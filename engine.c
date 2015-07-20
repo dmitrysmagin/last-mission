@@ -1436,64 +1436,7 @@ void DoEnemy(TSHIP *gobj)
 		break;
 
 	case AI_GARAGE:
-		if (ship->ai_type == AI_EXPLOSION)
-			break;
-
-		if (GarageShipIndex(gobj->i) != -1) {
-			break;
-		}
-
-		int w, h;
-		GetCurrentSpriteDimensions(ship, &w, &h);
-
-		if (!gobj->garage_inactive &&
-		    (ship->x >= gobj->x) &&
-		    (ship->x + w < gobj->x + GARAGE_WIDTH) &&
-		    (ship->y >= gobj->y) &&
-		    (ship->y + h < gobj->y + GARAGE_HEIGHT)) {
-			// Player ship is inside the garage, lets
-			// change the ship if possible.
-			TSHIP *spare = gObj_First(2);
-
-			for (; spare; spare = gObj_Next(spare)) {
-				if (spare->ai_type == AI_SPARE_SHIP)
-					break;
-			}
-
-			if (spare) {
-				// Swap data of the player ship and
-				// the spare ship.
-				/* FIXME: Rework this ugly code */
-				TSHIP tmp;
-				tmp = *ship;
-				*ship = *spare;
-				*spare = tmp;
-
-				TSHIP *garage = ship->garage;
-
-				garage->garage_inactive = 1;
-
-				SetGarageShipIndex(gobj->i, spare->i);
-				SetGarageShipIndex(garage->i, -1);
-
-				ship->ai_type = AI_SHIP;
-				ship->flags = EnemyFlags[AI_SHIP];
-				ship->garage = NULL;
-
-				spare->ai_type = AI_SPARE_SHIP;
-				spare->flags = EnemyFlags[AI_SPARE_SHIP];
-				spare->garage = gobj;
-
-				// restore HP
-				game->health = 3;
-
-				PlaySoundEffect(SND_CONTACT);
-			}
-		} else if (gobj->garage_inactive) {
-			if (!IsOverlap(ship->x, ship->y, ship, gobj)) {
-				gobj->garage_inactive = 0;
-			}
-		}
+		Update_Garage(gobj);
 		break;
 
 	case AI_SPARE_SHIP:
