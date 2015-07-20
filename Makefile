@@ -12,7 +12,7 @@ LFLAGS = -s -lSDL_gfx -lSDL -lSDL_mixer -lm
 
 OBJ =	m_data.o
 OBJ +=	demo.o enemies.o engine.o input.o main.o random.o room.o \
-	sound.o sprites.o video.o world.o
+	sound.o sprites.o video.o world.o object_garage.o
 
 all : $(APP_NAME)
 

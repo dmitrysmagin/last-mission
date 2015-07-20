@@ -1,0 +1,179 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+#include "m_data.h"
+#include "demo.h"
+#include "random.h"
+#include "video.h"
+#include "input.h"
+#include "sound.h"
+#include "sprites.h"
+#include "enemies.h"
+#include "engine.h"
+#include "object_garage.h"
+#include "room.h"
+
+/* HACK: Remove later */
+void GetCurrentSpriteDimensions(TSHIP *i, int *cx, int *cy);
+
+// Actual garage data, valid for current game.
+static int garage_data[MAX_GARAGES][2];
+// Garage data of the last game start. Will be restored if player is dead.
+static int main_garage_data[MAX_GARAGES][2];
+
+void GarageRestore()
+{
+	memcpy(garage_data, main_garage_data, sizeof(garage_data));
+}
+
+void GarageSave()
+{
+	memcpy(main_garage_data, garage_data, sizeof(main_garage_data));
+}
+
+void BestPositionInGarage(TSHIP *ship, int *x, int *y)
+{
+	int cxShip, cyShip;
+	GetCurrentSpriteDimensions(ship, &cxShip, &cyShip);
+
+	if (ship->garage == NULL) {
+		// actually, should not happen.
+		*x = ship->x;
+		*y = ship->y;
+	} else {
+		TSHIP *garage = ship->garage;
+		*x = garage->x + ((GARAGE_WIDTH - cxShip) >> 1);
+		*y = garage->y + ((GARAGE_HEIGHT - cyShip) >> 1);
+	}
+}
+
+void InitGaragesForNewGame()
+{
+	memset(garage_data, 0, sizeof(garage_data));
+
+	int n = 0;
+	garage_data[n  ][0] = 100;
+	garage_data[n++][1] = -1;
+
+	garage_data[n  ][0] = 101;
+	garage_data[n++][1] = SHIP_TYPE_MACHINE_GUN;
+
+	garage_data[n  ][0] = 110;
+	garage_data[n++][1] = -1;
+
+	garage_data[n  ][0] = 111;
+	garage_data[n++][1] = SHIP_TYPE_ROCKET_LAUNCHER;
+
+	garage_data[n  ][0] = 120;
+	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
+
+	garage_data[n  ][0] = 121;
+	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
+
+	garage_data[n  ][0] = 122;
+	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
+
+	garage_data[n  ][0] = 123;
+	garage_data[n++][1] = -1;
+
+	garage_data[n  ][0] = 124;
+	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
+
+	garage_data[n  ][0] = 130;
+	garage_data[n++][1] = -1;
+
+	garage_data[n  ][0] = 131;
+	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
+
+	garage_data[n  ][0] = 190;
+	garage_data[n++][1] = -1;
+
+	garage_data[n  ][0] = 191;
+	garage_data[n++][1] = SHIP_TYPE_BFG;
+
+	GarageSave();
+}
+
+void SetGarageShipIndex(int garageId, int shipIndex)
+{
+	for (int i = 0; i < MAX_GARAGES; ++i) {
+		if (garage_data[i][0] == garageId) {
+			garage_data[i][1] = shipIndex;
+		}
+	}
+}
+
+int GarageShipIndex(int garageId)
+{
+	for (int i = 0; i < MAX_GARAGES; ++i) {
+		if (garage_data[i][0] == garageId) {
+			return garage_data[i][1];
+		}
+	}
+
+	return -1;
+}
+
+void CreateGarage(TSHIP *en, int garage_id)
+{
+	en->i = garage_id;
+
+	int iShip = GarageShipIndex(en->i);
+	if (iShip != -1) {
+		// Find which type of the ship is supposed to be here,
+		// create the ship in the best position inside it.
+		TSHIP *ship = gObj_CreateObject();
+		ship->i = iShip;
+		ship->ai_type = AI_SPARE_SHIP;
+		ship->flags = EnemyFlags[AI_SPARE_SHIP];
+		ship->garage = en;
+
+		switch (iShip) {
+		case SHIP_TYPE_LASER:
+		case SHIP_TYPE_MACHINE_GUN:
+		case SHIP_TYPE_ROCKET_LAUNCHER:
+			ship->max_frame = 6;
+			ship->min_frame = 0;
+			break;
+		case SHIP_TYPE_OBSERVER:
+			ship->max_frame = 3;
+			ship->min_frame = 1;
+			ship->cur_frame = 1;
+			break;
+		case SHIP_TYPE_BFG:
+			ship->max_frame = 4;
+			ship->min_frame = 0;
+			break;
+		}
+		BestPositionInGarage(ship, &ship->x, &ship->y);
+	}
+}
+
+int IsParked(int ship_type)
+{
+	for (int i = 0; i < MAX_GARAGES; ++i) {
+		if (garage_data[i][0] && garage_data[i][1] == ship_type) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int GetPlayerShipIndex()
+{
+	if (!IsParked(SHIP_TYPE_LASER))
+		return SHIP_TYPE_LASER;
+
+	if (!IsParked(SHIP_TYPE_MACHINE_GUN))
+		return SHIP_TYPE_MACHINE_GUN;
+
+	if (!IsParked(SHIP_TYPE_ROCKET_LAUNCHER))
+		return SHIP_TYPE_ROCKET_LAUNCHER;
+
+	if (!IsParked(SHIP_TYPE_BFG))
+		return SHIP_TYPE_BFG;
+
+	return SHIP_TYPE_OBSERVER;
+}

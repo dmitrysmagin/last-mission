@@ -21,6 +21,7 @@
 #include "sound.h"
 #include "sprites.h"
 #include "enemies.h"
+#include "object_garage.h"
 #include "engine.h"
 #include "room.h"
 
@@ -82,10 +83,6 @@ void DoGame();
 void CreateExplosion(TSHIP *gobj);
 void CreateWallExplosion(int x, int y);
 void RenderGame(int renderStatus);
-void InitGaragesForNewGame();
-void SetGarageShipIndex(int garageId, int shipIndex);
-int GarageShipIndex(int garageId);
-int GetPlayerShipIndex();
 
 // Game callbacks.
 void HitTheBonus(int);
@@ -93,11 +90,6 @@ void PublishScore();
 void GameLevelUp();
 
 unsigned char ship_cur_screen = 0;
-
-// Actual garage data, valid for current game.
-int garage_data[MAX_GARAGES][2];
-// Garage data of the last game start. Will be restored if player is dead.
-int main_garage_data[MAX_GARAGES][2];
 
 typedef struct {
 	int xc, yc;
@@ -112,8 +104,6 @@ typedef struct {
 #define MAX_BFG_TARGETS 13
 TBFGTARGET BfgTargets[MAX_BFG_TARGETS];
 int bfg_on = 0;
-
-void BestPositionInGarage(TSHIP *ship, int *x, int *y);
 
 unsigned int player_attached = 0;
 int base_cur_screen;
@@ -1742,7 +1732,7 @@ void DoEnemy(TSHIP *gobj)
 
 						if (ship_cur_screen != 69) {
 							game_level += 1;
-							memcpy(main_garage_data, garage_data, sizeof(main_garage_data));
+							GarageSave();
 							PublishScore();
 							GameLevelUp();
 						}
@@ -1785,7 +1775,7 @@ void InitShip()
 	TSHIP *ship = gObj_Ship(); /* FIXME: Should be gObj_CreateObject */
 	TSHIP *base = gObj_Base(); /* FIXME: Should be gObj_CreateObject */
 
-	memcpy(garage_data, main_garage_data, sizeof(garage_data));
+	GarageRestore();
 
 	/* FIXME: Clear all game objects and init object queue */
 	gObj_DestroyAll(0);
@@ -1833,151 +1823,6 @@ void InitShip()
 	ship->anim_speed_cnt = 1;
 	ship->ai_type = AI_SHIP;
 	ship->flags = EnemyFlags[AI_SHIP];
-}
-
-void BestPositionInGarage(TSHIP *ship, int *x, int *y)
-{
-	int cxShip, cyShip;
-	GetCurrentSpriteDimensions(ship, &cxShip, &cyShip);
-
-	if (ship->garage == NULL) {
-		// actually, should not happen.
-		*x = ship->x;
-		*y = ship->y;
-	} else {
-		TSHIP *garage = ship->garage;
-		*x = garage->x + ((GARAGE_WIDTH - cxShip) >> 1);
-		*y = garage->y + ((GARAGE_HEIGHT - cyShip) >> 1);
-	}
-}
-
-void InitGaragesForNewGame()
-{
-	memset(garage_data, 0, sizeof(garage_data));
-
-	int n = 0;
-	garage_data[n  ][0] = 100;
-	garage_data[n++][1] = -1;
-
-	garage_data[n  ][0] = 101;
-	garage_data[n++][1] = SHIP_TYPE_MACHINE_GUN;
-
-	garage_data[n  ][0] = 110;
-	garage_data[n++][1] = -1;
-
-	garage_data[n  ][0] = 111;
-	garage_data[n++][1] = SHIP_TYPE_ROCKET_LAUNCHER;
-
-	garage_data[n  ][0] = 120;
-	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
-
-	garage_data[n  ][0] = 121;
-	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
-
-	garage_data[n  ][0] = 122;
-	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
-
-	garage_data[n  ][0] = 123;
-	garage_data[n++][1] = -1;
-
-	garage_data[n  ][0] = 124;
-	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
-
-	garage_data[n  ][0] = 130;
-	garage_data[n++][1] = -1;
-
-	garage_data[n  ][0] = 131;
-	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
-
-	garage_data[n  ][0] = 190;
-	garage_data[n++][1] = -1;
-
-	garage_data[n  ][0] = 191;
-	garage_data[n++][1] = SHIP_TYPE_BFG;
-
-	memcpy(main_garage_data, garage_data, sizeof(main_garage_data));
-}
-
-void SetGarageShipIndex(int garageId, int shipIndex)
-{
-	for (int i = 0; i < MAX_GARAGES; ++i) {
-		if (garage_data[i][0] == garageId) {
-			garage_data[i][1] = shipIndex;
-		}
-	}
-}
-
-int GarageShipIndex(int garageId)
-{
-	for (int i = 0; i < MAX_GARAGES; ++i) {
-		if (garage_data[i][0] == garageId) {
-			return garage_data[i][1];
-		}
-	}
-
-	return -1;
-}
-
-void CreateGarage(TSHIP *en, int garage_id)
-{
-	en->i = garage_id;
-
-	int iShip = GarageShipIndex(en->i);
-	if (iShip != -1) {
-		// Find which type of the ship is supposed to be here,
-		// create the ship in the best position inside it.
-		TSHIP *ship = gObj_CreateObject();
-		ship->i = iShip;
-		ship->ai_type = AI_SPARE_SHIP;
-		ship->flags = EnemyFlags[AI_SPARE_SHIP];
-		ship->garage = en;
-
-		switch (iShip) {
-		case SHIP_TYPE_LASER:
-		case SHIP_TYPE_MACHINE_GUN:
-		case SHIP_TYPE_ROCKET_LAUNCHER:
-			ship->max_frame = 6;
-			ship->min_frame = 0;
-			break;
-		case SHIP_TYPE_OBSERVER:
-			ship->max_frame = 3;
-			ship->min_frame = 1;
-			ship->cur_frame = 1;
-			break;
-		case SHIP_TYPE_BFG:
-			ship->max_frame = 4;
-			ship->min_frame = 0;
-			break;
-		}
-		BestPositionInGarage(ship, &ship->x, &ship->y);
-	}
-}
-
-int IsParked(int ship_type)
-{
-	for (int i = 0; i < MAX_GARAGES; ++i) {
-		if (garage_data[i][0] && garage_data[i][1] == ship_type) {
-			return 1;
-		}
-	}
-	return 0;
-}
-
-int GetPlayerShipIndex()
-{
-	if (!IsParked(SHIP_TYPE_LASER))
-		return SHIP_TYPE_LASER;
-
-	if (!IsParked(SHIP_TYPE_MACHINE_GUN))
-		return SHIP_TYPE_MACHINE_GUN;
-
-	if (!IsParked(SHIP_TYPE_ROCKET_LAUNCHER))
-		return SHIP_TYPE_ROCKET_LAUNCHER;
-
-	if (!IsParked(SHIP_TYPE_BFG))
-		return SHIP_TYPE_BFG;
-
-	return SHIP_TYPE_OBSERVER;
 }
 
 void InitEnemies()
@@ -2045,7 +1890,7 @@ void InitNewScreen()
 		hidden_level_entered = 1;
 	} else if (hidden_level_entered && ship_cur_screen == 1) {
 		// Save game, cause we are back from the underggroung (most probably, heh).
-		memcpy(main_garage_data, garage_data, sizeof(main_garage_data));
+		GarageSave();
 		PublishScore();
 
 	}
@@ -2789,8 +2634,11 @@ void LoadGame(TGAMEDATA *data)
 	base_level_start = data->base_level;
 	game_level = GameLevelFromScreen(data->base_level);
 
+#if 0
+	/* FIXME: Later */
 	memcpy(garage_data, data->garages, sizeof(garage_data));
 	memcpy(main_garage_data, data->garages, sizeof(main_garage_data));
+#endif
 
 	InitShip();
 	InitNewScreen();
@@ -2809,7 +2657,10 @@ void SaveGame(TGAMEDATA *data)
 	data->fuel = game->fuel;
 	data->health = game->health;
 	data->easy_mode = game->easy_mode;
+#if 0
+	/* FIXME: Later */
 	memcpy(data->garages, main_garage_data, sizeof(main_garage_data));
+#endif
 }
 
 void ResetGame(int gameMode)
