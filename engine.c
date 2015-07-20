@@ -1918,6 +1918,41 @@ int GarageShipIndex(int garageId)
 	return -1;
 }
 
+void CreateGarage(TSHIP *en, int garage_id)
+{
+	en->i = garage_id;
+
+	int iShip = GarageShipIndex(en->i);
+	if (iShip != -1) {
+		// Find which type of the ship is supposed to be here,
+		// create the ship in the best position inside it.
+		TSHIP *ship = gObj_CreateObject();
+		ship->i = iShip;
+		ship->ai_type = AI_SPARE_SHIP;
+		ship->flags = EnemyFlags[AI_SPARE_SHIP];
+		ship->garage = en;
+
+		switch (iShip) {
+		case SHIP_TYPE_LASER:
+		case SHIP_TYPE_MACHINE_GUN:
+		case SHIP_TYPE_ROCKET_LAUNCHER:
+			ship->max_frame = 6;
+			ship->min_frame = 0;
+			break;
+		case SHIP_TYPE_OBSERVER:
+			ship->max_frame = 3;
+			ship->min_frame = 1;
+			ship->cur_frame = 1;
+			break;
+		case SHIP_TYPE_BFG:
+			ship->max_frame = 4;
+			ship->min_frame = 0;
+			break;
+		}
+		BestPositionInGarage(ship, &ship->x, &ship->y);
+	}
+}
+
 int IsParked(int ship_type)
 {
 	for (int i = 0; i < MAX_GARAGES; ++i) {
@@ -1983,37 +2018,7 @@ void InitEnemies()
 			en->flags &= ~GOBJ_DESTROY;
 
 		if (en->ai_type == AI_GARAGE) {
-			en->i = object->garage_id;
-
-			int iShip = GarageShipIndex(en->i);
-			if (iShip != -1) {
-				// Find which type of the ship is supposed to be here,
-				// create the ship in the best position inside it.
-				TSHIP *ship = gObj_CreateObject();
-				ship->i = iShip;
-				ship->ai_type = AI_SPARE_SHIP;
-				ship->flags = EnemyFlags[AI_SPARE_SHIP];
-				ship->garage = en;
-
-				switch (iShip) {
-				case SHIP_TYPE_LASER:
-				case SHIP_TYPE_MACHINE_GUN:
-				case SHIP_TYPE_ROCKET_LAUNCHER:
-					ship->max_frame = 6;
-					ship->min_frame = 0;
-					break;
-				case SHIP_TYPE_OBSERVER:
-					ship->max_frame = 3;
-					ship->min_frame = 1;
-					ship->cur_frame = 1;
-					break;
-				case SHIP_TYPE_BFG:
-					ship->max_frame = 4;
-					ship->min_frame = 0;
-					break;
-				}
-				BestPositionInGarage(ship, &ship->x, &ship->y);
-			}
+			CreateGarage(en, object->garage_id);
 		} else if (en->ai_type == AI_HIDDEN_AREA_ACCESS) {
 			en->dx = object->speed;
 			en->dy = object->minframe;
