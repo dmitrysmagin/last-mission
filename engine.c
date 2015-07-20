@@ -115,7 +115,7 @@ int bfg_on = 0;
 
 void BestPositionInGarage(TSHIP *ship, int *x, int *y);
 
-unsigned char player_attached = 0;
+unsigned int player_attached = 0;
 int base_cur_screen;
 int base_level_start = 1;
 char screen_procedure;
@@ -1422,44 +1422,7 @@ void DoEnemy(TSHIP *gobj)
 		break;
 
 	case AI_CANNON:
-		if (gobj->x - 40 > ship->x) {
-			gobj->cur_frame = 0;
-		} else {
-			if (gobj->x + 40 < ship->x)
-				gobj->cur_frame = 2;
-			else
-				gobj->cur_frame = 1;
-		}
-
-		if ((RandomInt() & 255) > 252) {
-			TSHIP *bullet = gObj_CreateObject();
-			if (bullet) {
-				bullet->i = 43;
-				if (gobj->cur_frame == 0) {
-					bullet->x = gobj->x - 4;
-					bullet->y = gobj->y + 4;
-					bullet->dx = -1;
-					bullet->dy = -1;
-				}
-				if (gobj->cur_frame == 1) {
-					bullet->x = gobj->x + 6;
-					bullet->y = gobj->y - 4;
-					bullet->dx = 0;
-					bullet->dy = -1;
-				}
-				if (gobj->cur_frame == 2) {
-					bullet->x = gobj->x + 16;
-					bullet->y = gobj->y + 4;
-					bullet->dx = 1;
-					bullet->dy = -1;
-				}
-				bullet->anim_speed = 4;
-				bullet->anim_speed_cnt = bullet->anim_speed;
-				bullet->ai_type = AI_BULLET;
-				bullet->flags = EnemyFlags[AI_BULLET];
-				bullet->parent = gobj;
-			}
-		}
+		Update_Cannon(gobj);
 		break;
 
 	case AI_ELECTRIC_SPARKLE_HORIZONTAL:
@@ -1467,93 +1430,19 @@ void DoEnemy(TSHIP *gobj)
 		break;
 
 	case AI_BONUS:
-		if (UpdateAnimation(gobj) == 1) {
-			static int yOffset[] = {
-				-1, -1, -2, -2, -1, 1, 1, 2, 2, 1
-			};
-
-			gobj->y += yOffset[gobj->dy];
-			gobj->dy = (gobj->dy + 1) % (sizeof(yOffset) / sizeof(yOffset[0]));
-		}
+		Update_Bonus(gobj);
 		break;
 
 	case AI_SMOKE:
-		if (UpdateAnimation(gobj) == 1) {
-			gObj_DestroyObject(gobj);
-		} else if (gobj->cur_frame % 2) {
-			gobj->x += gobj->dx;
-			gobj->y += gobj->dy;
-		}
+		Update_Smoke(gobj);
 		break;
 
 	case AI_EXPLOSION: // explosion, do one animation cycle and deactivate enemy entry
-		if (UpdateAnimation(gobj) == 1) {
-			if (gobj->explosion.bonus_type) {
-				if (gobj->explosion.regenerate_bonus) {
-					// Hit with laser, restore the other bonus.
-					gobj->ai_type = AI_BONUS;
-					gobj->flags = EnemyFlags[AI_BONUS];
-					switch (gobj->explosion.bonus_type) {
-					case BONUS_FACEBOOK:
-						gobj->i = BONUS_TWITTER;
-						break;
-					case BONUS_TWITTER:
-						gobj->i = BONUS_FACEBOOK;
-						break;
-					default:
-						gobj->i = gobj->explosion.bonus_type;
-						break;
-					}
-
-					gobj->explosion.bonus_type = 0;
-					gobj->explosion.regenerate_bonus = 0;
-					gobj->dx = 0;
-					gobj->dy = 0;
-					gobj->max_frame = 0;
-					gobj->cur_frame = 0;
-					gobj->min_frame = 0;
-					gobj->anim_speed = 4;
-					return;
-				} else {
-					PlaySoundEffect(SND_BONUS);
-
-					switch (gobj->explosion.bonus_type) {
-					case BONUS_HP:
-						// add HP
-						++game->health;
-						if (game->health > 3)
-							game->health = 3;
-						break;
-
-					case BONUS_FACEBOOK:
-					case BONUS_TWITTER:
-						HitTheBonus(gobj->explosion.bonus_type);
-						break;
-					}
-				}
-			}
-
-			gObj_DestroyObject(gobj);
-			if (gobj == ship)
-				RestartLevel();
-
-			return;
-		}
+		Update_Explosion(gobj);
 		break;
 
 	case AI_BRIDGE: // bridge, appear if bonded ship, disappear otherwise
-		if (player_attached) {
-			gobj->flags |= GOBJ_SOLID | GOBJ_SHADOW | GOBJ_VISIBLE;
-		} else {
-			gobj->flags &= ~(GOBJ_SOLID | GOBJ_SHADOW | GOBJ_VISIBLE);
-		}
-
-		int a = player_attached ? 245 : 0;
-
-		// seal or unseal the floor
-		for (int f = 0; f <= 4; f++) {
-			SetTileI((gobj->x >> 3) + f, gobj->y >> 3, a);
-		}
+		Update_Bridge(gobj);
 		break;
 
 	case AI_GARAGE:
