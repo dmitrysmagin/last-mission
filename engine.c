@@ -479,12 +479,6 @@ void DoShip()
 		ticks_for_damage = 0;
 
 
-	if (ship->ai_type == AI_EXPLOSION) {
-		DoEnemy(ship);
-
-		return;
-	}
-
 	// check if ships are attached
 	if (base->state == SH_ACTIVE &&
 	    base->ai_type != AI_EXPLOSION &&
