@@ -1,7 +1,7 @@
 #ifndef _OBJECT_GARAGE_H_
 #define _OBJECT_GARAGE_H_
 
-#include "enemies.h"
+#include "object.h"
 
 #define GARAGE_WIDTH 48
 #define GARAGE_HEIGHT 18

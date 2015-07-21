@@ -10,7 +10,7 @@
 #include "input.h"
 #include "sound.h"
 #include "sprites.h"
-#include "enemies.h"
+#include "object.h"
 #include "engine.h"
 #include "room.h"
 

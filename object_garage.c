@@ -10,8 +10,8 @@
 #include "input.h"
 #include "sound.h"
 #include "sprites.h"
-#include "enemies.h"
 #include "engine.h"
+#include "object.h"
 #include "object_garage.h"
 #include "room.h"
 
