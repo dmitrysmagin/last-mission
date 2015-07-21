@@ -1202,9 +1202,11 @@ void DoEnemy(TSHIP *gobj)
 	case AI_SHIP:
 		Update_Ship(gobj);
 		break;
+
 	case AI_BASE:
 		Update_Base(gobj);
 		break;
+
 	case AI_STATIC: // breakable wall or non-moving enemy
 		Update_Static(gobj);
 		break;
@@ -1214,10 +1216,7 @@ void DoEnemy(TSHIP *gobj)
 		break;
 
 	case AI_KAMIKADZE:
-		if (ship->i == SHIP_TYPE_OBSERVER)
-			Update_Random(gobj);
-		else
-			Update_Kamikaze(gobj);
+		Update_Kamikaze(gobj);
 		break;
 
 	case AI_ELECTRIC_SPARKLE_VERTICAL:
@@ -1225,12 +1224,9 @@ void DoEnemy(TSHIP *gobj)
 		break;
 
 	case AI_CEILING_CANNON: // ceiling cannon spawning kamikazes
-		// if object is spawned - do nothig
-		if (gobj->dx == 1)
-			return;
-
 		Update_CeilingCannon(gobj);
 		break;
+
 	case AI_HOMING_MISSLE:
 		Update_HomingMissile(gobj);
 		break;
@@ -1277,6 +1273,7 @@ void DoEnemy(TSHIP *gobj)
 
 	case AI_BFG_SHOT:
 		Update_BfgShot(gobj);
+		break;
 
 	case AI_SHOT: // bullet shot by a player
 		Update_Shot(gobj);

@@ -169,4 +169,6 @@ void Update_BfgShot(TSHIP *gobj)
 			}
 		}
 	}
+
+	Update_Shot(gobj);
 }

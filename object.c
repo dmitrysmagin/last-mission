@@ -184,6 +184,11 @@ void Update_Kamikaze(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
 
+	if (ship->i == SHIP_TYPE_OBSERVER) {
+		Update_Random(gobj);
+		return;
+	}
+
 	UpdateAnimation(gobj);
 	if (UpdateMoveSpeed(gobj) == 1) {
 		if (gobj->ai_update_cnt == 0) {
@@ -237,6 +242,10 @@ void Update_SparkleVertical(TSHIP *gobj)
 
 void Update_CeilingCannon(TSHIP *gobj)
 {
+	// if object is spawned - do nothing
+	if (gobj->dx == 1)
+		return;
+
 	if (UpdateAnimation(gobj) == 1) {
 		gobj->dx = 1;
 
