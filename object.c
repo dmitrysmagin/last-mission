@@ -446,3 +446,120 @@ void Update_Bridge(TSHIP *gobj)
 	}
 
 }
+/* HACK: later remove this */
+void BlowUpEnemy(TSHIP *gobj);
+
+void Update_Bullet(TSHIP *gobj)
+{
+	// random exploding
+	if (gobj->parent)
+	if (gobj->y + 16 < gobj->parent->y && (RandomInt() & 63) == 1) {
+		BlowUpEnemy(gobj);
+		return;
+	}
+
+	gobj->x += gobj->dx;
+	if (gobj->x < 0 || gobj->x > SCREEN_WIDTH) {
+		BlowUpEnemy(gobj);
+		return;
+	}
+
+	gobj->y += gobj->dy;
+	if (gobj->y < 0)
+		BlowUpEnemy(gobj);
+
+}
+
+void Update_HomingShot(TSHIP *gobj)
+{
+	if (gobj->just_created == 1) {
+		if (IsTouch(gobj->x, gobj->y, gobj)) {
+			BlowUpEnemy(gobj);
+			return;
+		}
+	}
+
+	// Calculate vertical speed.
+	gobj->dy = 0;
+
+	if (++gobj->ticks_passed > 10) {
+		TSHIP *trg = gObj_First(2);
+		TSHIP *best = NULL;
+		int dx_best = 0;
+
+		for (; trg; trg = gObj_Next(trg)) {
+			if (trg->ai_type != AI_RANDOM_MOVE &&
+			    trg->ai_type != AI_KAMIKADZE)
+				continue;
+
+			if (trg->i == 11)
+				continue;
+
+			int dx = trg->x - gobj->x;
+
+			if (gobj->cur_frame < 2) {
+				// moving left.
+				if (dx > 10 || dx < -110)
+					continue;
+				if (!best || dx > dx_best) {
+					best = trg;
+					dx_best = dx;
+				}
+			} else {
+				// moving right.
+				if (dx < 10 || dx > 110)
+					continue;
+				if (!best || dx > dx_best) {
+					best = trg;
+					dx_best = dx;
+				}
+			}
+		}
+
+		if (best) {
+			int dy = best->y - gobj->y;
+
+			if (dy < 0)
+				gobj->dy = -1;
+			if (dy > 0)
+				gobj->dy = 1;
+		}
+	}
+
+	UpdateAnimation(gobj);
+
+	gobj->x += gobj->dx;
+	gobj->y += gobj->dy;
+
+	if (/*gobj->x + gobj->dx < 0 ||
+	    gobj->x + gobj->dx >= SCREEN_WIDTH ||
+	    gobj->y < 0 ||
+	    gobj->y >= SCREEN_HEIGHT ||*/
+	    IsTouch(gobj->x, gobj->y, gobj)) {
+		gObj_DestroyObject(gobj);
+		return;
+	}
+}
+
+void Update_Shot(TSHIP *gobj)
+{
+	if (gobj->just_created) {
+		gobj->just_created = 0;
+		if (IsTouch(gobj->x, gobj->y, gobj)) {
+			BlowUpEnemy(gobj);
+			return;
+		}
+	}
+
+	gobj->x += gobj->dx;
+	gobj->y += gobj->dy;
+
+	if (gobj->x + gobj->dx < 0 ||
+	    gobj->x + gobj->dx >= SCREEN_WIDTH ||
+	    gobj->y < 0 ||
+	    gobj->y >= SCREEN_HEIGHT ||
+	    IsTouch(gobj->x, gobj->y, gobj)) {
+		BlowUpEnemy(gobj);
+		return;
+	}
+}

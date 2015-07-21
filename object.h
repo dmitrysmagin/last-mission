@@ -109,4 +109,8 @@ void Update_Smoke(TSHIP *gobj);
 void Update_Explosion(TSHIP *gobj);
 void Update_Bridge(TSHIP *gobj);
 
+void Update_Bullet(TSHIP *gobj);
+void Update_HomingShot(TSHIP *gobj);
+void Update_Shot(TSHIP *gobj);
+
 #endif /* _ENEMIES_H_ */
