@@ -33,9 +33,9 @@ unsigned char ChangeScreen(int flag);
 int IsOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
 int IsTouch(int x, int y, TSHIP *gobj);
 int UpdateFuel();
-void DoShip();
+void Update_Ship(TSHIP *ship);
 void ReEnableBase();
-void DoBase();
+void Update_Base(TSHIP *base);
 void BlowUpEnemy(TSHIP *gobj);
 int UpdateLaser(int i);
 void DoLaser();
@@ -433,9 +433,8 @@ int UpdateFuel()
 	return 0;
 }
 
-void DoShip()
+void Update_Ship(TSHIP *ship)
 {
-	TSHIP *ship = gObj_Ship();
 	TSHIP *base = gObj_Base();
 	static unsigned char fallflag = 1;
 	static int dy;
@@ -582,10 +581,9 @@ void ReEnableBase()
 	}
 }
 
-void DoBase()
+void Update_Base(TSHIP *base)
 {
 	TSHIP *ship = gObj_Ship();
-	TSHIP *base = gObj_Base();
 
 	// do smth if attach mode ON
 	int playMoveSound = 0;
@@ -1343,10 +1341,10 @@ void DoEnemy(TSHIP *gobj)
 	// do different ai types
 	switch (gobj->ai_type) {
 	case AI_SHIP:
-		DoShip();
+		Update_Ship(gobj);
 		break;
 	case AI_BASE:
-		DoBase();
+		Update_Base(gobj);
 		break;
 	case AI_STATIC: // breakable wall or non-moving enemy
 		Update_Static(gobj);
@@ -2072,7 +2070,7 @@ void DoWinScreen()
 		GKeys[KEY_DOWN] = 0;
 		GKeys[KEY_FIRE] = 0;
 
-		DoShip();
+		Update_Ship(ship);
 
 		TSHIP *gobj = gObj_First(2);
 		for (; gobj; gobj = gObj_Next(gobj))
