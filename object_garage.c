@@ -126,8 +126,7 @@ void CreateGarage(TSHIP *en, int garage_id)
 		// create the ship in the best position inside it.
 		TSHIP *ship = gObj_CreateObject();
 		ship->i = iShip;
-		ship->ai_type = AI_SPARE_SHIP;
-		ship->flags = EnemyFlags[AI_SPARE_SHIP];
+		gObj_Constructor(ship, AI_SPARE_SHIP);
 		ship->garage = en;
 
 		switch (iShip) {
@@ -226,12 +225,10 @@ void Update_Garage(TSHIP *gobj)
 			SetGarageShipIndex(gobj->i, spare->i);
 			SetGarageShipIndex(garage->i, -1);
 
-			ship->ai_type = AI_SHIP;
-			ship->flags = EnemyFlags[AI_SHIP];
+			gObj_Constructor(ship, AI_SHIP);
 			ship->garage = NULL;
 
-			spare->ai_type = AI_SPARE_SHIP;
-			spare->flags = EnemyFlags[AI_SPARE_SHIP];
+			gObj_Constructor(spare, AI_SPARE_SHIP);
 			spare->garage = gobj;
 
 			// restore HP

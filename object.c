@@ -14,6 +14,31 @@
 #include "engine.h"
 #include "room.h"
 
+static int EnemyFlags[] = {
+	[AI_STATIC]			= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_RANDOM_MOVE]		= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_KAMIKADZE]			= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_ELECTRIC_SPARKLE_VERTICAL]	=            GOBJ_HURTS|                         GOBJ_VISIBLE,
+	[AI_CEILING_CANNON]		= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_HOMING_MISSLE]		=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
+	[AI_CANNON]			= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_ELECTRIC_SPARKLE_HORIZONTAL]=            GOBJ_HURTS|                         GOBJ_VISIBLE,
+	[AI_EXPLOSION]			=                                                GOBJ_VISIBLE,
+	[AI_BRIDGE]			= GOBJ_SOLID|                        GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_BULLET]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
+	[AI_ELEVATOR]			= GOBJ_SOLID|                        GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_SMOKE]			=                                                GOBJ_VISIBLE,
+	[AI_BONUS]			= GOBJ_SOLID                                    |GOBJ_VISIBLE,
+	[AI_SHOT]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
+	[AI_GARAGE]			= 0,
+	[AI_SPARE_SHIP]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_HOMING_SHOT]		=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
+	[AI_HIDDEN_AREA_ACCESS]		= GOBJ_SOLID           |GOBJ_DESTROY,
+	[AI_BFG_SHOT]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
+	[AI_SHIP]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
+	[AI_BASE]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
+};
+
 #define SHIPS_NUMBER 32
 static TSHIP Ships[SHIPS_NUMBER];
 
@@ -72,6 +97,19 @@ void gObj_DestroyObject(TSHIP *obj)
 void gObj_DestroyAll(int i)
 {
 	memset(&Ships[i], 0, sizeof(TSHIP) * (SHIPS_NUMBER - i));
+}
+
+/* FIXME: Perhaps, merge with gObj_CreateObject? */
+void gObj_Constructor(TSHIP *gobj, int ai)
+{
+	gobj->ai_type = ai;
+	gobj->flags = EnemyFlags[ai];
+
+	/* FIXME: later add setting function pointers and calling them */
+}
+
+void gObj_Destructor(TSHIP *gobj)
+{
 }
 
 /* update animation counters, return 1 if end of animation cycle */

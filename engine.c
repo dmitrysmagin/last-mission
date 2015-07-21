@@ -29,31 +29,6 @@
 
 //#define GOD_MODE
 
-int EnemyFlags[] = {
-	[AI_STATIC]			= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
-	[AI_RANDOM_MOVE]		= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
-	[AI_KAMIKADZE]			= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
-	[AI_ELECTRIC_SPARKLE_VERTICAL]	=            GOBJ_HURTS|                         GOBJ_VISIBLE,
-	[AI_CEILING_CANNON]		= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
-	[AI_HOMING_MISSLE]		=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
-	[AI_CANNON]			= GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
-	[AI_ELECTRIC_SPARKLE_HORIZONTAL]=            GOBJ_HURTS|                         GOBJ_VISIBLE,
-	[AI_EXPLOSION]			=                                                GOBJ_VISIBLE,
-	[AI_BRIDGE]			= GOBJ_SOLID|                        GOBJ_SHADOW|GOBJ_VISIBLE,
-	[AI_BULLET]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
-	[AI_ELEVATOR]			= GOBJ_SOLID|                        GOBJ_SHADOW|GOBJ_VISIBLE,
-	[AI_SMOKE]			=                                                GOBJ_VISIBLE,
-	[AI_BONUS]			= GOBJ_SOLID                                    |GOBJ_VISIBLE,
-	[AI_SHOT]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
-	[AI_GARAGE]			= 0,
-	[AI_SPARE_SHIP]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
-	[AI_HOMING_SHOT]		=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
-	[AI_HIDDEN_AREA_ACCESS]		= GOBJ_SOLID           |GOBJ_DESTROY,
-	[AI_BFG_SHOT]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE,
-	[AI_SHIP]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
-	[AI_BASE]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
-};
-
 unsigned char ChangeScreen(int flag);
 int IsOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
 int IsTouch(int x, int y, TSHIP *gobj);
@@ -597,8 +572,7 @@ void ReEnableBase()
 		base->max_frame = 1;
 		base->anim_speed = 0;
 		base->anim_speed_cnt = 0;
-		base->ai_type = AI_BASE;
-		base->flags = EnemyFlags[AI_BASE];
+		gObj_Constructor(base, AI_BASE);
 	}
 
 	if(base_cur_screen != ship_cur_screen) {
@@ -880,8 +854,7 @@ void BlowUpEnemy(TSHIP *gobj)
 		}
 	}
 
-	gobj->ai_type = AI_EXPLOSION;
-	gobj->flags = EnemyFlags[AI_EXPLOSION];
+	gObj_Constructor(gobj, AI_EXPLOSION);
 
 	switch (gobj->i) {
 	case 6: // special explosion for breakable walls
@@ -1015,8 +988,7 @@ void DoMachineGun()
 			bullet->anim_speed_cnt = bullet->anim_speed;
 			bullet->move_speed_cnt = bullet->move_speed;
 			bullet->cur_frame = FacingRight(ship) ? 0 : 1;
-			bullet->ai_type = AI_SHOT;
-			bullet->flags = EnemyFlags[AI_SHOT];
+			gObj_Constructor(bullet, AI_SHOT);
 			bullet->just_created = 1;
 			bullet->parent = ship;
 
@@ -1057,8 +1029,7 @@ void DoBFG()
 			bullet->move_speed_cnt = bullet->move_speed;
 			bullet->cur_frame = 0;
 			bullet->max_frame = 3;
-			bullet->ai_type = AI_BFG_SHOT;
-			bullet->flags = EnemyFlags[AI_BFG_SHOT];
+			gObj_Constructor(bullet, AI_BFG_SHOT);
 			bullet->just_created = 1;
 			bullet->parent = ship;
 
@@ -1096,8 +1067,7 @@ void DoRocketLauncher()
 			bullet->anim_speed = 4;
 			bullet->anim_speed_cnt = bullet->anim_speed;
 			bullet->move_speed_cnt = bullet->move_speed;
-			bullet->ai_type = AI_HOMING_SHOT;
-			bullet->flags = EnemyFlags[AI_HOMING_SHOT];
+			gObj_Constructor(bullet, AI_HOMING_SHOT);
 			bullet->just_created = 1;
 			bullet->parent = ship;
 
@@ -1280,8 +1250,7 @@ void CreateExplosion(TSHIP *gobj)
 	j->anim_speed = 6;
 	j->anim_speed_cnt = 6;
 	j->max_frame = 2;
-	j->ai_type = AI_EXPLOSION;
-	j->flags = EnemyFlags[AI_EXPLOSION];
+	gObj_Constructor(j, AI_EXPLOSION);
 }
 
 int ShipsDistance(TSHIP *i, TSHIP *j)
@@ -1326,8 +1295,7 @@ void CreateWallExplosion(int x, int y)
 	j->anim_speed = 6;
 	j->anim_speed_cnt = 6;
 	j->max_frame = 2;
-	j->ai_type = AI_EXPLOSION;
-	j->flags = EnemyFlags[AI_EXPLOSION];
+	gObj_Constructor(j, AI_EXPLOSION);
 }
 
 void DoSmoke()
@@ -1353,8 +1321,7 @@ void DoSmoke()
 	j->anim_speed = 4;
 	j->anim_speed_cnt = j->anim_speed;
 	j->max_frame = 4;
-	j->ai_type = AI_SMOKE;
-	j->flags = EnemyFlags[AI_SMOKE];
+	gObj_Constructor(j, AI_SMOKE);
 }
 
 void DoEnemy(TSHIP *gobj)
@@ -1633,8 +1600,7 @@ void DoEnemy(TSHIP *gobj)
 						gobj->i = 21;
 						gobj->x = base->x - 4;
 						gobj->y = 128;
-						gobj->ai_type = AI_ELEVATOR;
-						gobj->flags = EnemyFlags[AI_ELEVATOR];
+						gObj_Constructor(gobj, AI_ELEVATOR);
 						goto _here;
 					}
 				} else {
@@ -1707,8 +1673,7 @@ void InitShip()
 	base->max_frame = 1;
 	base->anim_speed = 0;
 	base->anim_speed_cnt = 0;
-	base->ai_type = AI_BASE;
-	base->flags = EnemyFlags[AI_BASE];
+	gObj_Constructor(base, AI_BASE);
 
 	// flying ship data
 	ship->state = SH_ACTIVE;
@@ -1738,8 +1703,7 @@ void InitShip()
 	ship->cur_frame = ((game_level & 1) == 0 ? ship->max_frame : ship->min_frame);
 	ship->anim_speed = 1;
 	ship->anim_speed_cnt = 1;
-	ship->ai_type = AI_SHIP;
-	ship->flags = EnemyFlags[AI_SHIP];
+	gObj_Constructor(ship, AI_SHIP);
 }
 
 void InitEnemies()
@@ -1770,8 +1734,7 @@ void InitEnemies()
 		en->min_frame = object->minframe;
 		en->cur_frame = object->minframe;
 		en->max_frame = object->maxframe;
-		en->ai_type = object->ai;
-		en->flags = EnemyFlags[object->ai];
+		gObj_Constructor(en, object->ai);
 		en->move_speed = 1; // standard
 		en->move_speed_cnt = 1;
 

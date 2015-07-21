@@ -93,8 +93,8 @@ TSHIP *gObj_Ship();
 TSHIP *gObj_CreateObject();
 void gObj_DestroyObject(TSHIP *obj);
 void gObj_DestroyAll(int i);
-
-extern int EnemyFlags[];
+void gObj_Constructor(TSHIP *gobj, int ai);
+void gObj_Destructor(TSHIP *gobj);
 
 void Update_Static(TSHIP *gobj);
 void Update_Random(TSHIP *gobj);
