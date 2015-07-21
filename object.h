@@ -116,4 +116,6 @@ void Update_Bullet(TSHIP *gobj);
 void Update_HomingShot(TSHIP *gobj);
 void Update_Shot(TSHIP *gobj);
 
+void Update_Elevator(TSHIP *gobj);
+
 #endif /* _ENEMIES_H_ */

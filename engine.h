@@ -57,7 +57,15 @@ typedef struct {
 void GameLoop();
 
 /* FIXME: this should not be public, remove later */
+#define F_UP 0
+#define F_RIGHT 1
+#define F_DOWN 2
+#define F_LEFT 3
+
+unsigned char ChangeScreen(int flag);
 void RestartLevel();
+void InitNewScreen();
+
 
 /* FIXME: Move to other header file (object.h ??) */
 void BlowUpEnemy(TSHIP *gobj);
@@ -69,5 +77,10 @@ int FacingRight(TSHIP *i);
 
 extern TGAMEDATA *game;
 extern unsigned int player_attached;
+extern int elevator_flag;
+extern int base_cur_screen;
+extern int base_level_start;
+extern unsigned char ship_cur_screen;
+extern int game_level;
 
 #endif // _ENGINE_H_

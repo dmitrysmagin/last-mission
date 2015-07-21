@@ -11,6 +11,7 @@
 #include "sound.h"
 #include "sprites.h"
 #include "object.h"
+#include "object_garage.h"
 #include "engine.h"
 #include "room.h"
 
@@ -549,5 +550,100 @@ void Update_Shot(TSHIP *gobj)
 	    IsTouch(gobj->x, gobj->y, gobj)) {
 		BlowUpEnemy(gobj);
 		return;
+	}
+}
+
+void Update_Elevator(TSHIP *gobj)
+{
+	TSHIP *ship = gObj_Ship();
+	TSHIP *base = gObj_Base();
+
+	if (player_attached == 1) {
+		// start to lift only when ship and base are standing on the elevator
+		// ugly, improve in future
+		//if ((gobj->x == 256 && base->x >= 260) || (gobj->x == 16 && base->x <= 20))
+		if (gobj->x == base->x - 4) {
+			static int el_phase = 0;
+
+			elevator_flag = 1;
+
+			if (el_phase == 0) {
+				// when starting to lift up - unseal the floor
+				// ugly, maybe change in future
+				if (gobj->y == 120) {
+					// unseal the floor
+					for (int j = 0; j <= 5; j++) {
+						SetTileI((gobj->x >> 3) + j, gobj->y >> 3, 0);
+					}
+				}
+
+				// upper limit of the screen is reached
+				if (ship->y == 0) {
+					el_phase = 1;
+
+					int sx, sy;
+					GetCurrentSpriteDimensions(ship, &sx, &sy);
+
+					ship->y = 112 - sy;
+					base->y = 112;
+
+					ChangeScreen(F_UP);
+					base_cur_screen = ship_cur_screen;
+					InitNewScreen();
+
+					// now i is invalid, because InitNewScreen reenables enemies
+					// spawn new elevator
+					gobj = gObj_CreateObject();
+					gobj->i = 21;
+					gobj->x = base->x - 4;
+					gobj->y = 128;
+					gObj_Constructor(gobj, AI_ELEVATOR);
+					goto _here;
+				}
+			} else {
+				// if elevator is done lifting
+				if (base->y == 104) {
+					el_phase = 0;
+
+					// seal the floor!
+					for (int i = 0; i <= 5; i++) {
+						SetTileI(((base->x - 4) >> 3) + i, (base->y + 16) >> 3, 245);
+					}
+
+					if (ship_cur_screen != 69) {
+						game_level += 1;
+						GarageSave();
+						//PublishScore();
+						//GameLevelUp();
+					}
+					base_level_start = ship_cur_screen;
+
+					// destroy elevator or it will roll forever
+					// but if not screen 69
+					if (base_cur_screen != 69) {
+						TSHIP *lift = gObj_First(2);
+						for (; lift; lift = gObj_Next(lift)) {
+							if(lift->ai_type == AI_ELEVATOR)
+								gObj_DestroyObject(lift);
+						}
+					}
+
+					elevator_flag = 0;
+					game->health = 3;
+
+					goto _here;
+				}
+			}
+
+			ship->y -= 1;
+			base->y -= 1;
+			gobj->y -= 1;
+
+		_here:
+			if (elevator_flag)
+				PlaySoundEffect(SND_ELEVATOR);
+			else
+				StopSoundEffect(SND_ELEVATOR);
+		}
 	}
 }
