@@ -2,6 +2,7 @@
 #define _ENGINE_H_
 
 #include "world.h"
+#include "object.h"
 
 #define GM_EXIT 	(-1)
 #define GM_TITLE	0
@@ -54,5 +55,17 @@ typedef struct {
 } Light;
 
 void GameLoop();
+
+/* FIXME: this should not be public, remove later */
+void RestartLevel();
+
+/* FIXME: Move to other header file (object.h ??) */
+void BlowUpEnemy(TSHIP *gobj);
+int IsTouch(int x, int y, TSHIP *gobj);
+int IsOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
+void GetCurrentSpriteDimensions(TSHIP *i, int *cx, int *cy);
+
+extern TGAMEDATA *game;
+extern unsigned int player_attached;
 
 #endif // _ENGINE_H_

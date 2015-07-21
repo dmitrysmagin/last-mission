@@ -15,9 +15,6 @@
 #include "object_garage.h"
 #include "room.h"
 
-/* HACK: Remove later */
-void GetCurrentSpriteDimensions(TSHIP *i, int *cx, int *cy);
-
 // Actual garage data, valid for current game.
 static int garage_data[MAX_GARAGES][2];
 // Garage data of the last game start. Will be restored if player is dead.
@@ -176,10 +173,6 @@ int GetPlayerShipIndex()
 
 	return SHIP_TYPE_OBSERVER;
 }
-
-/* HACK: later remove this */
-int IsOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
-extern TGAMEDATA *game;
 
 void Update_Garage(TSHIP *gobj)
 {

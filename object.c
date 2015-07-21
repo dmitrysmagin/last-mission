@@ -143,9 +143,6 @@ static int UpdateMoveSpeed(TSHIP *gobj)
 	return 0;
 }
 
-/* FIXME: Move to header file */
-int IsTouch(int x, int y, TSHIP *gobj);
-
 void Update_Static(TSHIP *gobj)
 {
 	UpdateAnimation(gobj);
@@ -365,10 +362,6 @@ void Update_Smoke(TSHIP *gobj)
 	}
 }
 
-/* HACK: later remove this */
-void RestartLevel();
-extern TGAMEDATA *game;
-
 void Update_Explosion(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
@@ -427,9 +420,6 @@ void Update_Explosion(TSHIP *gobj)
 	}
 }
 
-/* HACK: later remove this */
-extern int player_attached;
-
 void Update_Bridge(TSHIP *gobj)
 {
 	if (player_attached) {
@@ -446,8 +436,6 @@ void Update_Bridge(TSHIP *gobj)
 	}
 
 }
-/* HACK: later remove this */
-void BlowUpEnemy(TSHIP *gobj);
 
 void Update_Bullet(TSHIP *gobj)
 {

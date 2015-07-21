@@ -30,13 +30,10 @@
 //#define GOD_MODE
 
 unsigned char ChangeScreen(int flag);
-int IsOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
-int IsTouch(int x, int y, TSHIP *gobj);
 int UpdateFuel();
 void Update_Ship(TSHIP *ship);
 void ReEnableBase();
 void Update_Base(TSHIP *base);
-void BlowUpEnemy(TSHIP *gobj);
 int UpdateLaser(int i);
 void DoLaser();
 void DoMachineGun();
@@ -50,7 +47,6 @@ void InitEnemies();
 void InitNewScreen();
 void InitNewGame();
 int UpdateLives();
-void RestartLevel();
 void BlitStatus();
 void DoTitle();
 void DoWinScreen();
