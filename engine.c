@@ -22,6 +22,7 @@
 #include "sprites.h"
 #include "object.h"
 #include "object_garage.h"
+#include "object_bfg.h"
 #include "engine.h"
 #include "room.h"
 
@@ -37,10 +38,7 @@ void Update_Base(TSHIP *base);
 int UpdateLaser(int i);
 void DoLaser();
 void DoMachineGun();
-void DoBFG();
 void DoRocketLauncher();
-int UpdateAnimation(TSHIP *gobj);
-int UpdateMoveSpeed(TSHIP *gobj);
 void DoEnemy(TSHIP *gobj);
 void InitShip();
 void InitEnemies();
@@ -61,20 +59,6 @@ void PublishScore();
 void GameLevelUp();
 
 unsigned char ship_cur_screen = 0;
-
-typedef struct {
-	int xc, yc;
-	int xt, yt;
-	TSHIP *ship;
-	int hit_now;
-	int hit_count;
-} TBFGTARGET;
-
-#define BFG_KILL_DISTANCE 60
-#define BFG_KILL_TIME 16
-#define MAX_BFG_TARGETS 13
-TBFGTARGET BfgTargets[MAX_BFG_TARGETS];
-int bfg_on = 0;
 
 unsigned int player_attached = 0;
 int base_cur_screen;
@@ -246,12 +230,6 @@ int MaxBottomPos(TSHIP *i)
 	int x, y;
 	GetCurrentSpriteDimensions(i, &x, &y);
 	return ACTION_SCREEN_HEIGHT - y;
-}
-
-void CleanupBfg()
-{
-	memset(BfgTargets, 0, sizeof(BfgTargets));
-	bfg_on = 0;
 }
 
 int IsOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2)
@@ -997,48 +975,6 @@ void DoMachineGun()
 	}
 }
 
-void DoBFG()
-{
-	static int mg_timeout = 0;
-	if (--mg_timeout < 0)
-		mg_timeout = 0;
-
-	if (GKeys[KEY_FIRE] == 1) {
-		if (!mg_timeout && !bfg_on) {
-			// Create a new bullet.
-			TSHIP *ship = gObj_Ship();
-
-			//if ship is not facing right or left, then exit.
-			if (!FacingLeft(ship) && !FacingRight(ship))
-				return;
-
-			TSHIP *bullet = gObj_CreateObject();
-			bullet->i = 56;
-			bullet->x = ship->x + (FacingRight(ship) ? 16 : -11);
-			bullet->y = ship->y + 5;
-			bullet->dy = 0;
-			bullet->dx = FacingRight(ship) ? 2 : -2;
-			bullet->anim_speed = 10;
-			bullet->anim_speed_cnt = bullet->anim_speed;
-			bullet->move_speed_cnt = bullet->move_speed;
-			bullet->cur_frame = 0;
-			bullet->max_frame = 3;
-			gObj_Constructor(bullet, AI_BFG_SHOT);
-			bullet->just_created = 1;
-			bullet->parent = ship;
-
-			bfg_on = 1;
-
-			// Reset timeout.
-			mg_timeout = 20;
-
-			PlaySoundEffect(SND_CANNON_SHOOT);
-		}
-	} else {
-		mg_timeout = 0;
-	}
-}
-
 void DoRocketLauncher()
 {
 	static int rl_timeout = 0;
@@ -1203,38 +1139,6 @@ void DoLaser()
 	}
 }
 
-// update animation counters
-// returns 1 if reached the end of animation cycle
-int UpdateAnimation(TSHIP *gobj)
-{
-	// do animation counters
-	if (gobj->anim_speed_cnt == 0) {
-		gobj->anim_speed_cnt = gobj->anim_speed;
-		gobj->cur_frame += 1;
-		if (gobj->cur_frame > gobj->max_frame) {
-			gobj->cur_frame = gobj->min_frame;
-			return 1;
-		}
-	} else {
-		gobj->anim_speed_cnt -= 1;
-	}
-
-	return 0;
-}
-
-// returns 1 if reached the end of move-wait cycle
-int UpdateMoveSpeed(TSHIP *gobj)
-{
-	if (gobj->move_speed_cnt == 0) {
-		gobj->move_speed_cnt = gobj->move_speed;
-		return 1;
-	} else {
-		gobj->move_speed_cnt -= 1;
-	}
-
-	return 0;
-}
-
 void CreateExplosion(TSHIP *gobj)
 {
 	TSHIP *j = gObj_CreateObject();
@@ -1245,39 +1149,6 @@ void CreateExplosion(TSHIP *gobj)
 	j->anim_speed_cnt = 6;
 	j->max_frame = 2;
 	gObj_Constructor(j, AI_EXPLOSION);
-}
-
-int ShipsDistance(TSHIP *i, TSHIP *j)
-{
-	int x = i->x - j->x;
-	int y = i->y - j->y;
-
-	return (int)sqrt((float)(x*x + y*y));
-}
-
-void AddBfgTarget(TSHIP *gobj, TSHIP *bfg)
-{
-	TBFGTARGET *t = NULL;
-	for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
-		if (BfgTargets[n].ship == gobj) {
-			t = &BfgTargets[n];
-			break;
-		} else if (!t && !BfgTargets[n].ship) {
-			t = &BfgTargets[n];
-		}
-	}
-
-	if (!t)
-		return;
-
-	++t->hit_count;
-	t->hit_now = 1;
-	t->ship = gobj;
-
-	t->xc = bfg->x + 5;
-	t->yc = bfg->y + 5;
-	t->xt = gobj->x + 8;
-	t->yt = gobj->y + 8;
 }
 
 void CreateWallExplosion(int x, int y)
@@ -1413,42 +1284,7 @@ void DoEnemy(TSHIP *gobj)
 		break;
 
 	case AI_BFG_SHOT:
-		UpdateAnimation(gobj);
-
-		if (gobj->dx == 2)
-			gobj->dx = 3;
-		else if (gobj->dx == -2)
-			gobj->dx = -3;
-		else if (gobj->dx == 3)
-			gobj->dx = 2;
-		else if (gobj->dx == -3)
-			gobj->dx = -2;
-
-		// Calculate hit objects.
-		for (int n = 0; n < MAX_BFG_TARGETS; ++n)
-			BfgTargets[n].hit_now = 0;
-
-		TSHIP *trg = gObj_First(2);
-		for (; trg; trg = gObj_Next(trg)) {
-			if (trg->ai_type == AI_KAMIKADZE ||
-			    trg->ai_type == AI_RANDOM_MOVE) {
-				if (ShipsDistance(gobj, trg) < BFG_KILL_DISTANCE) {
-					AddBfgTarget(trg, gobj);
-				}
-			}
-		}
-
-		for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
-			if (BfgTargets[n].hit_count) {
-				if (BfgTargets[n].hit_now) {
-					if (BfgTargets[n].hit_count > BFG_KILL_TIME) {
-						BlowUpEnemy(BfgTargets[n].ship);
-					}
-				} else {
-					memset(BfgTargets + n, 0, sizeof(TBFGTARGET));
-				}
-			}
-		}
+		Update_BfgShot(gobj);
 
 	case AI_SHOT: // bullet shot by a player
 		Update_Shot(gobj);
@@ -1995,27 +1831,6 @@ void BlitLaser()
 {
 	if (laser_dir != 0) {
 		DrawLine(x_start, ly, x_end, ly, RGB(170, 170, 170));
-	}
-}
-
-void BlitBfg()
-{
-	if (bfg_on) {
-		for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
-			if (BfgTargets[n].ship) {
-				unsigned int color = RGB(85, 255, 85);
-
-				if (BfgTargets[n].hit_count < BFG_KILL_TIME / 2)
-					color = RGB(0, 170, 0);
-
-				DrawLine(
-					BfgTargets[n].xc,
-					BfgTargets[n].yc,
-					BfgTargets[n].xt,
-					BfgTargets[n].yt,
-					color);
-			}
-		}
 	}
 }
 

@@ -113,7 +113,7 @@ void gObj_Destructor(TSHIP *gobj)
 }
 
 /* update animation counters, return 1 if end of animation cycle */
-static int UpdateAnimation(TSHIP *gobj)
+int UpdateAnimation(TSHIP *gobj)
 {
 	// do animation counters
 	if (gobj->anim_speed_cnt == 0) {
@@ -131,7 +131,7 @@ static int UpdateAnimation(TSHIP *gobj)
 }
 
 /* returns 1 if end of move-wait cycle */
-static int UpdateMoveSpeed(TSHIP *gobj)
+int UpdateMoveSpeed(TSHIP *gobj)
 {
 	if (gobj->move_speed_cnt == 0) {
 		gobj->move_speed_cnt = gobj->move_speed;

@@ -96,6 +96,9 @@ void gObj_DestroyAll(int i);
 void gObj_Constructor(TSHIP *gobj, int ai);
 void gObj_Destructor(TSHIP *gobj);
 
+int UpdateAnimation(TSHIP *gobj);
+int UpdateMoveSpeed(TSHIP *gobj);
+
 void Update_Static(TSHIP *gobj);
 void Update_Random(TSHIP *gobj);
 void Update_Kamikaze(TSHIP *gobj);
