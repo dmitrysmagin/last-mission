@@ -11,6 +11,7 @@
 #include "sound.h"
 #include "sprites.h"
 #include "object.h"
+#include "object_bfg.h"
 #include "object_garage.h"
 #include "engine.h"
 #include "room.h"
@@ -654,5 +655,109 @@ void Update_Elevator(TSHIP *gobj)
 			else
 				StopSoundEffect(SND_ELEVATOR);
 		}
+	}
+}
+
+void gObj_Update(TSHIP *gobj)
+{
+	TSHIP *ship = gObj_Ship();
+
+	/* FIXME: this should be done in ship destructor, move there later */
+	// if main ship is exploding, freeze other enemies except bridge and garage
+	// it's not safe but ship dies after all and enemy data is reinitialized then
+	if (gobj != ship && ship->ai_type == AI_EXPLOSION) {
+		if(gobj->ai_type != AI_BRIDGE &&
+		   gobj->ai_type != AI_GARAGE &&
+		   gobj->ai_type != AI_HIDDEN_AREA_ACCESS &&
+		   gobj->ai_type != AI_SPARE_SHIP) {
+			gobj->ai_type = AI_STATIC; // don't affect ship itself
+		}
+	}
+
+	// do different ai types
+	switch (gobj->ai_type) {
+	case AI_SHIP:
+		Update_Ship(gobj);
+		break;
+
+	case AI_BASE:
+		Update_Base(gobj);
+		break;
+
+	case AI_STATIC: // breakable wall or non-moving enemy
+		Update_Static(gobj);
+		break;
+
+	case AI_RANDOM_MOVE:
+		Update_Random(gobj);
+		break;
+
+	case AI_KAMIKADZE:
+		Update_Kamikaze(gobj);
+		break;
+
+	case AI_ELECTRIC_SPARKLE_VERTICAL:
+		Update_SparkleVertical(gobj);
+		break;
+
+	case AI_CEILING_CANNON: // ceiling cannon spawning kamikazes
+		Update_CeilingCannon(gobj);
+		break;
+
+	case AI_HOMING_MISSLE:
+		Update_HomingMissile(gobj);
+		break;
+
+	case AI_CANNON:
+		Update_Cannon(gobj);
+		break;
+
+	case AI_ELECTRIC_SPARKLE_HORIZONTAL:
+		Update_SparkleHorizontal(gobj);
+		break;
+
+	case AI_BONUS:
+		Update_Bonus(gobj);
+		break;
+
+	case AI_SMOKE:
+		Update_Smoke(gobj);
+		break;
+
+	case AI_EXPLOSION: // explosion, do one animation cycle and deactivate enemy entry
+		Update_Explosion(gobj);
+		break;
+
+	case AI_BRIDGE: // bridge, appear if bonded ship, disappear otherwise
+		Update_Bridge(gobj);
+		break;
+
+	case AI_GARAGE:
+		Update_Garage(gobj);
+		break;
+
+	case AI_SPARE_SHIP:
+		Update_SpareShip(gobj);
+		break;
+
+	case AI_BULLET: // bullet
+		Update_Bullet(gobj);
+		break;
+
+	case AI_HOMING_SHOT: // missle shot by player.
+		Update_HomingShot(gobj);
+		break;
+
+	case AI_BFG_SHOT:
+		Update_BfgShot(gobj);
+		break;
+
+	case AI_SHOT: // bullet shot by a player
+		Update_Shot(gobj);
+		break;
+
+	case AI_ELEVATOR: // elevator
+		Update_Elevator(gobj);
+		break;
 	}
 }

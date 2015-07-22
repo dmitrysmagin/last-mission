@@ -96,6 +96,8 @@ void gObj_DestroyAll(int i);
 void gObj_Constructor(TSHIP *gobj, int ai);
 void gObj_Destructor(TSHIP *gobj);
 
+void gObj_Update(TSHIP *gobj);
+
 int UpdateAnimation(TSHIP *gobj);
 int UpdateMoveSpeed(TSHIP *gobj);
 
@@ -117,5 +119,6 @@ void Update_HomingShot(TSHIP *gobj);
 void Update_Shot(TSHIP *gobj);
 
 void Update_Elevator(TSHIP *gobj);
+
 
 #endif /* _ENEMIES_H_ */

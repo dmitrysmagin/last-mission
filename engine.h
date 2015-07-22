@@ -75,6 +75,9 @@ void GetCurrentSpriteDimensions(TSHIP *i, int *cx, int *cy);
 int FacingLeft(TSHIP *i);
 int FacingRight(TSHIP *i);
 
+void Update_Ship(TSHIP *ship);
+void Update_Base(TSHIP *base);
+
 extern TGAMEDATA *game;
 extern unsigned int player_attached;
 extern int elevator_flag;
