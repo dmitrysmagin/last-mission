@@ -700,13 +700,18 @@ void DestroyHiddenAreaAccess(TSHIP *i, int playEffects)
 void BlowUpEnemy(TSHIP *gobj)
 {
 #ifdef GOD_MODE
-	if (gobj == gObj_Ship() || gobj == gObj_Base()) {
+	if (gobj->ai_type == AI_SHIP || gobj->ai_type == AI_BASE) {
 		// You cannot hurt a god.
 		return;
 	}
 #endif
 
-	if (gobj == gObj_Ship()) {
+	/* Exit if non-killable enemy */
+	if (!(gobj->flags & GOBJ_DESTROY) && gobj->ai_type != AI_BONUS) /* HACK for AI_BONUS */
+		return;
+
+	switch (gobj->ai_type) {
+	case AI_SHIP:
 		// This is the player ship.
 		if (game->easy_mode) {
 			if (!ticks_for_damage) {
@@ -720,80 +725,43 @@ void BlowUpEnemy(TSHIP *gobj)
 		if (game->health >= 0) {
 			return;
 		}
-	}
+		break;
 
-	if (gobj == gObj_Base()) {
+	case AI_BASE:
 		// This is a base, do not kill the base while moving up,
 		// otherwise player will be disappointed + there is a bug whith
 		// elevator_flag being not reset.
 		if (elevator_flag)
 			return;
-	}
 
-	/* Exit if non-killable enemy */
-	if (!(gobj->flags & GOBJ_DESTROY) && gobj->ai_type != AI_BONUS) /* HACK for AI_BONUS */
-		return;
+		// if blowing base - zero player_attached
+		player_attached = 0;
+		break;
 
-	if (gobj->ai_type == AI_SHOT || gobj->ai_type == AI_HOMING_SHOT) {
+	case AI_SHOT:
+	case AI_HOMING_SHOT:
 		gObj_DestroyObject(gobj);
-
 		return;
-	}
 
-	if (gobj->ai_type == AI_BFG_SHOT) {
+	case AI_BFG_SHOT:
 		CleanupBfg();
 		gObj_DestroyObject(gobj);
-
 		return;
-	}
 
-	if (gobj->ai_type == AI_HIDDEN_AREA_ACCESS) {
+	case AI_HIDDEN_AREA_ACCESS:
 		DestroyHiddenAreaAccess(gobj, 1);
-
 		return;
-	}
 
-	// some corrections for homing missiles
-	if (gobj->i == 40 || gobj->i == 41) {
-		if (game->easy_mode) {
-			CreateExplosion(gobj);
-			gobj->x += SCREEN_WIDTH;
-			PlaySoundEffect(SND_EXPLODE);
-		}
-
-		return;
-	}
-
-	// update score with the killed ship data.
-	UpdateScoreWithShip(gobj);
-
-	// if blowing base - zero player_attached
-	if (gobj == gObj_Base())
-		player_attached = 0;
-
-	// reactivate parent cannon
-	if (gobj->i == 34 && gobj->parent)
-		gobj->parent->dx = 0;
-
-	// special procedures for breakable walls
-	if (gobj->i == 6) {
-		if (gobj->cur_frame == 0) {
-			gobj->x -= 8;
-			SetTileI(gobj->x >> 3, gobj->y >> 3, 0);
-			SetTileI(gobj->x >> 3, (gobj->y >> 3) + 1, 0);
-		} else {
-			SetTileI((gobj->x >> 3) + 1, gobj->y >> 3, 0);
-			SetTileI((gobj->x >> 3) + 1, (gobj->y >> 3) + 1, 0);
-		}
-	}
-
-	if (gobj->ai_type == AI_BONUS) {
+	case AI_BONUS:
 		// Memorize bonus type.
 		gobj->explosion.bonus_type = gobj->i;
-	}
+		break;
 
-	if (game->easy_mode &&
-	    (gobj->ai_type == AI_RANDOM_MOVE || gobj->ai_type == AI_KAMIKADZE)) {
+	case AI_RANDOM_MOVE:
+	case AI_KAMIKADZE:
+		if (!game->easy_mode)
+			break;
+
 		// Generate bonus if defined by screen and if
 		// this ship is the last one on the screen.
 		if (cur_screen_bonus) {
@@ -813,6 +781,37 @@ void BlowUpEnemy(TSHIP *gobj)
 				gobj->explosion.bonus_type = cur_screen_bonus;
 				gobj->explosion.regenerate_bonus = 1;
 			}
+		}
+		break;
+	}
+
+	// some corrections for homing missiles
+	if (gobj->i == 40 || gobj->i == 41) {
+		if (game->easy_mode) {
+			CreateExplosion(gobj);
+			gobj->x += SCREEN_WIDTH;
+			PlaySoundEffect(SND_EXPLODE);
+		}
+
+		return;
+	}
+
+	// update score with the killed ship data.
+	UpdateScoreWithShip(gobj);
+
+	// reactivate parent cannon
+	if (gobj->i == 34 && gobj->parent)
+		gobj->parent->dx = 0;
+
+	// special procedures for breakable walls
+	if (gobj->i == 6) {
+		if (gobj->cur_frame == 0) {
+			gobj->x -= 8;
+			SetTileI(gobj->x >> 3, gobj->y >> 3, 0);
+			SetTileI(gobj->x >> 3, (gobj->y >> 3) + 1, 0);
+		} else {
+			SetTileI((gobj->x >> 3) + 1, gobj->y >> 3, 0);
+			SetTileI((gobj->x >> 3) + 1, (gobj->y >> 3) + 1, 0);
 		}
 	}
 
