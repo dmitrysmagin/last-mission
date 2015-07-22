@@ -13,6 +13,7 @@
 #include "engine.h"
 #include "object.h"
 #include "object_bfg.h"
+#include "object_enemy.h"
 #include "room.h"
 
 typedef struct {
