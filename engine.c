@@ -782,11 +782,15 @@ void BlowUpEnemy(TSHIP *gobj)
 				gobj->explosion.regenerate_bonus = 1;
 			}
 		}
-		break;
-	}
 
-	// some corrections for homing missiles
-	if (gobj->i == 40 || gobj->i == 41) {
+		// this may be spawned by ceiling cannon, reactivate it
+		// FIXME: perhaps make it more general
+		if (gobj->parent)
+			gobj->parent->dx = 0;
+
+		break;
+
+	case AI_HOMING_MISSLE:
 		if (game->easy_mode) {
 			CreateExplosion(gobj);
 			gobj->x += SCREEN_WIDTH;
@@ -798,10 +802,6 @@ void BlowUpEnemy(TSHIP *gobj)
 
 	// update score with the killed ship data.
 	UpdateScoreWithShip(gobj);
-
-	// reactivate parent cannon
-	if (gobj->i == 34 && gobj->parent)
-		gobj->parent->dx = 0;
 
 	// special procedures for breakable walls
 	if (gobj->i == 6) {
