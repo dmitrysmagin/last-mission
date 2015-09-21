@@ -232,10 +232,28 @@ void Update_Bonus(TSHIP *gobj)
 	}
 }
 
+void Create_Smoke(TSHIP *gobj)
+{
+	TSHIP *i = gObj_CreateObject();
+	i->i = 46;
+	i->x = gobj->x + 8;
+	i->y = gobj->y - 8;
+	i->dy = -1;
+	i->dx = FacingRight(gobj) ? -1 : (FacingLeft(gobj) ? 1 : 0);
+	i->anim_speed = 4;
+	i->anim_speed_cnt = i->anim_speed;
+	i->cur_frame = 0;
+	i->max_frame = 4;
+	gObj_Constructor(i, AI_SMOKE);
+	i->parent = gobj;
+}
+
 void Update_Smoke(TSHIP *gobj)
 {
 	if (UpdateAnimation(gobj) == 1) {
-		gObj_DestroyObject(gobj);
+		gobj->x = gobj->parent->x + 8;
+		gobj->y = gobj->parent->y - 8;
+		gobj->cur_frame = 0;
 	} else if (gobj->cur_frame % 2) {
 		gobj->x += gobj->dx;
 		gobj->y += gobj->dy;

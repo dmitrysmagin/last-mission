@@ -717,6 +717,9 @@ void BlowUpEnemy(TSHIP *gobj)
 			if (!ticks_for_damage) {
 				ticks_for_damage = 20;
 				--game->health;
+				if (game->health <= 1) {
+					Create_Smoke(gobj);
+				}
 			}
 		} else {
 			game->health = -1;
@@ -1150,32 +1153,6 @@ void CreateWallExplosion(int x, int y)
 	j->anim_speed_cnt = 6;
 	j->max_frame = 2;
 	gObj_Constructor(j, AI_EXPLOSION);
-}
-
-void DoSmoke()
-{
-	if (!game->easy_mode || game->health > 1)
-		return;
-
-	static int smoke_counter = 0;
-	if (--smoke_counter > 0)
-		return;
-
-	smoke_counter = 60;
-
-	TSHIP *i = gObj_Ship();
-	TSHIP *j = gObj_CreateObject();
-	j->i = 46;
-	j->x = i->x + 8;
-	j->y = i->y - 8;
-	j->dy = -1;
-	j->dx =
-		FacingRight(i) ? -1 :
-		(FacingLeft(i) ? 1 : 0);
-	j->anim_speed = 4;
-	j->anim_speed_cnt = j->anim_speed;
-	j->max_frame = 4;
-	gObj_Constructor(j, AI_SMOKE);
 }
 
 void InitShip()
@@ -1830,8 +1807,6 @@ void DoGame()
 		// do enemies
 		for (TSHIP *gobj = gObj_First(0); gobj; gobj = gObj_Next(gobj))
 			gObj_Update(gobj);
-
-		DoSmoke();
 
 		/* FIXME: Rework this later */
 		TSHIP *ship = gObj_Ship();

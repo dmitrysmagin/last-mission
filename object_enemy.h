@@ -12,6 +12,7 @@ void Update_HomingMissile(TSHIP *gobj);
 void Update_Cannon(TSHIP *gobj);
 void Update_SparkleHorizontal(TSHIP *gobj);
 void Update_Bonus(TSHIP *gobj);
+void Create_Smoke(TSHIP *gobj);
 void Update_Smoke(TSHIP *gobj);
 void Update_Explosion(TSHIP *gobj);
 void Update_Bridge(TSHIP *gobj);
