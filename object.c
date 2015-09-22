@@ -97,10 +97,9 @@ void gObj_DestroyObject(TSHIP *obj)
 	obj->state = SH_DEAD;
 }
 
-/* FIXME: Later remove the parameter */
-void gObj_DestroyAll(int i)
+void gObj_DestroyAll()
 {
-	memset(&Ships[i], 0, sizeof(TSHIP) * (SHIPS_NUMBER - i));
+	memset(Ships, 0, sizeof(TSHIP) * SHIPS_NUMBER);
 }
 
 /* FIXME: Perhaps, merge with gObj_CreateObject? */

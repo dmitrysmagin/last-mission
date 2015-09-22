@@ -1162,8 +1162,8 @@ void InitShip()
 
 	GarageRestore();
 
-	/* FIXME: Clear all game objects and init object queue */
-	gObj_DestroyAll(0);
+	/* Erase all game objects and init object queue */
+	gObj_DestroyAll();
 
 	// base data
 	base->state = SH_ACTIVE;
