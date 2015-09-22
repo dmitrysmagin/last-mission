@@ -1214,8 +1214,12 @@ void InitEnemies()
 	OBJECT *object = room->object;
 	int count = room->object_num;
 
-	/* FIXME: Clear all except ship/base */
-	gObj_DestroyAll(2);
+	/* FIXME: Clear all except ship/base and smoke */
+	TSHIP *gobj = gObj_First(2);
+	for (; gobj; gobj = gObj_Next(gobj)) {
+		if (gobj->ai_type != AI_SMOKE)
+			gObj_DestroyObject(gobj);
+	}
 
 	screen_procedure = room->procedure;
 	cur_screen_bonus = room->bonus;

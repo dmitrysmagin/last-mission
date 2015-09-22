@@ -93,6 +93,7 @@ TSHIP *gObj_CreateObject()
 
 void gObj_DestroyObject(TSHIP *obj)
 {
+	memset(obj, 0, sizeof(TSHIP));
 	obj->state = SH_DEAD;
 }
 
