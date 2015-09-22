@@ -278,6 +278,9 @@ void HandleShipsContact(TSHIP *gobj1, TSHIP *gobj2)
 		}
 	}
 
+	if(gobj2->ai_type == AI_GARAGE)
+		return;
+
 	if ((gobj1->ai_type == AI_SPARE_SHIP && j) || // j == 1
 		(gobj2->ai_type == AI_SPARE_SHIP && i)) { // i == 1
 		return;
