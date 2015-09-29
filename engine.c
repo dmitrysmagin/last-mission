@@ -21,6 +21,7 @@
 #include "sound.h"
 #include "sprites.h"
 #include "object.h"
+#include "object_enemy.h"
 #include "object_garage.h"
 #include "object_bfg.h"
 #include "engine.h"
@@ -222,7 +223,7 @@ int MaxBottomPos(TSHIP *i)
 	return ACTION_SCREEN_HEIGHT - y;
 }
 
-int IsOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2)
+int gObj_CheckOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2)
 {
 	int xs, ys, xs2, ys2;
 
@@ -252,67 +253,52 @@ int IsOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2)
 	return 0;
 }
 
-/* Check if gobj1 could destroy gobj2 */
-void HandleShipsContact(TSHIP *gobj1, TSHIP *gobj2)
+/* Check if gobj1 can destroy gobj2 */
+int gObj_CheckDestruction(TSHIP *gobj1, TSHIP *gobj2)
 {
-	int i, j; /* FIXME: 1 if controlled object */
+	// 0 - any obj, 1 - player, 2 - weapon
+	int obj1_type = (gobj1->flags & (GOBJ_PLAYER|GOBJ_WEAPON)) >> 5;
+	int obj2_type = (gobj2->flags & (GOBJ_PLAYER|GOBJ_WEAPON)) >> 5;
 
-	i = (gobj1 == gObj_Ship() || gobj1 == gObj_Base()) ? 1 : 0;
-	j = (gobj2 == gObj_Ship() || gobj2 == gObj_Base()) ? 1 : 0;
+	/* don't interact with the same objects */
+	if (obj1_type == obj2_type)
+		goto _exit_proc;
 
-	// i == 1, j == 1
-	/* Both objects are player controlled. */
-	if (i && j)
-		return;
-
-	// i == 0, j == 0
-	/* Both objects are NPC. */
-	if (!i && !j) {
-		if (gobj1->ai_type != AI_SHOT &&
-		    gobj2->ai_type != AI_SHOT &&
-		    gobj1->ai_type != AI_HOMING_SHOT &&
-		    gobj2->ai_type != AI_HOMING_SHOT &&
-		    gobj1->ai_type != AI_BFG_SHOT &&
-		    gobj2->ai_type != AI_BFG_SHOT) {
-			return;
-		}
-	}
-
+	/* FIXME: hack for garage, later make more generic */
 	if(gobj2->ai_type == AI_GARAGE)
-		return;
+		goto _exit_proc;
 
-	if ((gobj1->ai_type == AI_SPARE_SHIP && j) || // j == 1
-		(gobj2->ai_type == AI_SPARE_SHIP && i)) { // i == 1
-		return;
-	}
-
-	if (gobj1->ai_type == AI_BFG_SHOT) {
-		BlowUpEnemy(gobj2);
-	} else if (gobj2->ai_type == AI_BFG_SHOT) {
-		BlowUpEnemy(gobj1);
-	} else if (gobj1->ai_type == AI_BONUS) {
+	if (gobj1->ai_type == AI_BONUS) {
 		/* Bonus hit by a bullet. Swap bonus. */
-		if (!j) { // j == 0
+		if (obj2_type == 2) {
 			gobj1->explosion.regenerate_bonus = 1;
 		}
 
 		BlowUpEnemy(gobj1);
+		goto _exit_proc;
 	} else if (gobj2->ai_type == AI_BONUS) {
 		/* Bonus hit by a bullet. Swap bonus. */
-		if (!i) { // i == 0
-			gobj1->explosion.regenerate_bonus = 1;
+		if (obj1_type == 2) {
+			gobj2->explosion.regenerate_bonus = 1;
 		}
 
 		BlowUpEnemy(gobj2);
-	} else if (!(gobj1->flags & GOBJ_HURTS) && !(gobj2->flags & GOBJ_HURTS)) {
-		return;
-	} else {
-		if (!j || game->easy_mode || i) // i == 1, j == 0
-			BlowUpEnemy(gobj1);
-
-		if (!i || game->easy_mode || j) // i == 0, j == 1
-			BlowUpEnemy(gobj2);
+		goto _exit_proc;
 	}
+
+	if (gobj1->flags & GOBJ_HURTS || gobj2->flags & GOBJ_HURTS) {
+			if (gobj1->ai_type != AI_BFG_SHOT)
+				BlowUpEnemy(gobj1);
+
+			if (gobj2->ai_type != AI_BFG_SHOT)
+				BlowUpEnemy(gobj2);
+	}
+
+_exit_proc:
+	if (!(gobj1->flags & GOBJ_SOLID) || !(gobj2->flags & GOBJ_SOLID))
+		return 0;
+
+	return 1;
 }
 
 int IsTouch(int x, int y, TSHIP *gobj)
@@ -341,18 +327,9 @@ int IsTouch(int x, int y, TSHIP *gobj)
 		if (en == gobj->parent || en->parent == gobj)
 			continue;
 
-		if (IsOverlap(x, y, gobj, en)) {
-			HandleShipsContact(gobj, en);
-
-			if (!(en->flags & GOBJ_SOLID))
+		if (gObj_CheckOverlap(x, y, gobj, en)) {
+			if (!gObj_CheckDestruction(gobj, en))
 				continue;
-
-			if (!(gobj->flags & GOBJ_SOLID))
-				continue;
-
-			/* This is to make BFG shot multiple enemies */
-			if (gobj->ai_type == AI_BFG_SHOT)
-				return 0;
 
 			return 1;
 		}
@@ -366,7 +343,7 @@ int IsTouch(int x, int y, TSHIP *gobj)
 				continue;
 
 			// All tiles are solid.
-			if (gobj == gObj_Ship() && b >= 246) {
+			if (gobj->ai_type == AI_SHIP && b >= 246) {
 				// ship dies from touching certain tiles
 				BlowUpEnemy(gobj);
 			}
@@ -710,7 +687,7 @@ void BlowUpEnemy(TSHIP *gobj)
 #endif
 
 	/* Exit if non-killable enemy */
-	if (!(gobj->flags & GOBJ_DESTROY) && gobj->ai_type != AI_BONUS) /* HACK for AI_BONUS */
+	if (!(gobj->flags & GOBJ_DESTROY))
 		return;
 
 	switch (gobj->ai_type) {

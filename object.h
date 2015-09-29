@@ -27,11 +27,13 @@
 #define AI_SHIP				20
 #define AI_BASE				21
 
-#define GOBJ_SOLID			1
-#define GOBJ_HURTS			2
-#define GOBJ_DESTROY			4
-#define GOBJ_SHADOW			8
-#define GOBJ_VISIBLE			16
+#define GOBJ_SOLID			(1 << 0)
+#define GOBJ_HURTS			(1 << 1)
+#define GOBJ_DESTROY			(1 << 2)
+#define GOBJ_SHADOW			(1 << 3)
+#define GOBJ_VISIBLE			(1 << 4)
+#define GOBJ_PLAYER			(1 << 5)
+#define GOBJ_WEAPON			(1 << 6)
 
 #define SHIP_TYPE_LASER			0
 #define SHIP_TYPE_MACHINE_GUN		51

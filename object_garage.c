@@ -230,7 +230,7 @@ void Update_Garage(TSHIP *gobj)
 			PlaySoundEffect(SND_CONTACT);
 		}
 	} else if (gobj->garage_inactive) {
-		if (!IsOverlap(ship->x, ship->y, ship, gobj)) {
+		if (!gObj_CheckOverlap(ship->x, ship->y, ship, gobj)) {
 			gobj->garage_inactive = 0;
 		}
 	}

@@ -70,7 +70,7 @@ void InitNewScreen();
 /* FIXME: Move to other header file (object.h ??) */
 void BlowUpEnemy(TSHIP *gobj);
 int IsTouch(int x, int y, TSHIP *gobj);
-int IsOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
+int gObj_CheckOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
 void GetCurrentSpriteDimensions(TSHIP *i, int *cx, int *cy);
 int FacingLeft(TSHIP *i);
 int FacingRight(TSHIP *i);
