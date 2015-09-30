@@ -711,12 +711,6 @@ void BlowUpEnemy(TSHIP *gobj)
 		break;
 
 	case AI_BASE:
-		// This is a base, do not kill the base while moving up,
-		// otherwise player will be disappointed + there is a bug whith
-		// elevator_flag being not reset.
-		if (elevator_flag)
-			return;
-
 		// if blowing base - zero player_attached
 		player_attached = 0;
 		break;
