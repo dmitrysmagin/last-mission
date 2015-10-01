@@ -46,14 +46,6 @@ typedef struct TGAMEDATA {
 	WORLD *world;
 } TGAMEDATA;
 
-#define MAX_LIGHTS 13
-
-typedef struct {
-	int x, y;
-	float radius;
-	float r, g, b;
-} Light;
-
 void GameLoop();
 
 /* FIXME: this should not be public, remove later */

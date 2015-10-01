@@ -1418,87 +1418,6 @@ void BlitEnemyOutlines(WORLD *world)
 	}
 }
 
-unsigned char *pLightBuffer = 0;
-int numLights = 0;
-Light lights[MAX_LIGHTS];
-
-void AddLight(int x, int y, int radius, unsigned char r, unsigned char g, unsigned char b)
-{
-	if (numLights >= MAX_LIGHTS)
-		return;
-
-	Light *l = &lights[numLights++];
-	l->x = x;
-	l->y = y;
-	l->radius = radius;
-	l->b = b;
-	l->g = g;
-	l->r = r;
-}
-
-int ExplosionRadius(TSHIP *ship, int maxRadius)
-{
-	return maxRadius * cos((3.14159 * 0.5 * ship->cur_frame) / ship->max_frame);
-}
-
-void CastLights()
-{
-	numLights = 0;
-
-	// Laser.
-	if (laser_dir) {
-		//AddLight((x_start + x_end) / 2, ly, 60, 50, 50, 50);
-	}
-
-	// Enemies.
-	TSHIP *obj = gObj_First(0);
-	for (; obj; obj = gObj_Next(obj)) {
-		if (obj->ai_type != AI_BRIDGE) {
-			switch (obj->ai_type) {
-			case AI_ELECTRIC_SPARKLE_HORIZONTAL:
-			case AI_ELECTRIC_SPARKLE_VERTICAL:
-				AddLight(obj->x + 8, obj->y + 8, 50, 200, 50, 50);
-				break;
-
-			case AI_SHOT:
-				AddLight(obj->x + 2, obj->y, 20, 100, 50, 50);
-				break;
-
-			case AI_BFG_SHOT:
-				AddLight(obj->x + 5, obj->y + 5, 16, 90, 200, 90);
-				break;
-
-			case AI_HOMING_SHOT:
-				if (obj->cur_frame < 2)
-					AddLight(obj->x + 14, obj->y + 4, 20, 150, 110, 100);
-				else
-					AddLight(obj->x, obj->y + 4, 20, 150, 110, 100);
-				break;
-
-			case AI_EXPLOSION:
-				AddLight(obj->x + 10, obj->y + 10, ExplosionRadius(obj, 80), 240, 100, 0);
-				break;
-
-			case AI_BONUS:
-				if (obj->i == BONUS_HP) AddLight(obj->x + 5, obj->y + 5, 25, 200, 80, 80);
-				break;
-
-			case AI_SMOKE:
-				AddLight(obj->x + 8, obj->y + 8, ExplosionRadius(obj, 40), 100, 70, 0);
-				break;
-			}
-		}
-	}
-}
-
-void BlitNonAmbientEnemies()
-{
-	for (TSHIP *gobj = gObj_First(0); gobj; gobj = gObj_Next(gobj)) {
-		if (gobj->flags & GOBJ_SHADOW)
-			PutSpriteI(gobj->x, gobj->y, gobj->i, gobj->cur_frame);
-	}
-}
-
 void RenderGame(int renderStatus)
 {
 	if (modern_background) {
@@ -1516,19 +1435,6 @@ void RenderGame(int renderStatus)
 
 	if (renderStatus)
 		BlitStatus(); // draw score etc
-
-	if (pLightBuffer) {
-		// Render light map
-#if 0
-		/*
-		 * TODO: Render to lights_screen and later mix with small_screen
-		 * in LM_GFX_Flip
-		 */
-		BlitLevel();
-		BlitNonAmbientEnemies();
-		CastLights();
-#endif
-	}
 }
 
 void DoGame()
