@@ -216,3 +216,20 @@ void BlitLaser()
 		DrawLine(x_start, ly, x_end, ly, RGB(170, 170, 170));
 	}
 }
+
+void BlitLaserStatus()
+{
+	for (int i = 0; i <= 31; i++) {
+
+		unsigned int c = ((i < (laser_overload >> 3)) ? RGB(255, 0, 0) : 0);
+
+		PutPixel(i + 192, 162, c);
+		PutPixel(i + 192, 163, c);
+		PutPixel(i + 192, 164, c);
+	}
+}
+
+void ResetLaser()
+{
+	laser_overload = 0;
+}

@@ -1163,14 +1163,7 @@ void BlitStatus()
 	}
 
 	// laser
-	for (int i = 0; i <= 31; i++) {
-
-		unsigned int c = ((i < (laser_overload >> 3)) ? RGB(255, 0, 0) : 0);
-
-		PutPixel(i + 192, 162, c);
-		PutPixel(i + 192, 163, c);
-		PutPixel(i + 192, 164, c);
-	}
+	BlitLaserStatus();
 
 	// lives
 	sprintf(string_buffer, "%02d", game->lives);
@@ -1662,7 +1655,7 @@ void LoadGame(TGAMEDATA *data)
 {
 	player_attached = 0;
 	screen_bridge = 0;
-	laser_overload = 0;
+	ResetLaser();
 	SetGameMode(GM_GAME);
 	elevator_flag = 0;
 
@@ -1719,7 +1712,7 @@ void ResetGame(int gameMode)
 	hidden_level_entered = 0;
 	game->health = 3;
 	game->score = 0;
-	laser_overload = 0;
+	ResetLaser();
 	SetGameMode(gameMode);
 	elevator_flag = 0;
 
