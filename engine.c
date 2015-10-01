@@ -44,7 +44,6 @@ void BlitStatus();
 void DoTitle();
 void DoWinScreen();
 void DoGame();
-void CreateExplosion(TSHIP *gobj);
 void CreateWallExplosion(int x, int y);
 void RenderGame(int renderStatus);
 
@@ -766,13 +765,18 @@ void BlowUpEnemy(TSHIP *gobj)
 		break;
 
 	case AI_HOMING_MISSLE:
-		if (game->easy_mode) {
-			CreateExplosion(gobj);
-			gobj->x += SCREEN_WIDTH;
-			PlaySoundEffect(SND_EXPLODE);
-		}
+		{
+			/* Create new explosion object and move missile outside
+				the screen */
+			TSHIP *exp = gObj_CreateObject();
+			exp->i = 2;
+			exp->x = gobj->x;
+			exp->y = gobj->y;
 
-		return;
+			gobj->x += SCREEN_WIDTH;
+			gobj = exp; /* HACKY: swap */
+		}
+		break;
 	}
 
 	// update score with the killed ship data.
@@ -914,18 +918,6 @@ void DoRocketLauncher()
 	}
 }
 
-void CreateExplosion(TSHIP *gobj)
-{
-	TSHIP *j = gObj_CreateObject();
-	j->i = 2;
-	j->x = gobj->x;
-	j->y = gobj->y;
-	j->anim_speed = 6;
-	j->anim_speed_cnt = 6;
-	j->max_frame = 2;
-	gObj_Constructor(j, AI_EXPLOSION);
-}
-
 void CreateWallExplosion(int x, int y)
 {
 	TSHIP *j = gObj_CreateObject();
@@ -1030,6 +1022,12 @@ void InitEnemies()
 		/* FIXME: Special hack */
 		if (en->i == 11 || en->i == 42)
 			en->flags &= ~GOBJ_DESTROY;
+
+		/* FIXME: Hack for homing missiles:
+				make them undestroyable in hard mode */
+		if (en->ai_type == AI_HOMING_MISSLE && !game->easy_mode) {
+			en->flags &= ~(GOBJ_SOLID|GOBJ_DESTROY);
+		}
 
 		if (en->ai_type == AI_GARAGE) {
 			CreateGarage(en, object->garage_id);
