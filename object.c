@@ -14,6 +14,7 @@
 #include "object_bfg.h"
 #include "object_enemy.h"
 #include "object_garage.h"
+#include "object_laser.h"
 #include "engine.h"
 #include "room.h"
 
@@ -40,6 +41,7 @@ static int EnemyFlags[] = {
 	[AI_BFG_SHOT]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE|GOBJ_WEAPON,
 	[AI_SHIP]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE|GOBJ_PLAYER,
 	[AI_BASE]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE|GOBJ_PLAYER,
+	[AI_LASER]			= 0,
 };
 
 #define SHIPS_NUMBER 32
@@ -247,6 +249,10 @@ void gObj_Update(TSHIP *gobj)
 
 	case AI_ELEVATOR: // elevator
 		Update_Elevator(gobj);
+		break;
+
+	case AI_LASER: // laser
+		Update_Laser(gobj);
 		break;
 	}
 }

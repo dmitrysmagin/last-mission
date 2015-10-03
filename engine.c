@@ -1499,13 +1499,10 @@ void DoGame()
 				DoBFG();
 				break;
 			case SHIP_TYPE_LASER:
-				//DoLaser();
+				DoLaser();
 				break;
 			}
 		}
-
-		/* FIXME: Make laser a valid game object */
-		DoLaser();
 
 		if (!frame_skip)
 			RenderGame(1);

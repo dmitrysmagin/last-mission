@@ -26,6 +26,7 @@
 #define AI_BFG_SHOT			19
 #define AI_SHIP				20
 #define AI_BASE				21
+#define AI_LASER			22
 
 #define GOBJ_SOLID			(1 << 0)
 #define GOBJ_HURTS			(1 << 1)

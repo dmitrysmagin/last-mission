@@ -101,12 +101,13 @@ int UpdateLaser(int i)
 	return 0;
 }
 
+static int laser_phase = 0;
+static int previous_phase = 0;
+
 // ugly procedure which animates laser
 void DoLaser()
 {
 	TSHIP *ship = gObj_Ship();
-	static int laser_phase = 0, dx;
-	static int previous_phase = 0;
 
 	int fireOn = (GKeys[KEY_FIRE] == 1) && (ship->i == SHIP_TYPE_LASER);
 	if (fireOn) {
@@ -125,76 +126,17 @@ void DoLaser()
 				ly = ship->y + 6;
 				laser_dir = 1;
 				laser_phase = 0;
-				goto __woo;
-			} else { // if facing left
-				if (FacingLeft(ship)) {
-					x_start = ship->x - 1;
-					x_end = x_start;
-					ly = ship->y + 6;
-					laser_dir = -1;
-					laser_phase = 0;
-					goto __woo;
-				}
-			}
-		}
-	} else {
-		__woo:
-		// animate laser
-		// shooting right
-		if (laser_dir == 1) {
-			// another dirty hack or laser will overlap with ship when moving
-			//x_start = ship->x + 32;
-
-			if (laser_phase == 0) {
-				x_start = ship->x + 32;
-
-				for (dx = 0; dx <= 11; dx++) {
-					x_end += 1;
-					if (IsLaserHit2(x_start, x_end, ly) == 1) {
-						laser_phase = 1;
-						break;
-					}
-				}
-			} else {
-				for (dx = 0; dx <= 11; dx++) {
-					x_start += 1;
-
-					if (x_start == x_end) {
-						laser_dir = 0;
-						break;
-					}
-
-					IsLaserHit2(x_start, x_end, ly);
-				}
-			}
-
-		} else { // shooting left
-			// another dirty hack or laser will overlap with ship when moving
-			//x_start = ship->x - 1;
-
-			if (laser_dir == -1) {
-				if (laser_phase == 0) {
-					x_start = ship->x - 1;
-
-					for (dx = 0; dx <= 11; dx++) {
-						x_end -= 1;
-
-						if (IsLaserHit2(x_start, x_end, ly) == 1) {
-							laser_phase = 1;
-							break;
-						}
-					}
-				} else {
-					for (dx = 0; dx <= 11; dx++) {
-						x_start -= 1;
-						if (x_start == x_end) {
-							laser_dir = 0;
-							break;
-						}
-
-						IsLaserHit2(x_start, x_end, ly);
-					}
-				}
+				TSHIP *laser = gObj_CreateObject();
+				gObj_Constructor(laser, AI_LASER);
+			// if facing left
+			} else if (FacingLeft(ship)) {
+				x_start = ship->x - 1;
+				x_end = x_start;
+				ly = ship->y + 6;
+				laser_dir = -1;
+				laser_phase = 0;
+				TSHIP *laser = gObj_CreateObject();
+				gObj_Constructor(laser, AI_LASER);
 			}
 		}
 	}
@@ -232,4 +174,72 @@ void BlitLaserStatus()
 void ResetLaser()
 {
 	laser_overload = 0;
+}
+
+void Update_Laser(TSHIP *gobj)
+{
+	TSHIP *ship = gObj_Ship();
+	int dx;
+
+	/* HACK: destroy laser if not our ship, otherwise weird behavior */
+	if (ship->i != SHIP_TYPE_LASER) {
+		laser_dir = 0;
+		gObj_DestroyObject(gobj);
+		return;
+	}
+
+	// animate laser
+	// shooting right
+	if (laser_dir == 1) {
+		if (laser_phase == 0) {
+			x_start = ship->x + 32;
+
+			for (dx = 0; dx <= 11; dx++) {
+				x_end += 1;
+				if (IsLaserHit2(x_start, x_end, ly) == 1) {
+					laser_phase = 1;
+					break;
+				}
+			}
+		} else {
+			for (dx = 0; dx <= 11; dx++) {
+				x_start += 1;
+
+				if (x_start == x_end) {
+					laser_dir = 0;
+					gObj_DestroyObject(gobj);
+					break;
+				}
+
+				IsLaserHit2(x_start, x_end, ly);
+			}
+		}
+
+	} else { // shooting left
+		if (laser_dir == -1) {
+			if (laser_phase == 0) {
+				x_start = ship->x - 1;
+
+				for (dx = 0; dx <= 11; dx++) {
+					x_end -= 1;
+
+					if (IsLaserHit2(x_start, x_end, ly) == 1) {
+						laser_phase = 1;
+						break;
+					}
+				}
+			} else {
+				for (dx = 0; dx <= 11; dx++) {
+					x_start -= 1;
+					if (x_start == x_end) {
+						laser_dir = 0;
+						gObj_DestroyObject(gobj);
+						break;
+					}
+
+					IsLaserHit2(x_start, x_end, ly);
+				}
+			}
+		}
+	}
 }
