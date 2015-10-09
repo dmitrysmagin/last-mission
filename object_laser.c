@@ -111,9 +111,11 @@ void DoLaser()
 				TSHIP *laser = gObj_CreateObject();
 				gObj_Constructor(laser, AI_LASER);
 				laser->parent = ship;
-				x_start = ship->x + 32;
+				laser->x = x_start = ship->x + 32;
 				x_end = x_start;
+				laser->dx = 0;
 				laser->y = ship->y + 6;
+				laser->dy = 1;
 				laser_dir = 1;
 				laser_phase = 0;
 			// if facing left
@@ -121,9 +123,11 @@ void DoLaser()
 				TSHIP *laser = gObj_CreateObject();
 				gObj_Constructor(laser, AI_LASER);
 				laser->parent = ship;
-				x_start = ship->x - 1;
+				laser->x = x_start = ship->x - 1;
 				x_end = x_start;
+				laser->dx = 0;
 				laser->y = ship->y + 6;
+				laser->dy = 1;
 				laser_dir = -1;
 				laser_phase = 0;
 			}
@@ -144,7 +148,8 @@ void DoLaser()
 void BlitLaser(TSHIP *gobj)
 {
 	if (laser_dir != 0) {
-		DrawLine(x_start, gobj->y, x_end, gobj->y, RGB(170, 170, 170));
+		DrawLine(gobj->x, gobj->y,
+			 gobj->x + gobj->dx, gobj->y, RGB(170, 170, 170));
 	}
 }
 
@@ -230,5 +235,14 @@ void Update_Laser(TSHIP *gobj)
 				}
 			}
 		}
+	}
+
+	/* HACK: Fill x and y for gobj routines */
+	if (x_start > x_end) {
+		gobj->x = x_end;
+		gobj->dx = x_start - x_end;
+	} else {
+		gobj->x = x_start;
+		gobj->dx = x_end - x_start;
 	}
 }

@@ -263,9 +263,8 @@ int gObj_GetWidth(TSHIP *gobj)
 	case AI_GARAGE:
 		return GARAGE_WIDTH;
 	case AI_HIDDEN_AREA_ACCESS:
-		return gobj->dx;
 	case AI_LASER:
-		return 0;
+		return gobj->dx;
 	default:
 		return GetSpriteW(gobj->i);
 	}
@@ -277,9 +276,8 @@ int gObj_GetHeight(TSHIP *gobj)
 	case AI_GARAGE:
 		return GARAGE_HEIGHT;
 	case AI_HIDDEN_AREA_ACCESS:
-		return gobj->dy;
 	case AI_LASER:
-		return 0;
+		return gobj->dy;
 	default:
 		return GetSpriteH(gobj->i);
 	}
