@@ -104,4 +104,7 @@ void gObj_Update(TSHIP *gobj);
 int UpdateAnimation(TSHIP *gobj);
 int UpdateMoveSpeed(TSHIP *gobj);
 
+int gObj_GetWidth(TSHIP *gobj);
+int gObj_GetHeight(TSHIP *gobj);
+
 #endif /* _ENEMIES_H_ */

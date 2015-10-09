@@ -33,7 +33,9 @@ void GarageSave()
 void BestPositionInGarage(TSHIP *ship, int *x, int *y)
 {
 	int cxShip, cyShip;
-	GetCurrentSpriteDimensions(ship, &cxShip, &cyShip);
+
+	cxShip = gObj_GetWidth(ship);
+	cyShip = gObj_GetHeight(ship);
 
 	if (ship->garage == NULL) {
 		// actually, should not happen.
@@ -186,7 +188,9 @@ void Update_Garage(TSHIP *gobj)
 	}
 
 	int w, h;
-	GetCurrentSpriteDimensions(ship, &w, &h);
+
+	w = gObj_GetWidth(ship);
+	h = gObj_GetHeight(ship);
 
 	if (!gobj->garage_inactive &&
 		(ship->x >= gobj->x) &&

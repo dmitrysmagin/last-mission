@@ -54,11 +54,8 @@ int IsLaserHit2(int x_start, int x_end, int y)
 		if (!(gobj->flags & GOBJ_SOLID))
 			continue;
 
-		int cx, cy;
-		GetCurrentSpriteDimensions(gobj, &cx, &cy);
-
-		xs2 = gobj->x + cx;
-		ys2 = gobj->y + cy;
+		xs2 = gobj->x + gObj_GetWidth(gobj);
+		ys2 = gobj->y + gObj_GetHeight(gobj);
 
 		if (y >= gobj->y && y < ys2) {
 			if (x_start < gobj->x && x_end >= xs2) {

@@ -477,8 +477,7 @@ void Update_Elevator(TSHIP *gobj)
 				if (ship->y == 0) {
 					el_phase = 1;
 
-					int sx, sy;
-					GetCurrentSpriteDimensions(ship, &sx, &sy);
+					int sy = gObj_GetHeight(ship);
 
 					ship->y = 112 - sy;
 					base->y = 112;

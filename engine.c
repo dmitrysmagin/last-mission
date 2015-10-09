@@ -172,26 +172,13 @@ unsigned char ChangeScreen(int flag)
 	return 1;
 }
 
-void GetCurrentSpriteDimensions(TSHIP *i, int *cx, int *cy)
-{
-	if (i->ai_type == AI_GARAGE) {
-		*cx = GARAGE_WIDTH;
-		*cy = GARAGE_HEIGHT;
-	} else if (i->ai_type == AI_HIDDEN_AREA_ACCESS) {
-		*cx = i->dx;
-		*cy = i->dy;
-	} else {
-		*cx = GetSpriteW(i->i);
-		*cy = GetSpriteH(i->i);
-	}
-}
-
 int ShipBaseOffset()
 {
-	int xs, ys, xb, yb;
+	int xs, xb;
 
-	GetCurrentSpriteDimensions(gObj_Ship(), &xs, &ys);
-	GetCurrentSpriteDimensions(gObj_Base(), &xb, &yb);
+	xb = gObj_GetWidth(gObj_Base());
+	xs = gObj_GetWidth(gObj_Ship());
+
 	return (xb - xs) / 2;
 }
 
@@ -207,31 +194,23 @@ int FacingRight(TSHIP *i)
 
 int MaxRightPos(TSHIP *i)
 {
-	int x, y;
-
-	GetCurrentSpriteDimensions(i, &x, &y);
-	return SCREEN_WIDTH - x;
+	return SCREEN_WIDTH - gObj_GetWidth(i);
 }
 
 int MaxBottomPos(TSHIP *i)
 {
-	int x, y;
-	GetCurrentSpriteDimensions(i, &x, &y);
-	return ACTION_SCREEN_HEIGHT - y;
+	return ACTION_SCREEN_HEIGHT - gObj_GetHeight(i);
 }
 
 int gObj_CheckOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2)
 {
 	int xs, ys, xs2, ys2;
 
-	GetCurrentSpriteDimensions(gobj1, &xs, &ys);
-	GetCurrentSpriteDimensions(gobj2, &xs2, &ys2);
+	ys = y + gObj_GetHeight(gobj1);
+	xs = x + gObj_GetWidth(gobj1);
 
-	ys += y;
-	xs += x;
-
-	ys2 += gobj2->y;
-	xs2 += gobj2->x;
+	ys2 = gobj2->y + gObj_GetHeight(gobj2);
+	xs2 = gobj2->x + gObj_GetWidth(gobj2);
 
 	// Return 1 if rectangles do intersect.
 	if (x < gobj2->x)
@@ -305,10 +284,8 @@ int IsTouch(int x, int y, TSHIP *gobj)
 	if (x < 0 || y < 0)
 		return 1;
 
-	GetCurrentSpriteDimensions(gobj, &xs, &ys);
-
-	ys += y;
-	xs += x;
+	ys = y + gObj_GetHeight(gobj);
+	xs = x + gObj_GetWidth(gobj);
 
 	if (xs > SCREEN_WIDTH || ys > ACTION_SCREEN_HEIGHT)
 		return 1;
@@ -389,10 +366,11 @@ void Update_Ship(TSHIP *ship)
 	    base->ai_type != AI_EXPLOSION &&
 	    player_attached == 0) {
 		if (FacingLeft(ship) || FacingRight(ship)) {
-			int xs, ys, xb, yb;
+			int xs, ys, xb;
 
-			GetCurrentSpriteDimensions(ship, &xs, &ys);
-			GetCurrentSpriteDimensions(base, &xb, &yb);
+			xs = gObj_GetWidth(ship);
+			ys = gObj_GetHeight(ship);
+			xb = gObj_GetWidth(base);
 
 			if ((ship->x + xs / 2 == base->x + xb / 2) &&
 			    (ship->y + ys == base->y)) {
