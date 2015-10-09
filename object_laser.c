@@ -13,8 +13,6 @@
 int laser_overload = 0;
 int laser_dir = 0;
 
-static int x_start, x_end;
-
 int IsLaserHit2(int x_start, int x_end, int y)
 {
 	int xs2, ys2, return_value = 0;
@@ -111,8 +109,7 @@ void DoLaser()
 				TSHIP *laser = gObj_CreateObject();
 				gObj_Constructor(laser, AI_LASER);
 				laser->parent = ship;
-				laser->x = x_start = ship->x + 32;
-				x_end = x_start;
+				laser->x = ship->x + 32;
 				laser->dx = 0;
 				laser->y = ship->y + 6;
 				laser->dy = 1;
@@ -123,8 +120,7 @@ void DoLaser()
 				TSHIP *laser = gObj_CreateObject();
 				gObj_Constructor(laser, AI_LASER);
 				laser->parent = ship;
-				laser->x = x_start = ship->x - 1;
-				x_end = x_start;
+				laser->x = ship->x - 1;
 				laser->dx = 0;
 				laser->y = ship->y + 6;
 				laser->dy = 1;
@@ -186,63 +182,56 @@ void Update_Laser(TSHIP *gobj)
 	// shooting right
 	if (laser_dir == 1) {
 		if (laser_phase == 0) {
-			x_start = ship->x + 32;
+			gobj->x = ship->x + 32;
 
 			for (dx = 0; dx <= 11; dx++) {
-				x_end += 1;
-				if (IsLaserHit2(x_start, x_end, gobj->y) == 1) {
+				gobj->dx++;
+				if (IsLaserHit2(gobj->x, gobj->x + gobj->dx, gobj->y) == 1) {
 					laser_phase = 1;
 					break;
 				}
 			}
 		} else {
 			for (dx = 0; dx <= 11; dx++) {
-				x_start += 1;
+				gobj->x++;
+				gobj->dx--;
 
-				if (x_start == x_end) {
+				if (gobj->dx == 0) {
 					laser_dir = 0;
 					gObj_DestroyObject(gobj);
 					break;
 				}
 
-				IsLaserHit2(x_start, x_end, gobj->y);
+				IsLaserHit2(gobj->x, gobj->x + gobj->dx, gobj->y);
 			}
 		}
 
 	} else { // shooting left
 		if (laser_dir == -1) {
 			if (laser_phase == 0) {
-				x_start = ship->x - 1;
+				gobj->dx = ship->x - gobj->x - 1;
 
 				for (dx = 0; dx <= 11; dx++) {
-					x_end -= 1;
+					gobj->x--;
+					gobj->dx++;
 
-					if (IsLaserHit2(x_start, x_end, gobj->y) == 1) {
+					if (IsLaserHit2(gobj->x, gobj->x + gobj->dx, gobj->y) == 1) {
 						laser_phase = 1;
 						break;
 					}
 				}
 			} else {
 				for (dx = 0; dx <= 11; dx++) {
-					x_start -= 1;
-					if (x_start == x_end) {
+					gobj->dx--;
+					if (gobj->dx == 0) {
 						laser_dir = 0;
 						gObj_DestroyObject(gobj);
 						break;
 					}
 
-					IsLaserHit2(x_start, x_end, gobj->y);
+					IsLaserHit2(gobj->x, gobj->x + gobj->dx, gobj->y);
 				}
 			}
 		}
-	}
-
-	/* HACK: Fill x and y for gobj routines */
-	if (x_start > x_end) {
-		gobj->x = x_end;
-		gobj->dx = x_start - x_end;
-	} else {
-		gobj->x = x_start;
-		gobj->dx = x_end - x_start;
 	}
 }
