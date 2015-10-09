@@ -1,21 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include <string.h>
-//#include <math.h>
-//#include <SDL/SDL.h>
-//#include <SDL/SDL_rotozoom.h>
 
-//#include "m_data.h"
-//#include "demo.h"
-//#include "random.h"
 #include "video.h"
 #include "input.h"
 #include "sound.h"
 #include "sprites.h"
 #include "object.h"
-//#include "object_enemy.h"
-//#include "object_garage.h"
-//#include "object_bfg.h"
 #include "object_laser.h"
 #include "engine.h"
 #include "room.h"
@@ -23,7 +13,7 @@
 int laser_overload = 0;
 int laser_dir = 0;
 
-static int x_start, x_end, ly;
+static int x_start, x_end;
 
 int IsLaserHit2(int x_start, int x_end, int y)
 {
@@ -118,22 +108,24 @@ void DoLaser()
 		if (fireOn && elevator_flag == 0) { // HACK, or you will shoot your base
 			//if ship facing right
 			if (FacingRight(ship)) {
+				TSHIP *laser = gObj_CreateObject();
+				gObj_Constructor(laser, AI_LASER);
+				laser->parent = ship;
 				x_start = ship->x + 32;
 				x_end = x_start;
-				ly = ship->y + 6;
+				laser->y = ship->y + 6;
 				laser_dir = 1;
 				laser_phase = 0;
-				TSHIP *laser = gObj_CreateObject();
-				gObj_Constructor(laser, AI_LASER);
 			// if facing left
 			} else if (FacingLeft(ship)) {
-				x_start = ship->x - 1;
-				x_end = x_start;
-				ly = ship->y + 6;
-				laser_dir = -1;
-				laser_phase = 0;
 				TSHIP *laser = gObj_CreateObject();
 				gObj_Constructor(laser, AI_LASER);
+				laser->parent = ship;
+				x_start = ship->x - 1;
+				x_end = x_start;
+				laser->y = ship->y + 6;
+				laser_dir = -1;
+				laser_phase = 0;
 			}
 		}
 	}
@@ -149,10 +141,10 @@ void DoLaser()
 	}
 }
 
-void BlitLaser()
+void BlitLaser(TSHIP *gobj)
 {
 	if (laser_dir != 0) {
-		DrawLine(x_start, ly, x_end, ly, RGB(170, 170, 170));
+		DrawLine(x_start, gobj->y, x_end, gobj->y, RGB(170, 170, 170));
 	}
 }
 
@@ -175,7 +167,7 @@ void ResetLaser()
 
 void Update_Laser(TSHIP *gobj)
 {
-	TSHIP *ship = gObj_Ship();
+	TSHIP *ship = gobj->parent;
 	int dx;
 
 	/* HACK: destroy laser if not our ship, otherwise weird behavior */
@@ -193,7 +185,7 @@ void Update_Laser(TSHIP *gobj)
 
 			for (dx = 0; dx <= 11; dx++) {
 				x_end += 1;
-				if (IsLaserHit2(x_start, x_end, ly) == 1) {
+				if (IsLaserHit2(x_start, x_end, gobj->y) == 1) {
 					laser_phase = 1;
 					break;
 				}
@@ -208,7 +200,7 @@ void Update_Laser(TSHIP *gobj)
 					break;
 				}
 
-				IsLaserHit2(x_start, x_end, ly);
+				IsLaserHit2(x_start, x_end, gobj->y);
 			}
 		}
 
@@ -220,7 +212,7 @@ void Update_Laser(TSHIP *gobj)
 				for (dx = 0; dx <= 11; dx++) {
 					x_end -= 1;
 
-					if (IsLaserHit2(x_start, x_end, ly) == 1) {
+					if (IsLaserHit2(x_start, x_end, gobj->y) == 1) {
 						laser_phase = 1;
 						break;
 					}
@@ -234,7 +226,7 @@ void Update_Laser(TSHIP *gobj)
 						break;
 					}
 
-					IsLaserHit2(x_start, x_end, ly);
+					IsLaserHit2(x_start, x_end, gobj->y);
 				}
 			}
 		}

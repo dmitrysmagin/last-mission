@@ -9,7 +9,7 @@ extern int laser_dir;
 void DoLaser();
 void ResetLaser();
 int UpdateLaser(int i);
-void BlitLaser();
+void BlitLaser(TSHIP *gobj);
 void BlitLaserStatus();
 
 void Update_Laser(TSHIP *gobj);

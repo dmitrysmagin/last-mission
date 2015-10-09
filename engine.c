@@ -1371,6 +1371,9 @@ void BlitEnemies()
 #endif
 		}
 
+		if (gobj->ai_type == AI_LASER)
+			BlitLaser(gobj);
+		else
 		if (gobj->flags & GOBJ_VISIBLE)
 			PutSpriteI(gobj->x, gobj->y, gobj->i, gobj->cur_frame);
 	}
@@ -1400,7 +1403,6 @@ void RenderGame(int renderStatus)
 	BlitLevel(ship_cur_screen); // blit walls
 	BlitBfg();
 	BlitEnemies(); // draw all enemies and cannon+base
-	BlitLaser(); // don't forget laser
 
 	if (renderStatus)
 		BlitStatus(); // draw score etc
