@@ -360,6 +360,20 @@ void Update_Ship(TSHIP *ship)
 	if (--ticks_for_damage < 0)
 		ticks_for_damage = 0;
 
+	switch (ship->i) {
+	case SHIP_TYPE_ROCKET_LAUNCHER:
+		DoRocketLauncher();
+		break;
+	case SHIP_TYPE_MACHINE_GUN:
+		DoMachineGun();
+		break;
+	case SHIP_TYPE_BFG:
+		DoBFG();
+		break;
+	case SHIP_TYPE_LASER:
+		DoLaser();
+		break;
+	}
 
 	// check if ships are attached
 	if (base->state == SH_ACTIVE &&
@@ -1464,25 +1478,6 @@ void DoGame()
 		// do enemies
 		for (TSHIP *gobj = gObj_First(0); gobj; gobj = gObj_Next(gobj))
 			gObj_Update(gobj);
-
-		/* FIXME: Rework this later */
-		TSHIP *ship = gObj_Ship();
-		if (ship->state == SH_ACTIVE) {
-			switch (ship->i) {
-			case SHIP_TYPE_ROCKET_LAUNCHER:
-				DoRocketLauncher();
-				break;
-			case SHIP_TYPE_MACHINE_GUN:
-				DoMachineGun();
-				break;
-			case SHIP_TYPE_BFG:
-				DoBFG();
-				break;
-			case SHIP_TYPE_LASER:
-				DoLaser();
-				break;
-			}
-		}
 
 		if (!frame_skip)
 			RenderGame(1);
