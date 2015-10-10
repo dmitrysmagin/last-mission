@@ -41,7 +41,7 @@ static int EnemyFlags[] = {
 	[AI_BFG_SHOT]			=            GOBJ_HURTS|GOBJ_DESTROY            |GOBJ_VISIBLE|GOBJ_WEAPON,
 	[AI_SHIP]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE|GOBJ_PLAYER,
 	[AI_BASE]			= GOBJ_SOLID           |GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE|GOBJ_PLAYER,
-	[AI_LASER]			= 0,
+	[AI_LASER]			=            GOBJ_HURTS                                      |GOBJ_WEAPON,
 };
 
 #define SHIPS_NUMBER 32

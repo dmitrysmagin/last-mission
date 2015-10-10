@@ -13,64 +13,6 @@
 int laser_overload = 0;
 int laser_dir = 0;
 
-int IsLaserHit2(int x_start, int x_end, int y)
-{
-	int xs2, ys2, return_value = 0;
-
-	// swap if x_start > x_end
-	if (x_start > x_end) {
-		x_start ^= x_end;
-		x_end ^= x_start;
-		x_start ^= x_end;
-	}
-
-	if (x_start <= 0)
-		return_value = 1;
-
-	if (x_end >= 319)
-		return_value =  1;
-
-	if (GetTileI(x_start >> 3, y >> 3))
-		return_value = 1;
-
-	if (GetTileI(x_end >> 3, y >> 3))
-		return_value = 1;
-
-	TSHIP *gobj = gObj_First(1);
-	for (; gobj; gobj = gObj_Next(gobj)) {
-		/* exclude non-hittable objects */
-		if (!(gobj->flags & GOBJ_SOLID))
-			continue;
-
-		xs2 = gobj->x + gObj_GetWidth(gobj);
-		ys2 = gobj->y + gObj_GetHeight(gobj);
-
-		if (y >= gobj->y && y < ys2) {
-			if (x_start < gobj->x && x_end >= xs2) {
-				if (gobj->ai_type == AI_BONUS) {
-					gobj->explosion.regenerate_bonus = 1;
-				}
-
-				BlowUpEnemy(gobj);
-				continue;
-			}
-
-			for (int dx = x_start; dx <= x_end; dx++) {
-				if (dx >= gobj->x && dx < xs2) {
-					if (gobj->ai_type == AI_BONUS) {
-						gobj->explosion.regenerate_bonus = 1;
-					}
-
-					BlowUpEnemy(gobj);
-					return 1;
-				}
-			}
-		}
-	}
-
-	return return_value;
-}
-
 int UpdateLaser(int i)
 {
 	laser_overload += i;
@@ -110,7 +52,7 @@ void DoLaser()
 				gObj_Constructor(laser, AI_LASER);
 				laser->parent = ship;
 				laser->x = ship->x + 32;
-				laser->dx = 0;
+				laser->dx = 1;
 				laser->y = ship->y + 6;
 				laser->dy = 1;
 				laser_dir = 1;
@@ -121,7 +63,7 @@ void DoLaser()
 				gObj_Constructor(laser, AI_LASER);
 				laser->parent = ship;
 				laser->x = ship->x - 1;
-				laser->dx = 0;
+				laser->dx = 1;
 				laser->y = ship->y + 6;
 				laser->dy = 1;
 				laser_dir = -1;
@@ -186,7 +128,7 @@ void Update_Laser(TSHIP *gobj)
 
 			for (dx = 0; dx <= 11; dx++) {
 				gobj->dx++;
-				if (IsLaserHit2(gobj->x, gobj->x + gobj->dx, gobj->y) == 1) {
+				if (IsTouch(gobj->x, gobj->y, gobj) == 1) {
 					laser_phase = 1;
 					break;
 				}
@@ -196,13 +138,13 @@ void Update_Laser(TSHIP *gobj)
 				gobj->x++;
 				gobj->dx--;
 
-				if (gobj->dx == 0) {
+				if (gobj->dx <= 0) {
 					laser_dir = 0;
 					gObj_DestroyObject(gobj);
 					break;
 				}
 
-				IsLaserHit2(gobj->x, gobj->x + gobj->dx, gobj->y);
+				IsTouch(gobj->x, gobj->y, gobj);
 			}
 		}
 
@@ -215,7 +157,7 @@ void Update_Laser(TSHIP *gobj)
 					gobj->x--;
 					gobj->dx++;
 
-					if (IsLaserHit2(gobj->x, gobj->x + gobj->dx, gobj->y) == 1) {
+					if (IsTouch(gobj->x, gobj->y, gobj) == 1) {
 						laser_phase = 1;
 						break;
 					}
@@ -223,13 +165,13 @@ void Update_Laser(TSHIP *gobj)
 			} else {
 				for (dx = 0; dx <= 11; dx++) {
 					gobj->dx--;
-					if (gobj->dx == 0) {
+					if (gobj->dx <= 0) {
 						laser_dir = 0;
 						gObj_DestroyObject(gobj);
 						break;
 					}
 
-					IsLaserHit2(gobj->x, gobj->x + gobj->dx, gobj->y);
+					IsTouch(gobj->x, gobj->y, gobj);
 				}
 			}
 		}
