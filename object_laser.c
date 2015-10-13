@@ -10,7 +10,7 @@
 #include "engine.h"
 #include "room.h"
 
-int laser_overload = 0;
+static int laser_overload = 0;
 int laser_dir = 0;
 
 int UpdateLaser(int i)
@@ -36,9 +36,14 @@ void DoLaser()
 {
 	TSHIP *ship = gObj_Ship();
 
-	int fireOn = (GKeys[KEY_FIRE] == 1) && (ship->i == SHIP_TYPE_LASER);
+	int fireOn = GKeys[KEY_FIRE];
+
 	if (fireOn) {
-		if(UpdateLaser(1) == 1) {BlowUpEnemy(ship); LM_ResetKeys(); return;}
+		if (UpdateLaser(1)) {
+			BlowUpEnemy(ship);
+			LM_ResetKeys();
+			return;
+		}
 	} else {
 		UpdateLaser(-1);
 	}
