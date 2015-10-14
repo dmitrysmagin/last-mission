@@ -38,7 +38,7 @@ void DoLaser()
 	if (GKeys[KEY_FIRE]) {
 		/* Explode if laser overload */
 		if (UpdateLaser(1)) {
-			BlowUpEnemy(ship);
+			gObj_Explode(ship);
 			LM_ResetKeys();
 			return;
 		}

@@ -282,3 +282,151 @@ int gObj_GetHeight(TSHIP *gobj)
 		return GetSpriteH(gobj->i);
 	}
 }
+
+void gObj_Explode(TSHIP *gobj)
+{
+#ifdef GOD_MODE
+	if (gobj->ai_type == AI_SHIP || gobj->ai_type == AI_BASE) {
+		// You cannot hurt a god.
+		return;
+	}
+#endif
+
+	/* Exit if non-killable enemy */
+	if (!(gobj->flags & GOBJ_DESTROY))
+		return;
+
+	switch (gobj->ai_type) {
+	case AI_SHIP:
+		// This is the player ship.
+		if (game->easy_mode) {
+			if (!ticks_for_damage) {
+				ticks_for_damage = 20;
+				--game->health;
+				if (game->health <= 1) {
+					Create_Smoke(gobj);
+				}
+			}
+		} else {
+			game->health = -1;
+		}
+
+		if (game->health >= 0) {
+			return;
+		}
+		break;
+
+	case AI_BASE:
+		// if blowing base - zero player_attached
+		player_attached = 0;
+		break;
+
+	case AI_SHOT:
+	case AI_HOMING_SHOT:
+		gObj_DestroyObject(gobj);
+		return;
+
+	case AI_BFG_SHOT:
+		CleanupBfg();
+		gObj_DestroyObject(gobj);
+		return;
+
+	case AI_HIDDEN_AREA_ACCESS:
+		DestroyHiddenAreaAccess(gobj, 1);
+		return;
+
+	case AI_BONUS:
+		// Memorize bonus type.
+		gobj->explosion.bonus_type = gobj->i;
+		break;
+
+	case AI_RANDOM_MOVE:
+	case AI_KAMIKADZE:
+		if (!game->easy_mode)
+			break;
+
+		// Generate bonus if defined by screen and if
+		// this ship is the last one on the screen.
+		if (cur_screen_bonus) {
+			int alive_ship = 0;
+			TSHIP *last_alive = gObj_First(2);
+
+			for (; last_alive; last_alive = gObj_Next(last_alive)) {
+				if (last_alive != gobj &&
+				    (last_alive->ai_type == AI_RANDOM_MOVE ||
+				     last_alive->ai_type == AI_KAMIKADZE)) {
+					alive_ship = 1;
+					break;
+				}
+			}
+
+			if (!alive_ship) {
+				gobj->explosion.bonus_type = cur_screen_bonus;
+				gobj->explosion.regenerate_bonus = 1;
+			}
+		}
+
+		// this may be spawned by ceiling cannon, reactivate it
+		// FIXME: perhaps make it more general
+		if (gobj->parent)
+			gobj->parent->dx = 0;
+
+		break;
+
+	case AI_HOMING_MISSLE:
+		{
+			/* Create new explosion object and move missile outside
+				the screen */
+			TSHIP *exp = gObj_CreateObject();
+			exp->i = 2;
+			exp->x = gobj->x;
+			exp->y = gobj->y;
+
+			gobj->x += SCREEN_WIDTH;
+			gobj = exp; /* HACKY: swap */
+		}
+		break;
+	}
+
+	// update score with the killed ship data.
+	UpdateScoreWithShip(gobj);
+
+	// special procedures for breakable walls
+	if (gobj->i == 6) {
+		if (gobj->cur_frame == 0) {
+			gobj->x -= 8;
+			SetTileI(gobj->x >> 3, gobj->y >> 3, 0);
+			SetTileI(gobj->x >> 3, (gobj->y >> 3) + 1, 0);
+		} else {
+			SetTileI((gobj->x >> 3) + 1, gobj->y >> 3, 0);
+			SetTileI((gobj->x >> 3) + 1, (gobj->y >> 3) + 1, 0);
+		}
+	}
+
+	gObj_Constructor(gobj, AI_EXPLOSION);
+
+	switch (gobj->i) {
+	case 6: // special explosion for breakable walls
+		gobj->i = 7;
+		break;
+	case 1: // explosion's sprite is smaller than base's thus a little hack
+		gobj->x += 4;
+		gobj->y += 4;
+	case 0:  // ship
+	case 51: // machine gun ship
+	case 53: // rocket ship
+		gobj->i = 23;
+		break;
+	default:
+		gobj->i = 2;
+		break;
+	}
+
+	gobj->min_frame = 0;
+	gobj->max_frame = 2;
+	gobj->cur_frame = 0;
+	gobj->anim_speed = 6;
+	gobj->anim_speed_cnt = 6;
+
+	PlaySoundEffect(SND_EXPLODE);
+}

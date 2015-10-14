@@ -163,7 +163,7 @@ void Update_BfgShot(TSHIP *gobj)
 		if (BfgTargets[n].hit_count) {
 			if (BfgTargets[n].hit_now) {
 				if (BfgTargets[n].hit_count > BFG_KILL_TIME) {
-					BlowUpEnemy(BfgTargets[n].ship);
+					gObj_Explode(BfgTargets[n].ship);
 				}
 			} else {
 				memset(BfgTargets + n, 0, sizeof(TBFGTARGET));

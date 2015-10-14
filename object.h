@@ -100,6 +100,7 @@ void gObj_Constructor(TSHIP *gobj, int ai);
 void gObj_Destructor(TSHIP *gobj);
 
 void gObj_Update(TSHIP *gobj);
+void gObj_Explode(TSHIP *gobj);
 
 int UpdateAnimation(TSHIP *gobj);
 int UpdateMoveSpeed(TSHIP *gobj);

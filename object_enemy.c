@@ -339,19 +339,19 @@ void Update_Bullet(TSHIP *gobj)
 	// random exploding
 	if (gobj->parent)
 	if (gobj->y + 16 < gobj->parent->y && (RandomInt() & 63) == 1) {
-		BlowUpEnemy(gobj);
+		gObj_Explode(gobj);
 		return;
 	}
 
 	gobj->x += gobj->dx;
 	if (gobj->x < 0 || gobj->x > SCREEN_WIDTH) {
-		BlowUpEnemy(gobj);
+		gObj_Explode(gobj);
 		return;
 	}
 
 	gobj->y += gobj->dy;
 	if (gobj->y < 0)
-		BlowUpEnemy(gobj);
+		gObj_Explode(gobj);
 
 }
 
@@ -359,7 +359,7 @@ void Update_HomingShot(TSHIP *gobj)
 {
 	if (gobj->just_created == 1) {
 		if (IsTouch(gobj->x, gobj->y, gobj)) {
-			BlowUpEnemy(gobj);
+			gObj_Explode(gobj);
 			return;
 		}
 	}
@@ -431,7 +431,7 @@ void Update_Shot(TSHIP *gobj)
 	if (gobj->just_created) {
 		gobj->just_created = 0;
 		if (IsTouch(gobj->x, gobj->y, gobj)) {
-			BlowUpEnemy(gobj);
+			gObj_Explode(gobj);
 			return;
 		}
 	}
@@ -444,7 +444,7 @@ void Update_Shot(TSHIP *gobj)
 	    gobj->y < 0 ||
 	    gobj->y >= SCREEN_HEIGHT ||
 	    IsTouch(gobj->x, gobj->y, gobj)) {
-		BlowUpEnemy(gobj);
+		gObj_Explode(gobj);
 		return;
 	}
 }

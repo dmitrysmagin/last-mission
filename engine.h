@@ -60,7 +60,6 @@ void InitNewScreen();
 
 
 /* FIXME: Move to other header file (object.h ??) */
-void BlowUpEnemy(TSHIP *gobj);
 int IsTouch(int x, int y, TSHIP *gobj);
 int gObj_CheckOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
 int FacingLeft(TSHIP *i);
@@ -69,6 +68,9 @@ int FacingRight(TSHIP *i);
 void Update_Ship(TSHIP *ship);
 void Update_Base(TSHIP *base);
 
+void UpdateScoreWithShip(TSHIP *gobj);
+void DestroyHiddenAreaAccess(TSHIP *i, int playEffects);
+
 extern TGAMEDATA *game;
 extern unsigned int player_attached;
 extern int elevator_flag;
@@ -76,5 +78,7 @@ extern int base_cur_screen;
 extern int base_level_start;
 extern unsigned char ship_cur_screen;
 extern int game_level;
+extern int ticks_for_damage;
+extern int cur_screen_bonus;
 
 #endif // _ENGINE_H_
