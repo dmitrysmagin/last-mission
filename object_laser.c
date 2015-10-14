@@ -30,52 +30,51 @@ int UpdateLaser(int i)
 
 static int laser_phase = 0;
 
-// ugly procedure which animates laser
+/* FIXME: this should belong to ship code in fact */
 void DoLaser()
 {
 	TSHIP *ship = gObj_Ship();
 
-	int fireOn = GKeys[KEY_FIRE];
-
-	if (fireOn) {
+	if (GKeys[KEY_FIRE]) {
+		/* Explode if laser overload */
 		if (UpdateLaser(1)) {
 			BlowUpEnemy(ship);
 			LM_ResetKeys();
 			return;
 		}
-	} else {
-		UpdateLaser(-1);
-	}
 
-	// if zero - no shooting, 1 - shooting right, -1 - shooting left
-	if (laser_dir == 0) {
-		if (fireOn && elevator_flag == 0) { // HACK, or you will shoot your base
-			//if ship facing right
-			if (FacingRight(ship)) {
-				TSHIP *laser = gObj_CreateObject();
-				gObj_Constructor(laser, AI_LASER);
-				laser->parent = ship;
-				laser->x = ship->x + 32;
-				laser->dx = 1;
-				laser->y = ship->y + 6;
-				laser->dy = 1;
-				laser_dir = 1;
-				laser_phase = 0;
-				PlaySoundEffect(SND_LASER_SHOOT);
-			// if facing left
-			} else if (FacingLeft(ship)) {
-				TSHIP *laser = gObj_CreateObject();
-				gObj_Constructor(laser, AI_LASER);
-				laser->parent = ship;
-				laser->x = ship->x - 1;
-				laser->dx = 1;
-				laser->y = ship->y + 6;
-				laser->dy = 1;
-				laser_dir = -1;
-				laser_phase = 0;
-				PlaySoundEffect(SND_LASER_SHOOT);
+		/* 0 - no shooting, 1 - shooting right, -1 - shooting left */
+		if (laser_dir == 0) {
+			if (!elevator_flag) { /* HACK: or you will shoot your base */
+				//if ship facing right
+				if (FacingRight(ship)) {
+					TSHIP *laser = gObj_CreateObject();
+					gObj_Constructor(laser, AI_LASER);
+					laser->parent = ship;
+					laser->x = ship->x + 32;
+					laser->dx = 1;
+					laser->y = ship->y + 6;
+					laser->dy = 1;
+					laser_dir = 1;
+					laser_phase = 0;
+					PlaySoundEffect(SND_LASER_SHOOT);
+				// if facing left
+				} else if (FacingLeft(ship)) {
+					TSHIP *laser = gObj_CreateObject();
+					gObj_Constructor(laser, AI_LASER);
+					laser->parent = ship;
+					laser->x = ship->x - 1;
+					laser->dx = 1;
+					laser->y = ship->y + 6;
+					laser->dy = 1;
+					laser_dir = -1;
+					laser_phase = 0;
+					PlaySoundEffect(SND_LASER_SHOOT);
+				}
 			}
 		}
+	} else {
+		UpdateLaser(-1);
 	}
 }
 
