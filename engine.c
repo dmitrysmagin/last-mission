@@ -59,7 +59,6 @@ char screen_procedure;
 int screen_bridge = 0;
 int game_level = 1;
 int ticks_for_damage = 0;
-int sn_enabled = 1; // Facebook/Twitter integration.
 int elevator_flag = 0; // 1 if elevator is working
 int frame_skip = 0;
 int modern_background = 1;
@@ -717,7 +716,7 @@ void InitEnemies()
 	for (; count > 0; count--, object++) {
 
 		if (object->index == BONUS_FACEBOOK || object->index == BONUS_TWITTER) {
-			if (!sn_enabled || game->mode == GM_DEMO || base_cur_screen < ship_cur_screen)
+			if (game->mode == GM_DEMO || base_cur_screen < ship_cur_screen)
 				continue;
 		}
 
@@ -1322,26 +1321,6 @@ void GameLoop()
 	}
 
 	free_world(game->world);
-}
-
-void EnableSocialNetworkIcon(int enable)
-{
-	sn_enabled = enable;
-}
-
-void SetModernBackground(int imodern)
-{
-	modern_background = imodern;
-}
-
-int CurrentLevel()
-{
-	return game_level;
-}
-
-int CurrentPoints()
-{
-	return game->score;
 }
 
 void LoadGame(TGAMEDATA *data)
