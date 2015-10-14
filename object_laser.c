@@ -29,7 +29,6 @@ int UpdateLaser(int i)
 }
 
 static int laser_phase = 0;
-static int previous_phase = 0;
 
 // ugly procedure which animates laser
 void DoLaser()
@@ -62,6 +61,7 @@ void DoLaser()
 				laser->dy = 1;
 				laser_dir = 1;
 				laser_phase = 0;
+				PlaySoundEffect(SND_LASER_SHOOT);
 			// if facing left
 			} else if (FacingLeft(ship)) {
 				TSHIP *laser = gObj_CreateObject();
@@ -73,18 +73,9 @@ void DoLaser()
 				laser->dy = 1;
 				laser_dir = -1;
 				laser_phase = 0;
+				PlaySoundEffect(SND_LASER_SHOOT);
 			}
 		}
-	}
-
-	if (fireOn) {
-		if (laser_phase != previous_phase && !laser_phase) {
-			PlaySoundEffect(SND_LASER_SHOOT);
-		}
-
-		previous_phase = laser_phase;
-	} else {
-		previous_phase = 1;
 	}
 }
 
