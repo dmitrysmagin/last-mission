@@ -40,12 +40,12 @@ void Update_Random(TSHIP *gobj)
 			gobj->ai_update_cnt -= 1;
 		}
 
-		if (IsTouch(gobj->x + gobj->dx, gobj->y, gobj) == 0)
+		if (gObj_CheckTouch(gobj->x + gobj->dx, gobj->y, gobj) == 0)
 			gobj->x += gobj->dx;
 		else
 			gobj->ai_update_cnt = 0;
 
-		if (IsTouch(gobj->x, gobj->y + gobj->dy, gobj) == 0)
+		if (gObj_CheckTouch(gobj->x, gobj->y + gobj->dy, gobj) == 0)
 			gobj->y += gobj->dy;
 		else
 			gobj->ai_update_cnt = 0;
@@ -87,12 +87,12 @@ void Update_Kamikaze(TSHIP *gobj)
 			gobj->ai_update_cnt -= 1;
 		}
 
-		if (IsTouch(gobj->x + gobj->dx, gobj->y, gobj) == 0)
+		if (gObj_CheckTouch(gobj->x + gobj->dx, gobj->y, gobj) == 0)
 			gobj->x += gobj->dx;
 		else
 			gobj->ai_update_cnt = 0;
 
-		if (IsTouch(gobj->x, gobj->y + gobj->dy, gobj) == 0)
+		if (gObj_CheckTouch(gobj->x, gobj->y + gobj->dy, gobj) == 0)
 			gobj->y += gobj->dy;
 		else
 			gobj->ai_update_cnt = 0;
@@ -105,7 +105,7 @@ void Update_SparkleVertical(TSHIP *gobj)
 	if (UpdateMoveSpeed(gobj) == 1) {
 		if (gobj->dy == 0)
 			gobj->dy = 1;
-		if (IsTouch(gobj->x, gobj->y + gobj->dy, gobj) == 0)
+		if (gObj_CheckTouch(gobj->x, gobj->y + gobj->dy, gobj) == 0)
 			gobj->y += gobj->dy;
 		else
 			gobj->dy = -gobj->dy;
@@ -143,7 +143,7 @@ void Update_HomingMissile(TSHIP *gobj)
 
 	if (gobj->x > 0) {
 		gobj->x -= 2;
-		IsTouch(gobj->x, gobj->y, gobj);
+		gObj_CheckTouch(gobj->x, gobj->y, gobj);
 		if (gobj->x < ship->x)
 			return;
 
@@ -213,7 +213,7 @@ void Update_SparkleHorizontal(TSHIP *gobj)
 	if (UpdateMoveSpeed(gobj) == 1) {
 		if (gobj->dx == 0)
 			gobj->dx = 1;
-		if (IsTouch(gobj->x + gobj->dx, gobj->y, gobj) == 0)
+		if (gObj_CheckTouch(gobj->x + gobj->dx, gobj->y, gobj) == 0)
 			gobj->x += gobj->dx;
 		else
 			gobj->dx = -gobj->dx;
@@ -358,7 +358,7 @@ void Update_Bullet(TSHIP *gobj)
 void Update_HomingShot(TSHIP *gobj)
 {
 	if (gobj->just_created == 1) {
-		if (IsTouch(gobj->x, gobj->y, gobj)) {
+		if (gObj_CheckTouch(gobj->x, gobj->y, gobj)) {
 			gObj_Explode(gobj);
 			return;
 		}
@@ -420,7 +420,7 @@ void Update_HomingShot(TSHIP *gobj)
 	    gobj->x + gobj->dx >= SCREEN_WIDTH ||
 	    gobj->y < 0 ||
 	    gobj->y >= SCREEN_HEIGHT ||*/
-	    IsTouch(gobj->x, gobj->y, gobj)) {
+	    gObj_CheckTouch(gobj->x, gobj->y, gobj)) {
 		gObj_DestroyObject(gobj);
 		return;
 	}
@@ -430,7 +430,7 @@ void Update_Shot(TSHIP *gobj)
 {
 	if (gobj->just_created) {
 		gobj->just_created = 0;
-		if (IsTouch(gobj->x, gobj->y, gobj)) {
+		if (gObj_CheckTouch(gobj->x, gobj->y, gobj)) {
 			gObj_Explode(gobj);
 			return;
 		}
@@ -443,7 +443,7 @@ void Update_Shot(TSHIP *gobj)
 	    gobj->x + gobj->dx >= SCREEN_WIDTH ||
 	    gobj->y < 0 ||
 	    gobj->y >= SCREEN_HEIGHT ||
-	    IsTouch(gobj->x, gobj->y, gobj)) {
+	    gObj_CheckTouch(gobj->x, gobj->y, gobj)) {
 		gObj_Explode(gobj);
 		return;
 	}

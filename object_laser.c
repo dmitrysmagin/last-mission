@@ -123,7 +123,7 @@ void Update_Laser(TSHIP *gobj)
 
 			for (dx = 0; dx <= 11; dx++) {
 				gobj->dx++;
-				if (IsTouch(gobj->x, gobj->y, gobj) == 1) {
+				if (gObj_CheckTouch(gobj->x, gobj->y, gobj) == 1) {
 					laser_phase = 1;
 					break;
 				}
@@ -139,7 +139,7 @@ void Update_Laser(TSHIP *gobj)
 					break;
 				}
 
-				IsTouch(gobj->x, gobj->y, gobj);
+				gObj_CheckTouch(gobj->x, gobj->y, gobj);
 			}
 		}
 
@@ -152,7 +152,7 @@ void Update_Laser(TSHIP *gobj)
 					gobj->x--;
 					gobj->dx++;
 
-					if (IsTouch(gobj->x, gobj->y, gobj) == 1) {
+					if (gObj_CheckTouch(gobj->x, gobj->y, gobj) == 1) {
 						laser_phase = 1;
 						break;
 					}
@@ -166,7 +166,7 @@ void Update_Laser(TSHIP *gobj)
 						break;
 					}
 
-					IsTouch(gobj->x, gobj->y, gobj);
+					gObj_CheckTouch(gobj->x, gobj->y, gobj);
 				}
 			}
 		}

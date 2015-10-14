@@ -200,138 +200,6 @@ int MaxBottomPos(TSHIP *i)
 	return ACTION_SCREEN_HEIGHT - gObj_GetHeight(i);
 }
 
-int gObj_CheckOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2)
-{
-	int xs, ys, xs2, ys2;
-
-	ys = y + gObj_GetHeight(gobj1);
-	xs = x + gObj_GetWidth(gobj1);
-
-	ys2 = gobj2->y + gObj_GetHeight(gobj2);
-	xs2 = gobj2->x + gObj_GetWidth(gobj2);
-
-	// Return 1 if rectangles do intersect.
-	if (x < gobj2->x)
-		if (xs > gobj2->x)
-			goto _wdw2;
-
-	if (x >= gobj2->x) {
-		if (xs2 > x) {
-		_wdw2:
-			if ((y < gobj2->y && ys > gobj2->y) ||
-			    (y >= gobj2->y && ys2 > y))
-				return 1;
-		}
-	}
-
-	return 0;
-}
-
-/* Check if gobj1 can destroy gobj2 */
-int gObj_CheckDestruction(TSHIP *gobj1, TSHIP *gobj2)
-{
-	// 0 - any obj, 1 - player, 2 - weapon
-	int obj1_type = (gobj1->flags & (GOBJ_PLAYER|GOBJ_WEAPON)) >> 5;
-	int obj2_type = (gobj2->flags & (GOBJ_PLAYER|GOBJ_WEAPON)) >> 5;
-
-	/* don't interact with the same objects */
-	if (obj1_type == obj2_type)
-		goto _exit_proc;
-
-	/* FIXME: hack for garage, later make more generic */
-	if(gobj2->ai_type == AI_GARAGE)
-		goto _exit_proc;
-
-	if (gobj1->ai_type == AI_BONUS) {
-		/* Bonus hit by a bullet. Swap bonus. */
-		if (obj2_type == 2) {
-			gobj1->explosion.regenerate_bonus = 1;
-		}
-
-		gObj_Explode(gobj1);
-		goto _exit_proc;
-	} else if (gobj2->ai_type == AI_BONUS) {
-		/* Bonus hit by a bullet. Swap bonus. */
-		if (obj1_type == 2) {
-			gobj2->explosion.regenerate_bonus = 1;
-		}
-
-		gObj_Explode(gobj2);
-		goto _exit_proc;
-	}
-
-	if (gobj1->flags & GOBJ_HURTS || gobj2->flags & GOBJ_HURTS) {
-			if (gobj1->ai_type != AI_BFG_SHOT)
-				gObj_Explode(gobj1);
-
-			if (gobj2->ai_type != AI_BFG_SHOT)
-				gObj_Explode(gobj2);
-	}
-
-_exit_proc:
-
-	/* FIXME: hack for laser */
-	if (gobj1->ai_type == AI_LASER || gobj2->ai_type == AI_LASER)
-		return 1;
-
-	if (!(gobj1->flags & GOBJ_SOLID) || !(gobj2->flags & GOBJ_SOLID))
-		return 0;
-
-	return 1;
-}
-
-int IsTouch(int x, int y, TSHIP *gobj)
-{
-	int xs, ys;
-
-	if (x < 0 || y < 0)
-		return 1;
-
-	ys = y + gObj_GetHeight(gobj);
-	xs = x + gObj_GetWidth(gobj);
-
-	if (xs > SCREEN_WIDTH || ys > ACTION_SCREEN_HEIGHT)
-		return 1;
-
-	TSHIP *en = gObj_First(0);
-
-	for (; en; en = gObj_Next(en)) {
-		/* don't compare with itself */
-		if (en == gobj)
-			continue;
-
-		/* Ignore your weapons */
-		if (en == gobj->parent || en->parent == gobj)
-			continue;
-
-		if (gObj_CheckOverlap(x, y, gobj, en)) {
-			if (!gObj_CheckDestruction(gobj, en))
-				continue;
-
-			return 1;
-		}
-	}
-
-	for (int dy = y; dy < ys; dy++) {
-		for (int dx = x; dx < xs; dx++) {
-			unsigned char b = GetTileI(dx >> 3, dy >> 3);
-
-			if (b == 0)
-				continue;
-
-			// All tiles are solid.
-			if (gobj->ai_type == AI_SHIP && b >= 246) {
-				// ship dies from touching certain tiles
-				gObj_Explode(gobj);
-			}
-
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
 int UpdateFuel()
 {
 	static int fuel_cnt = 25;
@@ -407,7 +275,7 @@ void Update_Ship(TSHIP *ship)
 
 	if (GKeys[KEY_RIGHT] == 1) {
 		if (FacingRight(ship)) {
-			if (IsTouch(ship->x + 2, ship->y, ship) == 0) {
+			if (gObj_CheckTouch(ship->x + 2, ship->y, ship) == 0) {
 				ship->x += 2;
 			} else {
 				if (ship->x == MaxRightPos(ship) && ChangeScreen(F_RIGHT) == 1) {
@@ -427,7 +295,7 @@ void Update_Ship(TSHIP *ship)
 
 	if (GKeys[KEY_LEFT] == 1) {
 		if (FacingLeft(ship)) {
-			if (IsTouch(ship->x - 2, ship->y, ship) == 0) {
+			if (gObj_CheckTouch(ship->x - 2, ship->y, ship) == 0) {
 				ship->x -= 2;
 			} else {
 				if (ship->x == 0 && ChangeScreen(F_LEFT) == 1) {
@@ -451,7 +319,7 @@ void Update_Ship(TSHIP *ship)
 		else
 			dy = 2;
 
-		if (IsTouch(ship->x, ship->y - dy, ship) == 0) {
+		if (gObj_CheckTouch(ship->x, ship->y - dy, ship) == 0) {
 			ship->y -= dy;
 		} else {
 			if (ship->y == 0 && ChangeScreen(F_UP) == 1) {
@@ -466,7 +334,7 @@ void Update_Ship(TSHIP *ship)
 			else
 				dy = 2;
 
-			if (IsTouch(ship->x, ship->y + dy, ship) == 0) {
+			if (gObj_CheckTouch(ship->x, ship->y + dy, ship) == 0) {
 				ship->y += dy;
 			} else {
 				if (ship->y == MaxBottomPos(ship) && ChangeScreen(F_DOWN) == 1) {
@@ -476,7 +344,7 @@ void Update_Ship(TSHIP *ship)
 			}
 		} else {
 			if (fallflag == 0) {
-				if (IsTouch(ship->x, ship->y + 1, ship) == 0)
+				if (gObj_CheckTouch(ship->x, ship->y + 1, ship) == 0)
 					ship->y += 1;
 
 				fallflag = 1;
@@ -530,7 +398,7 @@ void Update_Base(TSHIP *base)
 				base->cur_frame ^= 1;
 				playMoveSound = 1;
 
-				if (IsTouch(ship->x + 2, ship->y, ship) + IsTouch(base->x + 2, base->y, base) == 0) {
+				if (gObj_CheckTouch(ship->x + 2, ship->y, ship) + gObj_CheckTouch(base->x + 2, base->y, base) == 0) {
 					if (GetTileI((base->x + 40) >> 3, (base->y + 16) >> 3)) {
 						ship->x += 2;
 						base->x += 2;
@@ -558,7 +426,7 @@ void Update_Base(TSHIP *base)
 				base->cur_frame ^= 1;
 				playMoveSound = 1;
 
-				if (IsTouch(ship->x - 2, ship->y, ship) + IsTouch(base->x - 2, base->y, base) == 0) {
+				if (gObj_CheckTouch(ship->x - 2, ship->y, ship) + gObj_CheckTouch(base->x - 2, base->y, base) == 0) {
 					if (GetTileI((base->x - 2) >> 3, (base->y + 16) >> 3)) {
 						ship->x -= 2;
 						base->x -= 2;

@@ -58,10 +58,6 @@ unsigned char ChangeScreen(int flag);
 void RestartLevel();
 void InitNewScreen();
 
-
-/* FIXME: Move to other header file (object.h ??) */
-int IsTouch(int x, int y, TSHIP *gobj);
-int gObj_CheckOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
 int FacingLeft(TSHIP *i);
 int FacingRight(TSHIP *i);
 

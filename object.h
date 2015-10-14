@@ -101,6 +101,8 @@ void gObj_Destructor(TSHIP *gobj);
 
 void gObj_Update(TSHIP *gobj);
 void gObj_Explode(TSHIP *gobj);
+int gObj_CheckTouch(int x, int y, TSHIP *gobj);
+int gObj_CheckOverlap(int x, int y, TSHIP *gobj1, TSHIP *gobj2);
 
 int UpdateAnimation(TSHIP *gobj);
 int UpdateMoveSpeed(TSHIP *gobj);
