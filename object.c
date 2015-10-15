@@ -95,8 +95,7 @@ TSHIP *gObj_CreateObject()
 
 void gObj_DestroyObject(TSHIP *obj)
 {
-	/* FIXME: if uncommented, it makes base not appear at the level start */
-	//memset(obj, 0, sizeof(TSHIP));
+	memset(obj, 0, sizeof(TSHIP));
 	obj->state = SH_DEAD;
 }
 
@@ -319,6 +318,20 @@ void gObj_Explode(TSHIP *gobj)
 	case AI_BASE:
 		// if blowing base - zero player_attached
 		player_attached = 0;
+		{
+			/* Create new explosion object and hide base */
+			TSHIP *exp = gObj_CreateObject();
+			exp->i = 1;
+			exp->x = gobj->x;
+			exp->y = gobj->y;
+
+			base_cur_screen = base_level_start;
+			gobj->state = SH_HIDDEN;
+			gobj->x = 160;
+			gobj->y = 104;
+
+			gobj = exp; /* HACKY: swap */
+		}
 		break;
 
 	case AI_SHOT:

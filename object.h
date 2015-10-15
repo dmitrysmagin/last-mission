@@ -3,6 +3,7 @@
 
 #define SH_DEAD 0
 #define SH_ACTIVE 1
+#define SH_HIDDEN 2
 
 #define AI_STATIC			0 // breakable wall or non-moving enemy
 #define AI_RANDOM_MOVE			1 // randomly moving enemy

@@ -363,22 +363,8 @@ void ReEnableBase()
 {
 	TSHIP *base = gObj_Base();
 
-	/* if exploded previously, reenable base at level start */
-	if (base->ai_type == AI_EXPLOSION) {
-		base_cur_screen = base_level_start;
-		base->x = 160;
-		base->y = 104;
-		base->i = 1;
-		base->min_frame = 0;
-		base->cur_frame = 0;
-		base->max_frame = 1;
-		base->anim_speed = 0;
-		base->anim_speed_cnt = 0;
-		gObj_Constructor(base, AI_BASE);
-	}
-
-	if(base_cur_screen != ship_cur_screen) {
-		base->state = SH_DEAD;
+	if (base_cur_screen != ship_cur_screen) {
+		base->state = SH_HIDDEN;
 	} else {
 		base->state = SH_ACTIVE;
 	}
@@ -646,13 +632,15 @@ void CreateWallExplosion(int x, int y)
 
 void InitShip()
 {
-	TSHIP *ship = gObj_Ship(); /* FIXME: Should be gObj_CreateObject */
-	TSHIP *base = gObj_Base(); /* FIXME: Should be gObj_CreateObject */
+	TSHIP *base, *ship;
 
 	GarageRestore();
 
 	/* Erase all game objects and init object queue */
 	gObj_DestroyAll();
+
+	base = gObj_Base(); /* FIXME: Should be gObj_CreateObject */
+	ship = gObj_Ship(); /* FIXME: Should be gObj_CreateObject */
 
 	// base data
 	base->state = SH_ACTIVE;
