@@ -313,6 +313,8 @@ void gObj_Explode(TSHIP *gobj)
 		if (game->health >= 0) {
 			return;
 		}
+
+		gobj->restart_level = 1;
 		break;
 
 	case AI_BASE:

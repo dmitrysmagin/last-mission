@@ -262,8 +262,6 @@ void Update_Smoke(TSHIP *gobj)
 
 void Update_Explosion(TSHIP *gobj)
 {
-	TSHIP *ship = gObj_Ship();
-
 	if (UpdateAnimation(gobj) == 1) {
 		if (gobj->explosion.bonus_type) {
 			if (gobj->explosion.regenerate_bonus) {
@@ -309,9 +307,12 @@ void Update_Explosion(TSHIP *gobj)
 			}
 		}
 
-		gObj_DestroyObject(gobj);
-		if (gobj == ship)
+		/* Check if player exploded and restart level */
+		if (gobj->restart_level) {
 			RestartLevel();
+		} else {
+			gObj_DestroyObject(gobj);
+		}
 
 		return;
 	}
