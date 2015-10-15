@@ -73,11 +73,11 @@ TSHIP *gObj_Next(TSHIP *obj)
 	return NULL;
 }
 
-static int GetFreeEnemyIndex()
+static int free_gobj()
 {
-	for (int i = 2; i < SHIPS_NUMBER; i++) {
+	for (int i = 0; i < SHIPS_NUMBER; i++) {
 		if (Ships[i].state == SH_DEAD)
-			return i; // and ai_type should be zero!
+			return i;
 	}
 
 	return SHIPS_NUMBER - 1;
@@ -85,7 +85,7 @@ static int GetFreeEnemyIndex()
 
 TSHIP *gObj_CreateObject()
 {
-	TSHIP *obj = &Ships[GetFreeEnemyIndex()];
+	TSHIP *obj = &Ships[free_gobj()];
 	memset(obj, 0, sizeof(TSHIP));
 
 	obj->state = SH_ACTIVE;

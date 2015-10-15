@@ -639,11 +639,11 @@ void InitShip()
 	/* Erase all game objects and init object queue */
 	gObj_DestroyAll();
 
-	base = gObj_Base(); /* FIXME: Should be gObj_CreateObject */
-	ship = gObj_Ship(); /* FIXME: Should be gObj_CreateObject */
+	/* FIXME: strictly ship is 1st, base is second */
+	ship = gObj_CreateObject();
+	base = gObj_CreateObject();
 
 	// base data
-	base->state = SH_ACTIVE;
 	base->x = 148;
 	base->y = 104;
 	base->i = 1;
@@ -655,7 +655,6 @@ void InitShip()
 	gObj_Constructor(base, AI_BASE);
 
 	// flying ship data
-	ship->state = SH_ACTIVE;
 	ship->i = GetPlayerShipIndex();
 	ship->x = 148 + ShipBaseOffset();
 	ship->y = 68;
