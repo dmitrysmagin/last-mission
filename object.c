@@ -150,20 +150,6 @@ int UpdateMoveSpeed(TSHIP *gobj)
 
 void gObj_Update(TSHIP *gobj)
 {
-	TSHIP *ship = gObj_Ship();
-
-	/* FIXME: this should be done in ship destructor, move there later */
-	// if main ship is exploding, freeze other enemies except bridge and garage
-	// it's not safe but ship dies after all and enemy data is reinitialized then
-	if (gobj != ship && ship->ai_type == AI_EXPLOSION) {
-		if(gobj->ai_type != AI_BRIDGE &&
-		   gobj->ai_type != AI_GARAGE &&
-		   gobj->ai_type != AI_HIDDEN_AREA_ACCESS &&
-		   gobj->ai_type != AI_SPARE_SHIP) {
-			gobj->ai_type = AI_STATIC; // don't affect ship itself
-		}
-	}
-
 	// do different ai types
 	switch (gobj->ai_type) {
 	case AI_SHIP:
