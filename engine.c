@@ -474,19 +474,24 @@ void AddScore(int update)
 
 void UpdateScoreWithShip(TSHIP *gobj)
 {
+	int score;
 	TSHIP *ship = gObj_Ship();
 
-	if (gobj != ship &&
-	    gobj != gObj_Base() &&
-	    gobj->ai_type != AI_BULLET &&
-	    gobj->ai_type != AI_SHOT &&
-	    gobj->ai_type != AI_BFG_SHOT &&
-	    gobj->ai_type != AI_HOMING_SHOT &&
-	    gobj->ai_type != AI_BONUS &&
-	    gobj->ai_type != AI_ELECTRIC_SPARKLE_VERTICAL &&
-	    gobj->ai_type != AI_ELECTRIC_SPARKLE_HORIZONTAL) {
+	switch (gobj->ai_type) {
+	case AI_SHIP:
+	case AI_BASE:
+	case AI_BULLET:
+	case AI_SHOT:
+	case AI_BFG_SHOT:
+	case AI_HOMING_SHOT:
+	case AI_BONUS:
+	case AI_ELECTRIC_SPARKLE_VERTICAL:
+	case AI_ELECTRIC_SPARKLE_HORIZONTAL:
+		break;
+
+	default:
 		// /2 less points for hard mode, /2 less for rocket launcher of BFG
-		int score = gobj->ai_type * 100 * (game_level & 7) + (RandomInt() & 127);
+		score = gobj->ai_type * 100 * (game_level & 7) + (RandomInt() & 127);
 
 		if (game->easy_mode)
 			score >>= 1;
@@ -495,6 +500,7 @@ void UpdateScoreWithShip(TSHIP *gobj)
 			score >>= 1;
 
 		AddScore(score);
+		break;
 	}
 }
 
