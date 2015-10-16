@@ -470,6 +470,13 @@ static int gObj_CheckDestruction(TSHIP *gobj1, TSHIP *gobj2)
 	if (obj1_type == obj2_type)
 		goto _exit_proc;
 
+	/* FIXME: don't interact if it's your weapon */
+	if (gobj2->flags & GOBJ_WEAPON && gobj1 == gobj2->parent)
+		return 0;
+
+	if (gobj1->flags & GOBJ_WEAPON && gobj2 == gobj1->parent)
+		return 0;
+
 	/* FIXME: hack for garage, later make more generic */
 	if(gobj2->ai_type == AI_GARAGE)
 		goto _exit_proc;
@@ -530,10 +537,6 @@ int gObj_CheckTouch(int x, int y, TSHIP *gobj)
 	for (; en; en = gObj_Next(en)) {
 		/* don't compare with itself */
 		if (en == gobj)
-			continue;
-
-		/* Ignore your weapons */
-		if (en == gobj->parent || en->parent == gobj)
 			continue;
 
 		if (gObj_CheckOverlap(x, y, gobj, en)) {

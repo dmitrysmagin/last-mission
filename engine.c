@@ -658,12 +658,14 @@ void InitShip()
 	base->max_frame = 1;
 	base->anim_speed = 0;
 	base->anim_speed_cnt = 0;
+	base->parent = ship;
 	gObj_Constructor(base, AI_BASE);
 
 	// flying ship data
 	ship->i = GetPlayerShipIndex();
 	ship->x = 148 + ShipBaseOffset();
 	ship->y = 68;
+	ship->parent = base;
 
 	switch (ship->i) {
 	case SHIP_TYPE_LASER:
