@@ -510,7 +510,7 @@ static int gObj_CheckDestruction(TSHIP *gobj1, TSHIP *gobj2)
 _exit_proc:
 
 	/* FIXME: hack for laser */
-	if (gobj1->ai_type == AI_LASER || gobj2->ai_type == AI_LASER)
+	if (gobj1->ai_type == AI_LASER)
 		return 1;
 
 	if (!(gobj1->flags & GOBJ_SOLID) || !(gobj2->flags & GOBJ_SOLID))
