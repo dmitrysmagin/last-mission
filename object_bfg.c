@@ -51,7 +51,7 @@ void DoBFG(TSHIP *ship)
 		mg_timeout = 0;
 
 	if (GKeys[KEY_FIRE] == 1) {
-		if (!mg_timeout && !bfg_on) {
+		if (!mg_timeout && !bfg_on && !elevator_flag) {
 			//if ship is not facing right or left, then exit.
 			if (!FacingLeft(ship) && !FacingRight(ship))
 				return;
