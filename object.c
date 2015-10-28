@@ -48,7 +48,6 @@ static int EnemyFlags[] = {
 static TSHIP Ships[SHIPS_NUMBER];
 
 TSHIP *gObj_Ship() { return &Ships[0]; }
-TSHIP *gObj_Base() { return &Ships[1]; }
 
 /* FIXME: Later remove the first parameter */
 TSHIP *gObj_First(int i)

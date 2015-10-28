@@ -93,7 +93,6 @@ struct tship_t {
 TSHIP *gObj_First(int i);
 TSHIP *gObj_Next(TSHIP *obj);
 
-TSHIP *gObj_Base();
 TSHIP *gObj_Ship();
 
 TSHIP *gObj_CreateObject();
