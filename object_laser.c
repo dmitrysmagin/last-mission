@@ -31,10 +31,8 @@ int UpdateLaser(int i)
 static int laser_phase = 0;
 
 /* FIXME: this should belong to ship code in fact */
-void DoLaser()
+void DoLaser(TSHIP *ship)
 {
-	TSHIP *ship = gObj_Ship();
-
 	if (GKeys[KEY_FIRE]) {
 		/* Explode if laser overload */
 		if (UpdateLaser(1)) {

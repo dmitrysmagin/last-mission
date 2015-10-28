@@ -32,8 +32,8 @@
 
 int UpdateFuel();
 void ReEnableBase();
-void DoMachineGun();
-void DoRocketLauncher();
+void DoMachineGun(TSHIP *ship);
+void DoRocketLauncher(TSHIP *ship);
 void InitShip();
 void InitEnemies();
 void InitNewGame();
@@ -232,16 +232,16 @@ void Update_Ship(TSHIP *ship)
 
 	switch (ship->i) {
 	case SHIP_TYPE_ROCKET_LAUNCHER:
-		DoRocketLauncher();
+		DoRocketLauncher(ship);
 		break;
 	case SHIP_TYPE_MACHINE_GUN:
-		DoMachineGun();
+		DoMachineGun(ship);
 		break;
 	case SHIP_TYPE_BFG:
-		DoBFG();
+		DoBFG(ship);
 		break;
 	case SHIP_TYPE_LASER:
-		DoLaser();
+		DoLaser(ship);
 		break;
 	}
 
@@ -528,9 +528,8 @@ void DestroyHiddenAreaAccess(TSHIP *i, int playEffects)
 	gObj_DestroyObject(i);
 }
 
-void DoMachineGun()
+void DoMachineGun(TSHIP *ship)
 {
-	TSHIP *ship = gObj_Ship();
 	static int mg_timeout = 0;
 	if (--mg_timeout < 0)
 		mg_timeout = 0;
@@ -543,11 +542,11 @@ void DoMachineGun()
 		}
 
 		if (!mg_timeout) {
-			// Create a new bullet.
 			//if ship is not facing right or left, then exit.
 			if (!FacingLeft(ship) && !FacingRight(ship))
 				return;
 
+			// Create a new bullet.
 			TSHIP *bullet = gObj_CreateObject();
 			bullet->i = 50;
 			bullet->x = ship->x + (FacingRight(ship) ? 32 : -8);
@@ -573,7 +572,7 @@ void DoMachineGun()
 	}
 }
 
-void DoRocketLauncher()
+void DoRocketLauncher(TSHIP *ship)
 {
 	static int rl_timeout = 0;
 	if (--rl_timeout < 0)
@@ -581,13 +580,11 @@ void DoRocketLauncher()
 
 	if (GKeys[KEY_FIRE] == 1) {
 		if (!rl_timeout) {
-			// Create a new bullet.
-			TSHIP *ship = gObj_Ship();
-
 			//if ship is not facing right or left, then exit.
 			if (!FacingLeft(ship) && !FacingRight(ship))
 				return;
 
+			// Create a new bullet.
 			TSHIP *bullet = gObj_CreateObject();
 			bullet->i = 54;
 			bullet->y = ship->y + 1;

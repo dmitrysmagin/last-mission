@@ -3,7 +3,7 @@
 
 #include "object.h"
 
-void DoBFG();
+void DoBFG(TSHIP *ship);
 void CleanupBfg();
 void BlitBfg();
 void Update_BfgShot(TSHIP *gobj);

@@ -44,7 +44,7 @@ void CleanupBfg()
 	bfg_on = 0;
 }
 
-void DoBFG()
+void DoBFG(TSHIP *ship)
 {
 	static int mg_timeout = 0;
 	if (--mg_timeout < 0)
@@ -52,13 +52,11 @@ void DoBFG()
 
 	if (GKeys[KEY_FIRE] == 1) {
 		if (!mg_timeout && !bfg_on) {
-			// Create a new bullet.
-			TSHIP *ship = gObj_Ship();
-
 			//if ship is not facing right or left, then exit.
 			if (!FacingLeft(ship) && !FacingRight(ship))
 				return;
 
+			// Create a new bullet.
 			TSHIP *bullet = gObj_CreateObject();
 			bullet->i = 56;
 			bullet->x = ship->x + (FacingRight(ship) ? 16 : -11);
