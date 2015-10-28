@@ -31,7 +31,7 @@
 #define GAME_START_SCREEN 1 // Start of the labyrinth.
 
 int UpdateFuel();
-void ReEnableBase();
+void ReEnableBase(TSHIP *base);
 void DoMachineGun(TSHIP *ship);
 void DoRocketLauncher(TSHIP *ship);
 void InitShip();
@@ -280,6 +280,7 @@ void Update_Ship(TSHIP *ship)
 				if (ship->x == MaxRightPos(ship) && ChangeScreen(F_RIGHT) == 1) {
 					ship->x = 0;
 					InitNewScreen();
+					ReEnableBase(ship->base);
 				}
 			}
 		} else {
@@ -300,6 +301,7 @@ void Update_Ship(TSHIP *ship)
 				if (ship->x == 0 && ChangeScreen(F_LEFT) == 1) {
 					ship->x = MaxRightPos(ship);
 					InitNewScreen();
+					ReEnableBase(ship->base);
 				}
 			}
 		} else {
@@ -324,6 +326,7 @@ void Update_Ship(TSHIP *ship)
 			if (ship->y == 0 && ChangeScreen(F_UP) == 1) {
 				ship->y = MaxBottomPos(ship);
 				InitNewScreen();
+				ReEnableBase(ship->base);
 			}
 		}
 	} else {
@@ -339,6 +342,7 @@ void Update_Ship(TSHIP *ship)
 				if (ship->y == MaxBottomPos(ship) && ChangeScreen(F_DOWN) == 1) {
 					ship->y = 0;
 					InitNewScreen();
+					ReEnableBase(ship->base);
 				}
 			}
 		} else {
@@ -350,6 +354,7 @@ void Update_Ship(TSHIP *ship)
 				if (ship->y == MaxBottomPos(ship) && ChangeScreen(F_DOWN) == 1) {
 					ship->y = 0;
 					InitNewScreen();
+					ReEnableBase(ship->base);
 				}
 			} else {
 				fallflag -= 1;
@@ -359,10 +364,8 @@ void Update_Ship(TSHIP *ship)
 
 }
 
-void ReEnableBase()
+void ReEnableBase(TSHIP *base)
 {
-	TSHIP *base = gObj_Base();
-
 	if (base_cur_screen != ship_cur_screen) {
 		base->state = SH_HIDDEN;
 	} else {
@@ -753,8 +756,6 @@ void InitNewScreen()
 	UnpackLevel(game->world, ship_cur_screen);
 
 	InitEnemies();
-
-	ReEnableBase();
 
 	laser_dir = 0;
 
