@@ -453,7 +453,7 @@ void Update_Shot(TSHIP *gobj)
 void Update_Elevator(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
-	TSHIP *base = gObj_Base();
+	TSHIP *base = ship->base;
 
 	if (player_attached == 1) {
 		// start to lift only when ship and base are standing on the elevator

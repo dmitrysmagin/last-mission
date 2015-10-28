@@ -215,6 +215,9 @@ void Update_Garage(TSHIP *gobj)
 			*ship = *spare;
 			*spare = tmp;
 
+			/* FIXME: Restore pointer to base */
+			ship->base = spare->base;
+
 			TSHIP *garage = ship->garage;
 
 			garage->garage_inactive = 1;

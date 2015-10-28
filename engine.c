@@ -142,8 +142,8 @@ unsigned char ChangeScreen(int flag)
 	if (result == 0)
 		return 0;
 
-	TSHIP *base = gObj_Base();
 	TSHIP *ship = gObj_Ship();
+	TSHIP *base = ship->base;
 
 	// if base is blocking the way on the other screen
 	if (result == base_cur_screen) {
@@ -169,12 +169,12 @@ unsigned char ChangeScreen(int flag)
 	return 1;
 }
 
-int ShipBaseOffset()
+inline int ShipBaseOffset(TSHIP *ship, TSHIP *base)
 {
 	int xs, xb;
 
-	xb = gObj_GetWidth(gObj_Base());
-	xs = gObj_GetWidth(gObj_Ship());
+	xs = gObj_GetWidth(ship);
+	xb = gObj_GetWidth(base);
 
 	return (xb - xs) / 2;
 }
@@ -223,7 +223,7 @@ int UpdateFuel()
 
 void Update_Ship(TSHIP *ship)
 {
-	TSHIP *base = gObj_Base();
+	TSHIP *base = ship->base;
 	static unsigned char fallflag = 1;
 	static int dy;
 
@@ -390,7 +390,7 @@ void Update_Base(TSHIP *base)
 					}
 				} else {
 					if (base->x == 280 && ChangeScreen(F_RIGHT) == 1) {
-						ship->x = ShipBaseOffset();
+						ship->x = ShipBaseOffset(ship, base);
 						base->x = 0;
 						base_cur_screen = ship_cur_screen;
 						InitNewScreen();
@@ -419,7 +419,7 @@ void Update_Base(TSHIP *base)
 				} else {
 					if (base->x == 0 && ChangeScreen(F_LEFT) == 1) {
 						//xxx
-						ship->x = 280 + ShipBaseOffset();
+						ship->x = 280 + ShipBaseOffset(ship, base);
 						base->x = 280;
 						base_cur_screen = ship_cur_screen;
 						InitNewScreen();
@@ -660,9 +660,9 @@ void InitShip()
 
 	// flying ship data
 	ship->i = GetPlayerShipIndex();
-	ship->x = 148 + ShipBaseOffset();
+	ship->x = 148 + ShipBaseOffset(ship, base);
 	ship->y = 68;
-	ship->parent = base;
+	ship->base = base;
 
 	switch (ship->i) {
 	case SHIP_TYPE_LASER:

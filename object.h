@@ -84,6 +84,7 @@ struct tship_t {
 		TEXPLOSION explosion; // used by AI_BONUS & AI_EXPLOSION
 	};
 
+	TSHIP *base;	/* Used by AI_SHIP */
 	TSHIP *parent; /* Used by AI_CEILING_CANNON and AI_CANNON */
 	TSHIP *garage;
 };
