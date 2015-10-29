@@ -525,7 +525,7 @@ void Update_Elevator(TSHIP *gobj)
 						//PublishScore();
 						//GameLevelUp();
 					}
-					base_level_start = ship_cur_screen;
+					base_restart_screen = ship_cur_screen;
 
 					// destroy elevator or it will roll forever
 					// but if not screen 69

@@ -54,7 +54,7 @@ unsigned char ship_cur_screen = 0;
 
 unsigned int player_attached = 0;
 int base_cur_screen;
-int base_level_start = 1;
+int base_restart_screen = 1;
 char screen_procedure;
 int screen_bridge = 0;
 int game_level = 1;
@@ -808,7 +808,7 @@ void InitNewGame()
 
 	ship_cur_screen = GAME_START_SCREEN;
 	base_cur_screen = GAME_START_SCREEN;
-	base_level_start = GAME_START_SCREEN;
+	base_restart_screen = GAME_START_SCREEN;
 	game_level = GameLevelFromScreen(GAME_START_SCREEN);
 
 	player_attached = 0;
@@ -850,8 +850,8 @@ void RestartLevel()
 		return;
 
 	player_attached = 0;
-	ship_cur_screen = base_level_start;
-	base_cur_screen = base_level_start;
+	ship_cur_screen = base_restart_screen;
+	base_cur_screen = base_restart_screen;
 	elevator_flag = 0;
 
 	InitShip();
@@ -1351,7 +1351,7 @@ void LoadGame(TGAMEDATA *data)
 
 	ship_cur_screen = data->base_level;
 	base_cur_screen = data->base_level;
-	base_level_start = data->base_level;
+	base_restart_screen = data->base_level;
 	game_level = GameLevelFromScreen(data->base_level);
 
 #if 0
@@ -1371,7 +1371,7 @@ void LoadGame(TGAMEDATA *data)
 void SaveGame(TGAMEDATA *data)
 {
 	data->score = game->score;
-	data->base_level = base_level_start;
+	data->base_level = base_restart_screen;
 	data->lives = game->lives;
 	data->hidden_level_entered = hidden_level_entered;
 	data->fuel = game->fuel;
@@ -1386,7 +1386,7 @@ void SaveGame(TGAMEDATA *data)
 void ResetGame(int gameMode)
 {
 	player_attached = 0;
-	base_level_start = 1;
+	base_restart_screen = 1;
 	screen_bridge = 0;
 	game_level = 1;
 	game->fuel = 5000;
