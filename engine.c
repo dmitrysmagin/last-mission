@@ -50,12 +50,11 @@ void HitTheBonus(int);
 void PublishScore();
 void GameLevelUp();
 
-unsigned char ship_cur_screen = 0;
-
-unsigned int player_attached = 0;
+int ship_cur_screen = 0;
+int player_attached = 0;
 int base_cur_screen;
 int base_restart_screen = 1;
-char screen_procedure;
+int screen_procedure;
 int screen_bridge = 0;
 int game_level = 1;
 int ticks_for_damage = 0;

@@ -68,11 +68,11 @@ void UpdateScoreWithShip(TSHIP *gobj);
 void DestroyHiddenAreaAccess(TSHIP *i, int playEffects);
 
 extern TGAMEDATA *game;
-extern unsigned int player_attached;
+extern int player_attached;
 extern int elevator_flag;
 extern int base_cur_screen;
 extern int base_restart_screen;
-extern unsigned char ship_cur_screen;
+extern int ship_cur_screen;
 extern int game_level;
 extern int ticks_for_damage;
 extern int cur_screen_bonus;
