@@ -47,7 +47,18 @@ static int EnemyFlags[] = {
 #define SHIPS_NUMBER 32
 static TSHIP Ships[SHIPS_NUMBER];
 
-TSHIP *gObj_Ship() { return &Ships[0]; }
+/* Search for AI_SHIP in object pool */
+TSHIP *gObj_Ship()
+{
+	TSHIP *obj = Ships;
+
+	for (; obj < &Ships[SHIPS_NUMBER]; obj++) {
+		if (obj->state == SH_ACTIVE && obj->ai_type == AI_SHIP)
+			return obj;
+	}
+
+	return NULL;
+}
 
 /* FIXME: Later remove the first parameter */
 TSHIP *gObj_First(int i)
