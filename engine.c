@@ -377,6 +377,9 @@ void Update_Base(TSHIP *base)
 {
 	TSHIP *ship = gObj_Ship();
 
+	if (ship == NULL)
+		return;
+
 	// do smth if attach mode ON
 	int playMoveSound = 0;
 
@@ -1061,6 +1064,9 @@ void DoWinScreen()
 		LM_ResetKeys();
 	} else {
 		TSHIP *ship = gObj_Ship();
+
+		if (ship == NULL)
+			return;
 
 		// Update animations and screen.
 		GKeys[KEY_RIGHT] = (ship->x < 93) ? 1 : 0;

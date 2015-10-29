@@ -180,6 +180,9 @@ void Update_Garage(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
 
+	if (ship == NULL)
+		return;
+
 	if (ship->ai_type == AI_EXPLOSION)
 		return;
 
@@ -207,29 +210,21 @@ void Update_Garage(TSHIP *gobj)
 		}
 
 		if (spare) {
-			// Swap data of the player ship and
-			// the spare ship.
-			/* FIXME: Rework this ugly code */
-			TSHIP tmp;
-			tmp = *ship;
-			*ship = *spare;
-			*spare = tmp;
-
-			/* FIXME: Restore pointer to base */
-			ship->base = spare->base;
-
-			TSHIP *garage = ship->garage;
+			/* Swap AI_SHIP and AI_SPARE_SHIP */
+			TSHIP *garage = spare->garage;
 
 			garage->garage_inactive = 1;
 
-			SetGarageShipIndex(gobj->i, spare->i);
+			SetGarageShipIndex(gobj->i, ship->i);
 			SetGarageShipIndex(garage->i, -1);
 
-			gObj_Constructor(ship, AI_SHIP);
-			ship->garage = NULL;
+			gObj_Constructor(spare, AI_SHIP);
+			spare->garage = NULL;
+			spare->base = ship->base;
 
-			gObj_Constructor(spare, AI_SPARE_SHIP);
-			spare->garage = gobj;
+			gObj_Constructor(ship, AI_SPARE_SHIP);
+			ship->garage = gobj;
+			ship->base = NULL;
 
 			// restore HP
 			game->health = 3;

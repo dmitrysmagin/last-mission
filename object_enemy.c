@@ -56,6 +56,9 @@ void Update_Kamikaze(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
 
+	if (ship == NULL)
+		return;
+
 	if (ship->i == SHIP_TYPE_OBSERVER) {
 		Update_Random(gobj);
 		return;
@@ -139,6 +142,9 @@ void Update_HomingMissile(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
 
+	if (ship == NULL)
+		return;
+
 	UpdateAnimation(gobj);
 
 	if (gobj->x > 0) {
@@ -167,6 +173,9 @@ void Update_HomingMissile(TSHIP *gobj)
 void Update_Cannon(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
+
+	if (ship == NULL)
+		return;
 
 	if (gobj->x - 40 > ship->x) {
 		gobj->cur_frame = 0;
@@ -453,6 +462,10 @@ void Update_Shot(TSHIP *gobj)
 void Update_Elevator(TSHIP *gobj)
 {
 	TSHIP *ship = gObj_Ship();
+
+	if (ship == NULL)
+		return;
+
 	TSHIP *base = ship->base;
 
 	if (player_attached == 1) {
