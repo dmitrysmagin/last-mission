@@ -852,6 +852,7 @@ void RestartLevel()
 	player_attached = 0;
 	ship_cur_screen = base_level_start;
 	base_cur_screen = base_level_start;
+	elevator_flag = 0;
 
 	InitShip();
 	InitNewScreen();
