@@ -81,11 +81,8 @@ static void fread_WORLD(WORLD *world, FILE *fp)
 	res = fread(world, 1, SIZEOF_WORLD, fp);
 
 	// allocate all necessary pointers
-	if (world->room_num > 0)
-		world->room = (ROOM *)malloc(sizeof(ROOM) * world->room_num);
-
-	if (world->patternset_num > 0)
-		world->patternset = (PATTERNSET *)malloc(sizeof(PATTERNSET) * world->patternset_num);
+	world->room = (ROOM *)calloc(world->room_num, sizeof(ROOM));
+	world->patternset = (PATTERNSET *)calloc(world->patternset_num, sizeof(PATTERNSET));
 
 	(void)res; /* silence warning */
 }
@@ -114,14 +111,14 @@ static void fread_ROOM(WORLD *world, FILE *fp)
 
 	// allocate all necessary pointers
 	for (i = 0; i < world->room_num; i++) {
-		if ((world->room + i)->pattern_num > 0)
-			(world->room + i)->pattern = (PATTERN *)malloc(sizeof(PATTERN) * (world->room + i)->pattern_num);
+		(world->room + i)->pattern =
+			(PATTERN *)calloc((world->room + i)->pattern_num, sizeof(PATTERN));
 
-		if ((world->room + i)->object_num > 0)
-			(world->room + i)->object = (OBJECT *)malloc(sizeof(OBJECT) * (world->room + i)->object_num);
+		(world->room + i)->object =
+			(OBJECT *)calloc((world->room + i)->object_num, sizeof(OBJECT));
 
-		if ((world->room + i)->bg_num > 0)
-			(world->room + i)->bgline = (BGLINE *)malloc(sizeof(BGLINE) * (world->room + i)->bg_num);
+		(world->room + i)->bgline =
+			(BGLINE *)calloc((world->room + i)->bg_num, sizeof(BGLINE));
 	}
 
 	for (i = 0; i < world->room_num; i++)
@@ -303,8 +300,7 @@ WORLD *load_world(char *name)
 	FILE *fp;
 	size_t res;
 
-	world = (WORLD *)malloc(sizeof(WORLD));
-	memset(world, 0, sizeof(WORLD));
+	world = (WORLD *)calloc(1, sizeof(WORLD));
 
 	fp = fopen(name, "rb");
 
