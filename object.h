@@ -90,7 +90,7 @@ struct tship_t {
 };
 
 
-TSHIP *gObj_First(int i);
+TSHIP *gObj_First();
 TSHIP *gObj_Next(TSHIP *obj);
 
 TSHIP *gObj_Ship();

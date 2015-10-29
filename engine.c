@@ -480,6 +480,9 @@ void UpdateScoreWithShip(TSHIP *gobj)
 	int score;
 	TSHIP *ship = gObj_Ship();
 
+	if (ship == NULL)
+		return;
+
 	switch (gobj->ai_type) {
 	case AI_SHIP:
 	case AI_BASE:
@@ -698,11 +701,18 @@ void InitEnemies()
 	OBJECT *object = room->object;
 	int count = room->object_num;
 
-	/* FIXME: Clear all except ship/base and smoke */
-	TSHIP *gobj = gObj_First(2);
+	/* Clear all except ship/base and smoke */
+	TSHIP *gobj = gObj_First();
 	for (; gobj; gobj = gObj_Next(gobj)) {
-		if (gobj->ai_type != AI_SMOKE)
+		switch (gobj->ai_type) {
+		case AI_SHIP:
+		case AI_BASE:
+		case AI_SMOKE:
+			break;
+		default:
 			gObj_DestroyObject(gobj);
+			break;
+		}
 	}
 
 	screen_procedure = room->procedure;
@@ -1061,7 +1071,7 @@ void DoWinScreen()
 
 		Update_Ship(ship);
 
-		TSHIP *gobj = gObj_First(2);
+		TSHIP *gobj = gObj_First();
 		for (; gobj; gobj = gObj_Next(gobj))
 			UpdateAnimation(gobj);
 
@@ -1086,7 +1096,7 @@ void DoKeys()
 
 void BlitEnemies()
 {
-	for (TSHIP *gobj = gObj_First(0); gobj; gobj = gObj_Next(gobj)) {
+	for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
 		if (gobj->ai_type == AI_GARAGE) {
 #ifdef _DEBUG
 			DrawRect(
@@ -1112,7 +1122,7 @@ void BlitEnemyOutlines(WORLD *world)
 {
 	unsigned int shadow = (world->room + ship_cur_screen)->shadow;
 
-	for (TSHIP *gobj = gObj_First(0); gobj; gobj = gObj_Next(gobj)) {
+	for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
 		/* Blit shadow only if object needs it */
 		if (gobj->flags & GOBJ_SHADOW)
 			PutSpriteS(gobj->x, gobj->y, gobj->i, gobj->cur_frame, shadow);
@@ -1191,7 +1201,7 @@ void DoGame()
 		}
 
 		// do enemies
-		for (TSHIP *gobj = gObj_First(0); gobj; gobj = gObj_Next(gobj))
+		for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj))
 			gObj_Update(gobj);
 
 		if (!frame_skip)

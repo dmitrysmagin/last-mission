@@ -60,10 +60,10 @@ TSHIP *gObj_Ship()
 	return NULL;
 }
 
-/* FIXME: Later remove the first parameter */
-TSHIP *gObj_First(int i)
+/* Find first object in pool */
+TSHIP *gObj_First()
 {
-	TSHIP *obj = &Ships[i]; /* should be the start of gobj list */
+	TSHIP *obj = Ships;
 
 	for (; obj < &Ships[SHIPS_NUMBER]; obj++) {
 		if (obj->state == SH_ACTIVE)
@@ -360,7 +360,7 @@ void gObj_Explode(TSHIP *gobj)
 		// this ship is the last one on the screen.
 		if (cur_screen_bonus) {
 			int alive_ship = 0;
-			TSHIP *last_alive = gObj_First(2);
+			TSHIP *last_alive = gObj_First();
 
 			for (; last_alive; last_alive = gObj_Next(last_alive)) {
 				if (last_alive != gobj &&
@@ -542,7 +542,7 @@ int gObj_CheckTouch(int x, int y, TSHIP *gobj)
 	if (xs > SCREEN_WIDTH || ys > ACTION_SCREEN_HEIGHT)
 		return 1;
 
-	TSHIP *en = gObj_First(0);
+	TSHIP *en = gObj_First();
 
 	for (; en; en = gObj_Next(en)) {
 		/* don't compare with itself */

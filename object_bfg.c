@@ -147,7 +147,7 @@ void Update_BfgShot(TSHIP *gobj)
 	for (int n = 0; n < MAX_BFG_TARGETS; ++n)
 		BfgTargets[n].hit_now = 0;
 
-	TSHIP *trg = gObj_First(2);
+	TSHIP *trg = gObj_First();
 	for (; trg; trg = gObj_Next(trg)) {
 		if (trg->ai_type == AI_KAMIKADZE ||
 		    trg->ai_type == AI_RANDOM_MOVE) {

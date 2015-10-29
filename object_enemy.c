@@ -369,7 +369,7 @@ void Update_HomingShot(TSHIP *gobj)
 	gobj->dy = 0;
 
 	if (++gobj->ticks_passed > 10) {
-		TSHIP *trg = gObj_First(2);
+		TSHIP *trg = gObj_First();
 		TSHIP *best = NULL;
 		int dx_best = 0;
 
@@ -517,7 +517,7 @@ void Update_Elevator(TSHIP *gobj)
 					// destroy elevator or it will roll forever
 					// but if not screen 69
 					if (base_cur_screen != 69) {
-						TSHIP *lift = gObj_First(2);
+						TSHIP *lift = gObj_First();
 						for (; lift; lift = gObj_Next(lift)) {
 							if(lift->ai_type == AI_ELEVATOR)
 								gObj_DestroyObject(lift);

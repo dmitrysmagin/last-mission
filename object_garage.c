@@ -199,7 +199,7 @@ void Update_Garage(TSHIP *gobj)
 		(ship->y + h < gobj->y + GARAGE_HEIGHT)) {
 		// Player ship is inside the garage, lets
 		// change the ship if possible.
-		TSHIP *spare = gObj_First(2);
+		TSHIP *spare = gObj_First();
 
 		for (; spare; spare = gObj_Next(spare)) {
 			if (spare->ai_type == AI_SPARE_SHIP)
