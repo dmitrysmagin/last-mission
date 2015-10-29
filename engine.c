@@ -64,7 +64,6 @@ int modern_background = 1;
 int title_start_flag = 0;
 int youwin_start_flag = 0;
 int cur_screen_bonus = 0;
-int hidden_level_entered = 0;
 
 /* Global pointer to internal game data, fix later*/
 TGAMEDATA gamedata, *game = &gamedata;
@@ -756,7 +755,7 @@ void InitEnemies()
 			en->dx = object->speed;
 			en->dy = object->minframe;
 
-			if (hidden_level_entered) {
+			if (game->hidden_level_entered) {
 				DestroyHiddenAreaAccess(en, 0);
 			}
 		}
@@ -773,8 +772,8 @@ void InitNewScreen()
 
 	if (ship_cur_screen == 92) {
 		// Memorize that we entered the hidden area once.
-		hidden_level_entered = 1;
-	} else if (hidden_level_entered && ship_cur_screen == 1) {
+		game->hidden_level_entered = 1;
+	} else if (game->hidden_level_entered && ship_cur_screen == 1) {
 		// Save game, cause we are back from the underggroung (most probably, heh).
 		GarageSave();
 		PublishScore();
@@ -811,7 +810,7 @@ void InitNewGame()
 	game_level = GameLevelFromScreen(GAME_START_SCREEN);
 
 	player_attached = 0;
-	hidden_level_entered = 0;
+	game->hidden_level_entered = 0;
 
 	InitGaragesForNewGame();
 	InitShip();
@@ -1342,7 +1341,7 @@ void LoadGame(TGAMEDATA *data)
 
 	game->easy_mode = data->easy_mode;
 
-	hidden_level_entered = data->hidden_level_entered;
+	game->hidden_level_entered = data->hidden_level_entered;
 	game->fuel = data->fuel;
 	game->lives = data->lives;
 	game->health = data->health;
@@ -1372,7 +1371,7 @@ void SaveGame(TGAMEDATA *data)
 	data->score = game->score;
 	data->base_level = base_restart_screen;
 	data->lives = game->lives;
-	data->hidden_level_entered = hidden_level_entered;
+	data->hidden_level_entered = game->hidden_level_entered;
 	data->fuel = game->fuel;
 	data->health = game->health;
 	data->easy_mode = game->easy_mode;
@@ -1390,7 +1389,7 @@ void ResetGame(int gameMode)
 	game_level = 1;
 	game->fuel = 5000;
 	game->lives = 10;
-	hidden_level_entered = 0;
+	game->hidden_level_entered = 0;
 	game->health = 3;
 	game->score = 0;
 	ResetLaser();
