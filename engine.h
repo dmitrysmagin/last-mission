@@ -40,6 +40,7 @@ typedef struct TGAMEDATA {
 	int fuel;
 	int health;
 	int easy_mode;
+	int level;
 	int hidden_level_entered;
 	int garages[MAX_GARAGES][2];
 
@@ -73,7 +74,6 @@ extern int elevator_flag;
 extern int base_cur_screen;
 extern int base_restart_screen;
 extern int ship_cur_screen;
-extern int game_level;
 extern int ticks_for_damage;
 extern int cur_screen_bonus;
 

@@ -520,7 +520,7 @@ void Update_Elevator(TSHIP *gobj)
 					}
 
 					if (ship_cur_screen != 69) {
-						game_level += 1;
+						game->level += 1;
 						GarageSave();
 						//PublishScore();
 						//GameLevelUp();

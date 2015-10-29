@@ -56,7 +56,6 @@ int base_cur_screen;
 int base_restart_screen = 1;
 int screen_procedure;
 int screen_bridge = 0;
-int game_level = 1;
 int ticks_for_damage = 0;
 int elevator_flag = 0; // 1 if elevator is working
 int frame_skip = 0;
@@ -498,7 +497,7 @@ void UpdateScoreWithShip(TSHIP *gobj)
 
 	default:
 		// /2 less points for hard mode, /2 less for rocket launcher of BFG
-		score = gobj->ai_type * 100 * (game_level & 7) + (RandomInt() & 127);
+		score = gobj->ai_type * 100 * (game->level & 7) + (RandomInt() & 127);
 
 		if (game->easy_mode)
 			score >>= 1;
@@ -690,7 +689,7 @@ void InitShip()
 		break;
 	}
 
-	ship->cur_frame = ((game_level & 1) == 0 ? ship->max_frame : ship->min_frame);
+	ship->cur_frame = ((game->level & 1) == 0 ? ship->max_frame : ship->min_frame);
 	ship->anim_speed = 1;
 	ship->anim_speed_cnt = 1;
 	gObj_Constructor(ship, AI_SHIP);
@@ -807,7 +806,7 @@ void InitNewGame()
 	ship_cur_screen = GAME_START_SCREEN;
 	base_cur_screen = GAME_START_SCREEN;
 	base_restart_screen = GAME_START_SCREEN;
-	game_level = GameLevelFromScreen(GAME_START_SCREEN);
+	game->level = GameLevelFromScreen(GAME_START_SCREEN);
 
 	player_attached = 0;
 	game->hidden_level_entered = 0;
@@ -861,7 +860,7 @@ void BlitStatus()
 	static char string_buffer[16];
 
 	// level
-	sprintf(string_buffer, "%02d", game_level);
+	sprintf(string_buffer, "%02d", game->level);
 	PutString(8*16, 8*20, &string_buffer[0]);
 
 	// fuel
@@ -1350,7 +1349,7 @@ void LoadGame(TGAMEDATA *data)
 	ship_cur_screen = data->base_level;
 	base_cur_screen = data->base_level;
 	base_restart_screen = data->base_level;
-	game_level = GameLevelFromScreen(data->base_level);
+	game->level = GameLevelFromScreen(data->base_level);
 
 #if 0
 	/* FIXME: Later */
@@ -1386,7 +1385,7 @@ void ResetGame(int gameMode)
 	player_attached = 0;
 	base_restart_screen = 1;
 	screen_bridge = 0;
-	game_level = 1;
+	game->level = 1;
 	game->fuel = 5000;
 	game->lives = 10;
 	game->hidden_level_entered = 0;
