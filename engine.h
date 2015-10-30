@@ -37,6 +37,7 @@ typedef struct TGAMEDATA {
 	int score;
 	int ship_screen;
 	int base_screen;
+	int base_restart_screen;
 	int lives;
 	int fuel;
 	int health;
@@ -72,7 +73,6 @@ void DestroyHiddenAreaAccess(TSHIP *i, int playEffects);
 extern TGAMEDATA *game;
 extern int player_attached;
 extern int elevator_flag;
-extern int base_restart_screen;
 extern int ticks_for_damage;
 extern int cur_screen_bonus;
 
