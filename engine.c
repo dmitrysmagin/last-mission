@@ -50,7 +50,6 @@ void HitTheBonus(int);
 void PublishScore();
 void GameLevelUp();
 
-int player_attached = 0;
 int screen_procedure;
 int screen_bridge = 0;
 int ticks_for_damage = 0;
@@ -152,7 +151,7 @@ unsigned char ChangeScreen(int flag)
 		}
 	}
 
-	if (player_attached == 1)
+	if (game->player_attached == 1)
 		screen_bridge = 1;
 	else
 		screen_bridge = 0;
@@ -241,7 +240,7 @@ void Update_Ship(TSHIP *ship)
 	// check if ships are attached
 	if (base->state == SH_ACTIVE &&
 	    base->ai_type != AI_EXPLOSION &&
-	    player_attached == 0) {
+	    game->player_attached == 0) {
 		if (FacingLeft(ship) || FacingRight(ship)) {
 			int xs, ys, xb;
 
@@ -251,7 +250,7 @@ void Update_Ship(TSHIP *ship)
 
 			if ((ship->x + xs / 2 == base->x + xb / 2) &&
 			    (ship->y + ys == base->y)) {
-				player_attached = 1;
+				game->player_attached = 1;
 				screen_bridge = 1;
 				PlaySoundEffect(SND_CONTACT);
 			}
@@ -259,7 +258,7 @@ void Update_Ship(TSHIP *ship)
 	}
 
 	// exit if attach mode is ON
-	if (player_attached == 1 ||
+	if (game->player_attached == 1 ||
 	    UpdateFuel() == 1 ||
 	    ship->state == SH_DEAD) {
 		return;
@@ -376,7 +375,7 @@ void Update_Base(TSHIP *base)
 	// do smth if attach mode ON
 	int playMoveSound = 0;
 
-	if (player_attached == 1 && ship->ai_type != AI_EXPLOSION) {
+	if (game->player_attached == 1 && ship->ai_type != AI_EXPLOSION) {
 		if (GKeys[KEY_RIGHT] == 1) {
 			if (FacingRight(ship)) {
 				base->cur_frame ^= 1;
@@ -452,7 +451,7 @@ void Update_Base(TSHIP *base)
 
 			StopSoundEffect(SND_MOVE);
 
-			player_attached = 0;
+			game->player_attached = 0;
 			ship->y -= 2;
 		}
 	}
@@ -804,7 +803,7 @@ void InitNewGame()
 	game->base_restart_screen = GAME_START_SCREEN;
 	game->level = GameLevelFromScreen(GAME_START_SCREEN);
 
-	player_attached = 0;
+	game->player_attached = 0;
 	game->hidden_level_entered = 0;
 
 	InitGaragesForNewGame();
@@ -842,7 +841,7 @@ void RestartLevel()
 	if (UpdateLives() == 1)
 		return;
 
-	player_attached = 0;
+	game->player_attached = 0;
 	game->ship_screen = game->base_restart_screen;
 	game->base_screen = game->base_restart_screen;
 	elevator_flag = 0;
@@ -1328,7 +1327,7 @@ void GameLoop()
 
 void LoadGame(TGAMEDATA *data)
 {
-	player_attached = 0;
+	game->player_attached = 0;
 	screen_bridge = 0;
 	ResetLaser();
 	SetGameMode(GM_GAME);
@@ -1378,7 +1377,7 @@ void SaveGame(TGAMEDATA *data)
 
 void ResetGame(int gameMode)
 {
-	player_attached = 0;
+	game->player_attached = 0;
 	game->base_restart_screen = 1;
 	screen_bridge = 0;
 	game->level = 1;

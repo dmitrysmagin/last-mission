@@ -314,8 +314,8 @@ void gObj_Explode(TSHIP *gobj)
 		break;
 
 	case AI_BASE:
-		// if blowing base - zero player_attached
-		player_attached = 0;
+		// if blowing base - zero game->player_attached
+		game->player_attached = 0;
 		{
 			/* Create new explosion object and hide base */
 			TSHIP *exp = gObj_CreateObject();

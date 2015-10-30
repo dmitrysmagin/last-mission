@@ -329,13 +329,13 @@ void Update_Explosion(TSHIP *gobj)
 
 void Update_Bridge(TSHIP *gobj)
 {
-	if (player_attached) {
+	if (game->player_attached) {
 		gobj->flags |= GOBJ_SOLID | GOBJ_SHADOW | GOBJ_VISIBLE;
 	} else {
 		gobj->flags &= ~(GOBJ_SOLID | GOBJ_SHADOW | GOBJ_VISIBLE);
 	}
 
-	int a = player_attached ? 245 : 0;
+	int a = game->player_attached ? 245 : 0;
 
 	// seal or unseal the floor
 	for (int f = 0; f <= 4; f++) {
@@ -468,7 +468,7 @@ void Update_Elevator(TSHIP *gobj)
 
 	TSHIP *base = ship->base;
 
-	if (player_attached == 1) {
+	if (game->player_attached == 1) {
 		// start to lift only when ship and base are standing on the elevator
 		// ugly, improve in future
 		//if ((gobj->x == 256 && base->x >= 260) || (gobj->x == 16 && base->x <= 20))
