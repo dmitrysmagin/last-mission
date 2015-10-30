@@ -59,7 +59,6 @@ int frame_skip = 0;
 int modern_background = 1;
 int title_start_flag = 0;
 int youwin_start_flag = 0;
-int cur_screen_bonus = 0;
 
 /* Global pointer to internal game data, fix later*/
 TGAMEDATA gamedata, *game = &gamedata;
@@ -713,7 +712,7 @@ void InitEnemies()
 	}
 
 	screen_procedure = room->procedure;
-	cur_screen_bonus = room->bonus;
+	game->screen_bonus = room->bonus;
 
 	for (; count > 0; count--, object++) {
 

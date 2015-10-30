@@ -358,7 +358,7 @@ void gObj_Explode(TSHIP *gobj)
 
 		// Generate bonus if defined by screen and if
 		// this ship is the last one on the screen.
-		if (cur_screen_bonus) {
+		if (game->screen_bonus) {
 			int alive_ship = 0;
 			TSHIP *last_alive = gObj_First();
 
@@ -372,7 +372,7 @@ void gObj_Explode(TSHIP *gobj)
 			}
 
 			if (!alive_ship) {
-				gobj->explosion.bonus_type = cur_screen_bonus;
+				gobj->explosion.bonus_type = game->screen_bonus;
 				gobj->explosion.regenerate_bonus = 1;
 			}
 		}
