@@ -47,6 +47,7 @@ typedef struct TGAMEDATA {
 	int player_attached;
 	int elevator_flag;
 	int hidden_level_entered;
+	int ticks_for_damage;
 	int garages[MAX_GARAGES][2];
 
 	WORLD *world;
@@ -74,6 +75,5 @@ void UpdateScoreWithShip(TSHIP *gobj);
 void DestroyHiddenAreaAccess(TSHIP *i, int playEffects);
 
 extern TGAMEDATA *game;
-extern int ticks_for_damage;
 
 #endif // _ENGINE_H_

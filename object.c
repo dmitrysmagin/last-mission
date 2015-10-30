@@ -295,8 +295,8 @@ void gObj_Explode(TSHIP *gobj)
 	case AI_SHIP:
 		// This is the player ship.
 		if (game->easy_mode) {
-			if (!ticks_for_damage) {
-				ticks_for_damage = 20;
+			if (!game->ticks_for_damage) {
+				game->ticks_for_damage = 20;
 				--game->health;
 				if (game->health <= 1) {
 					Create_Smoke(gobj);

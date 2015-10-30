@@ -52,7 +52,6 @@ void GameLevelUp();
 
 int screen_procedure;
 int screen_bridge = 0;
-int ticks_for_damage = 0;
 int frame_skip = 0;
 int modern_background = 1;
 int title_start_flag = 0;
@@ -218,8 +217,8 @@ void Update_Ship(TSHIP *ship)
 	static unsigned char fallflag = 1;
 	static int dy;
 
-	if (--ticks_for_damage < 0)
-		ticks_for_damage = 0;
+	if (--game->ticks_for_damage < 0)
+		game->ticks_for_damage = 0;
 
 	switch (ship->i) {
 	case SHIP_TYPE_ROCKET_LAUNCHER:
