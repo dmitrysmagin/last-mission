@@ -497,7 +497,7 @@ void Update_Elevator(TSHIP *gobj)
 					base->y = 112;
 
 					ChangeScreen(F_UP);
-					base_cur_screen = ship_cur_screen;
+					game->base_screen = ship_cur_screen;
 					InitNewScreen();
 
 					// now i is invalid, because InitNewScreen reenables enemies
@@ -529,7 +529,7 @@ void Update_Elevator(TSHIP *gobj)
 
 					// destroy elevator or it will roll forever
 					// but if not screen 69
-					if (base_cur_screen != 69) {
+					if (game->base_screen != 69) {
 						TSHIP *lift = gObj_First();
 						for (; lift; lift = gObj_Next(lift)) {
 							if(lift->ai_type == AI_ELEVATOR)

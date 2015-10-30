@@ -323,7 +323,7 @@ void gObj_Explode(TSHIP *gobj)
 			exp->x = gobj->x;
 			exp->y = gobj->y;
 
-			base_cur_screen = base_restart_screen;
+			game->base_screen = base_restart_screen;
 			gobj->state = SH_HIDDEN;
 			gobj->x = 160;
 			gobj->y = 104;

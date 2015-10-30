@@ -52,7 +52,6 @@ void GameLevelUp();
 
 int ship_cur_screen = 0;
 int player_attached = 0;
-int base_cur_screen;
 int base_restart_screen = 1;
 int screen_procedure;
 int screen_bridge = 0;
@@ -143,7 +142,7 @@ unsigned char ChangeScreen(int flag)
 	TSHIP *base = ship->base;
 
 	// if base is blocking the way on the other screen
-	if (result == base_cur_screen) {
+	if (result == game->base_screen) {
 		if (flag == F_LEFT) {
 			if (base->x >= SCREEN_WIDTH - 32 - 40 &&
 			    ship->y + 12 >= base->y)
@@ -363,7 +362,7 @@ void Update_Ship(TSHIP *ship)
 
 void ReEnableBase(TSHIP *base)
 {
-	if (base_cur_screen != ship_cur_screen) {
+	if (game->base_screen != ship_cur_screen) {
 		base->state = SH_HIDDEN;
 	} else {
 		base->state = SH_ACTIVE;
@@ -395,7 +394,7 @@ void Update_Base(TSHIP *base)
 					if (base->x == 280 && ChangeScreen(F_RIGHT) == 1) {
 						ship->x = ShipBaseOffset(ship, base);
 						base->x = 0;
-						base_cur_screen = ship_cur_screen;
+						game->base_screen = ship_cur_screen;
 						InitNewScreen();
 					}
 				}
@@ -424,7 +423,7 @@ void Update_Base(TSHIP *base)
 						//xxx
 						ship->x = 280 + ShipBaseOffset(ship, base);
 						base->x = 280;
-						base_cur_screen = ship_cur_screen;
+						game->base_screen = ship_cur_screen;
 						InitNewScreen();
 					}
 				}
@@ -721,7 +720,7 @@ void InitEnemies()
 	for (; count > 0; count--, object++) {
 
 		if (object->index == BONUS_FACEBOOK || object->index == BONUS_TWITTER) {
-			if (game->mode == GM_DEMO || base_cur_screen < ship_cur_screen)
+			if (game->mode == GM_DEMO || game->base_screen < ship_cur_screen)
 				continue;
 		}
 
@@ -804,7 +803,7 @@ void InitNewGame()
 	game->score = 0;
 
 	ship_cur_screen = GAME_START_SCREEN;
-	base_cur_screen = GAME_START_SCREEN;
+	game->base_screen = GAME_START_SCREEN;
 	base_restart_screen = GAME_START_SCREEN;
 	game->level = GameLevelFromScreen(GAME_START_SCREEN);
 
@@ -848,7 +847,7 @@ void RestartLevel()
 
 	player_attached = 0;
 	ship_cur_screen = base_restart_screen;
-	base_cur_screen = base_restart_screen;
+	game->base_screen = base_restart_screen;
 	elevator_flag = 0;
 
 	InitShip();
@@ -1196,7 +1195,7 @@ void DoGame()
 		}
 
 		// win the game:
-		if (screen_procedure == 3 /*&& base_cur_screen >= 70*/) {
+		if (screen_procedure == 3 /*&& game->base_screen >= 70*/) {
 			SetGameMode(GM_YOUWIN);
 
 			LM_ResetKeys();
@@ -1346,10 +1345,10 @@ void LoadGame(TGAMEDATA *data)
 	game->health = data->health;
 	game->score = data->score;
 
-	ship_cur_screen = data->base_level;
-	base_cur_screen = data->base_level;
-	base_restart_screen = data->base_level;
-	game->level = GameLevelFromScreen(data->base_level);
+	ship_cur_screen = data->base_screen;
+	game->base_screen = data->base_screen;
+	base_restart_screen = data->base_screen;
+	game->level = GameLevelFromScreen(data->base_screen);
 
 #if 0
 	/* FIXME: Later */
@@ -1368,7 +1367,7 @@ void LoadGame(TGAMEDATA *data)
 void SaveGame(TGAMEDATA *data)
 {
 	data->score = game->score;
-	data->base_level = base_restart_screen;
+	data->base_screen = base_restart_screen;
 	data->lives = game->lives;
 	data->hidden_level_entered = game->hidden_level_entered;
 	data->fuel = game->fuel;
