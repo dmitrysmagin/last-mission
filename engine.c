@@ -53,7 +53,6 @@ void GameLevelUp();
 int screen_procedure;
 int screen_bridge = 0;
 int ticks_for_damage = 0;
-int elevator_flag = 0; // 1 if elevator is working
 int frame_skip = 0;
 int modern_background = 1;
 int title_start_flag = 0;
@@ -446,7 +445,7 @@ void Update_Base(TSHIP *base)
 			}
 
 			// if standing on an elevator which is lifting up - don't allow to fly up
-			if (elevator_flag == 1)
+			if (game->elevator_flag == 1)
 				return;
 
 			StopSoundEffect(SND_MOVE);
@@ -844,7 +843,7 @@ void RestartLevel()
 	game->player_attached = 0;
 	game->ship_screen = game->base_restart_screen;
 	game->base_screen = game->base_restart_screen;
-	elevator_flag = 0;
+	game->elevator_flag = 0;
 
 	InitShip();
 	InitNewScreen();
@@ -1331,7 +1330,7 @@ void LoadGame(TGAMEDATA *data)
 	screen_bridge = 0;
 	ResetLaser();
 	SetGameMode(GM_GAME);
-	elevator_flag = 0;
+	game->elevator_flag = 0;
 
 	game->easy_mode = data->easy_mode;
 
@@ -1388,7 +1387,7 @@ void ResetGame(int gameMode)
 	game->score = 0;
 	ResetLaser();
 	SetGameMode(gameMode);
-	elevator_flag = 0;
+	game->elevator_flag = 0;
 
 	InitNewGame();
 }

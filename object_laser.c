@@ -43,7 +43,7 @@ void DoLaser(TSHIP *ship)
 
 		/* 0 - no shooting, 1 - shooting right, -1 - shooting left */
 		if (laser_dir == 0) {
-			if (!elevator_flag) { /* HACK: or you will shoot your base */
+			if (!game->elevator_flag) { /* HACK: or you will shoot your base */
 				//if ship facing right
 				if (FacingRight(ship)) {
 					TSHIP *laser = gObj_CreateObject();

@@ -475,7 +475,7 @@ void Update_Elevator(TSHIP *gobj)
 		if (gobj->x == base->x - 4) {
 			static int el_phase = 0;
 
-			elevator_flag = 1;
+			game->elevator_flag = 1;
 
 			if (el_phase == 0) {
 				// when starting to lift up - unseal the floor
@@ -537,7 +537,7 @@ void Update_Elevator(TSHIP *gobj)
 						}
 					}
 
-					elevator_flag = 0;
+					game->elevator_flag = 0;
 					game->health = 3;
 
 					goto _here;
@@ -549,7 +549,7 @@ void Update_Elevator(TSHIP *gobj)
 			gobj->y -= 1;
 
 		_here:
-			if (elevator_flag)
+			if (game->elevator_flag)
 				PlaySoundEffect(SND_ELEVATOR);
 			else
 				StopSoundEffect(SND_ELEVATOR);
