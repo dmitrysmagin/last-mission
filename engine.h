@@ -35,6 +35,7 @@
 typedef struct TGAMEDATA {
 	int mode;
 	int score;
+	int ship_screen;
 	int base_screen;
 	int lives;
 	int fuel;
@@ -72,7 +73,6 @@ extern TGAMEDATA *game;
 extern int player_attached;
 extern int elevator_flag;
 extern int base_restart_screen;
-extern int ship_cur_screen;
 extern int ticks_for_damage;
 extern int cur_screen_bonus;
 

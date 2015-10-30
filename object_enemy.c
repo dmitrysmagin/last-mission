@@ -497,7 +497,7 @@ void Update_Elevator(TSHIP *gobj)
 					base->y = 112;
 
 					ChangeScreen(F_UP);
-					game->base_screen = ship_cur_screen;
+					game->base_screen = game->ship_screen;
 					InitNewScreen();
 
 					// now i is invalid, because InitNewScreen reenables enemies
@@ -519,13 +519,13 @@ void Update_Elevator(TSHIP *gobj)
 						SetTileI(((base->x - 4) >> 3) + i, (base->y + 16) >> 3, 245);
 					}
 
-					if (ship_cur_screen != 69) {
+					if (game->ship_screen != 69) {
 						game->level += 1;
 						GarageSave();
 						//PublishScore();
 						//GameLevelUp();
 					}
-					base_restart_screen = ship_cur_screen;
+					base_restart_screen = game->ship_screen;
 
 					// destroy elevator or it will roll forever
 					// but if not screen 69

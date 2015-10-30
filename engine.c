@@ -50,7 +50,6 @@ void HitTheBonus(int);
 void PublishScore();
 void GameLevelUp();
 
-int ship_cur_screen = 0;
 int player_attached = 0;
 int base_restart_screen = 1;
 int screen_procedure;
@@ -120,16 +119,16 @@ unsigned char ChangeScreen(int flag)
 
 	switch (flag) {
 	case F_UP:
-		result = (world->room + ship_cur_screen)->up;
+		result = (world->room + game->ship_screen)->up;
 		break;
 	case F_RIGHT:
-		result = (world->room + ship_cur_screen)->right;
+		result = (world->room + game->ship_screen)->right;
 		break;
 	case F_DOWN:
-		result = (world->room + ship_cur_screen)->down;
+		result = (world->room + game->ship_screen)->down;
 		break;
 	case F_LEFT:
-		result = (world->room + ship_cur_screen)->left;
+		result = (world->room + game->ship_screen)->left;
 		break;
 	default:
 		result = 0;
@@ -160,7 +159,7 @@ unsigned char ChangeScreen(int flag)
 	else
 		screen_bridge = 0;
 
-	ship_cur_screen = result;
+	game->ship_screen = result;
 
 	return 1;
 }
@@ -362,7 +361,7 @@ void Update_Ship(TSHIP *ship)
 
 void ReEnableBase(TSHIP *base)
 {
-	if (game->base_screen != ship_cur_screen) {
+	if (game->base_screen != game->ship_screen) {
 		base->state = SH_HIDDEN;
 	} else {
 		base->state = SH_ACTIVE;
@@ -394,7 +393,7 @@ void Update_Base(TSHIP *base)
 					if (base->x == 280 && ChangeScreen(F_RIGHT) == 1) {
 						ship->x = ShipBaseOffset(ship, base);
 						base->x = 0;
-						game->base_screen = ship_cur_screen;
+						game->base_screen = game->ship_screen;
 						InitNewScreen();
 					}
 				}
@@ -423,7 +422,7 @@ void Update_Base(TSHIP *base)
 						//xxx
 						ship->x = 280 + ShipBaseOffset(ship, base);
 						base->x = 280;
-						game->base_screen = ship_cur_screen;
+						game->base_screen = game->ship_screen;
 						InitNewScreen();
 					}
 				}
@@ -696,7 +695,7 @@ void InitShip()
 
 void InitEnemies()
 {
-	ROOM *room = game->world->room + ship_cur_screen;
+	ROOM *room = game->world->room + game->ship_screen;
 	OBJECT *object = room->object;
 	int count = room->object_num;
 
@@ -720,7 +719,7 @@ void InitEnemies()
 	for (; count > 0; count--, object++) {
 
 		if (object->index == BONUS_FACEBOOK || object->index == BONUS_TWITTER) {
-			if (game->mode == GM_DEMO || game->base_screen < ship_cur_screen)
+			if (game->mode == GM_DEMO || game->base_screen < game->ship_screen)
 				continue;
 		}
 
@@ -762,16 +761,16 @@ void InitEnemies()
 
 void InitNewScreen()
 {
-	UnpackLevel(game->world, ship_cur_screen);
+	UnpackLevel(game->world, game->ship_screen);
 
 	InitEnemies();
 
 	laser_dir = 0;
 
-	if (ship_cur_screen == 92) {
+	if (game->ship_screen == 92) {
 		// Memorize that we entered the hidden area once.
 		game->hidden_level_entered = 1;
-	} else if (game->hidden_level_entered && ship_cur_screen == 1) {
+	} else if (game->hidden_level_entered && game->ship_screen == 1) {
 		// Save game, cause we are back from the underggroung (most probably, heh).
 		GarageSave();
 		PublishScore();
@@ -802,7 +801,7 @@ void InitNewGame()
 	game->health = 3;
 	game->score = 0;
 
-	ship_cur_screen = GAME_START_SCREEN;
+	game->ship_screen = GAME_START_SCREEN;
 	game->base_screen = GAME_START_SCREEN;
 	base_restart_screen = GAME_START_SCREEN;
 	game->level = GameLevelFromScreen(GAME_START_SCREEN);
@@ -846,7 +845,7 @@ void RestartLevel()
 		return;
 
 	player_attached = 0;
-	ship_cur_screen = base_restart_screen;
+	game->ship_screen = base_restart_screen;
 	game->base_screen = base_restart_screen;
 	elevator_flag = 0;
 
@@ -986,10 +985,10 @@ void DoTitle()
 {
 	if (title_start_flag == 0) {
 		FillScreen(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-		ship_cur_screen = 0;
+		game->ship_screen = 0;
 		title_start_flag = 1;
 		InitNewScreen();
-		BlitLevel(ship_cur_screen);
+		BlitLevel(game->ship_screen);
 		PutSpriteI(50*4, 108, 45, 0);
 		PutString(76, 88, "ESPACIO PARA COMENZAR");
 		PutString(60, 24, "ORIGINAL GAME: PEDRO RUIZ");
@@ -1123,7 +1122,7 @@ void BlitEnemies()
 
 void BlitEnemyOutlines(WORLD *world)
 {
-	unsigned int shadow = (world->room + ship_cur_screen)->shadow;
+	unsigned int shadow = (world->room + game->ship_screen)->shadow;
 
 	for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
 		/* Blit shadow only if object needs it */
@@ -1135,14 +1134,14 @@ void BlitEnemyOutlines(WORLD *world)
 void RenderGame(int renderStatus)
 {
 	if (modern_background) {
-		BlitBackground(game->world, ship_cur_screen); // blit background
-		BlitLevelOutlines(game->world, ship_cur_screen);
+		BlitBackground(game->world, game->ship_screen); // blit background
+		BlitLevelOutlines(game->world, game->ship_screen);
 		BlitEnemyOutlines(game->world); // draw moving objects' outlines (shadows)
 	} else {
 		EraseBackground(0);
 	}
 
-	BlitLevel(ship_cur_screen); // blit walls
+	BlitLevel(game->ship_screen); // blit walls
 	BlitBfg();
 	BlitEnemies(); // draw all enemies and cannon+base
 
@@ -1182,7 +1181,7 @@ void DoGame()
 #ifdef _DEBUG
 		{
 			static char screen_nr_text[16];
-			sprintf(screen_nr_text, "SCREEN %i", ship_cur_screen);
+			sprintf(screen_nr_text, "SCREEN %i", game->ship_screen);
 			PutString(8*17, 8*17, screen_nr_text);
 		}
 #endif
@@ -1345,7 +1344,7 @@ void LoadGame(TGAMEDATA *data)
 	game->health = data->health;
 	game->score = data->score;
 
-	ship_cur_screen = data->base_screen;
+	game->ship_screen = data->base_screen;
 	game->base_screen = data->base_screen;
 	base_restart_screen = data->base_screen;
 	game->level = GameLevelFromScreen(data->base_screen);
