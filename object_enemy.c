@@ -367,11 +367,9 @@ void Update_Bullet(TSHIP *gobj)
 
 void Update_HomingShot(TSHIP *gobj)
 {
-	if (gobj->just_created == 1) {
-		if (gObj_CheckTouch(gobj->x, gobj->y, gobj)) {
-			gObj_Explode(gobj);
-			return;
-		}
+	if (gObj_CheckTouch(gobj->x, gobj->y, gobj)) {
+		gObj_Explode(gobj);
+		return;
 	}
 
 	// Calculate vertical speed.
@@ -425,38 +423,17 @@ void Update_HomingShot(TSHIP *gobj)
 
 	gobj->x += gobj->dx;
 	gobj->y += gobj->dy;
-
-	if (/*gobj->x + gobj->dx < 0 ||
-	    gobj->x + gobj->dx >= SCREEN_WIDTH ||
-	    gobj->y < 0 ||
-	    gobj->y >= SCREEN_HEIGHT ||*/
-	    gObj_CheckTouch(gobj->x, gobj->y, gobj)) {
-		gObj_DestroyObject(gobj);
-		return;
-	}
 }
 
 void Update_Shot(TSHIP *gobj)
 {
-	if (gobj->just_created) {
-		gobj->just_created = 0;
-		if (gObj_CheckTouch(gobj->x, gobj->y, gobj)) {
-			gObj_Explode(gobj);
-			return;
-		}
+	if (gObj_CheckTouch(gobj->x, gobj->y, gobj)) {
+		gObj_Explode(gobj);
+		return;
 	}
 
 	gobj->x += gobj->dx;
 	gobj->y += gobj->dy;
-
-	if (gobj->x + gobj->dx < 0 ||
-	    gobj->x + gobj->dx >= SCREEN_WIDTH ||
-	    gobj->y < 0 ||
-	    gobj->y >= SCREEN_HEIGHT ||
-	    gObj_CheckTouch(gobj->x, gobj->y, gobj)) {
-		gObj_Explode(gobj);
-		return;
-	}
 }
 
 void Update_Elevator(TSHIP *gobj)

@@ -69,7 +69,6 @@ void DoBFG(TSHIP *ship)
 			bullet->cur_frame = 0;
 			bullet->max_frame = 3;
 			gObj_Constructor(bullet, AI_BFG_SHOT);
-			bullet->just_created = 1;
 			bullet->parent = ship;
 
 			bfg_on = 1;

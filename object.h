@@ -77,7 +77,6 @@ struct tship_t {
 
 	// AI-type specific data. Just to make code a bit more readable.
 	union {
-		int just_created; // used by AI_SHOT, AI_HOMING_SHOT and AI_BFG_SHOT
 		int ticks_passed; // used by AI_HOMING_SHOT
 		int garage_inactive; // used by AI_GARAGE
 		int restart_level; // used by AI_EXPLOSION

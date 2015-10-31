@@ -550,7 +550,6 @@ void DoMachineGun(TSHIP *ship)
 			bullet->move_speed_cnt = bullet->move_speed;
 			bullet->cur_frame = FacingRight(ship) ? 0 : 1;
 			gObj_Constructor(bullet, AI_SHOT);
-			bullet->just_created = 1;
 			bullet->parent = ship;
 
 			// Reset timeout.
@@ -585,7 +584,6 @@ void DoRocketLauncher(TSHIP *ship)
 			bullet->anim_speed_cnt = bullet->anim_speed;
 			bullet->move_speed_cnt = bullet->move_speed;
 			gObj_Constructor(bullet, AI_HOMING_SHOT);
-			bullet->just_created = 1;
 			bullet->parent = ship;
 
 			if (FacingRight(ship)) {
