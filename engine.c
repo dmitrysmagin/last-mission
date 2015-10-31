@@ -51,7 +51,6 @@ void PublishScore();
 void GameLevelUp();
 
 int screen_procedure;
-int screen_bridge = 0;
 int frame_skip = 0;
 int modern_background = 1;
 int title_start_flag = 0;
@@ -149,11 +148,6 @@ unsigned char ChangeScreen(int flag)
 		}
 	}
 
-	if (game->player_attached == 1)
-		screen_bridge = 1;
-	else
-		screen_bridge = 0;
-
 	game->ship_screen = result;
 
 	return 1;
@@ -249,7 +243,6 @@ void Update_Ship(TSHIP *ship)
 			if ((ship->x + xs / 2 == base->x + xb / 2) &&
 			    (ship->y + ys == base->y)) {
 				game->player_attached = 1;
-				screen_bridge = 1;
 				PlaySoundEffect(SND_CONTACT);
 			}
 		}
@@ -1326,7 +1319,6 @@ void GameLoop()
 void LoadGame(TGAMEDATA *data)
 {
 	game->player_attached = 0;
-	screen_bridge = 0;
 	ResetLaser();
 	SetGameMode(GM_GAME);
 	game->elevator_flag = 0;
@@ -1377,7 +1369,6 @@ void ResetGame(int gameMode)
 {
 	game->player_attached = 0;
 	game->base_restart_screen = 1;
-	screen_bridge = 0;
 	game->level = 1;
 	game->fuel = 5000;
 	game->lives = 10;
