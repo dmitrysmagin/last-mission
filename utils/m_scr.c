@@ -1,6 +1,5 @@
 #define NUM_SCREENS 101
 
-#include "../m_data.h"
 #include "../object.h"
 
 unsigned char screen0[] = {
