@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "m_data.h"
+#include "data.h"
 #include "demo.h"
 #include "random.h"
 #include "video.h"

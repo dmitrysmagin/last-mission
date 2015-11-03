@@ -10,9 +10,8 @@ LFLAGS = -s -lSDL_gfx -lSDL -lSDL_mixer -lm
 
 # source files
 
-OBJ =	m_data.o
-OBJ +=	demo.o engine.o input.o main.o random.o room.o \
-	sound.o sprites.o video.o world.o object.o \
+OBJ =	data.o demo.o engine.o input.o main.o random.o \
+	room.o sound.o sprites.o video.o world.o object.o \
 	object_bfg.o object_enemy.o object_garage.o \
 	object_laser.o
 

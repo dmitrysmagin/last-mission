@@ -5,7 +5,7 @@
 #include "engine.h"
 #include "sprites.h"
 #include "room.h"
-#include "m_data.h"
+#include "data.h"
 
 #define ROOM_WIDTH (SCREEN_WIDTH/8)
 #define ROOM_HEIGHT (ACTION_SCREEN_HEIGHT/8)

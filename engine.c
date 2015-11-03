@@ -13,7 +13,7 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_rotozoom.h>
 
-#include "m_data.h"
+#include "data.h"
 #include "demo.h"
 #include "random.h"
 #include "video.h"

@@ -1,4 +1,4 @@
-#include "m_data.h"
+#include "data.h"
 
 unsigned char SkyMap[9][21] = {
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0},
