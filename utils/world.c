@@ -100,7 +100,7 @@ static void fwrite_ROOM(WORLD *world, FILE *fp)
 	for (i = 0; i < world->room_num; i++) {
 		ROOM *room = world->room + i;
 
-		sprintf(g_string, "ROOM %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",
+		sprintf(g_string, "ROOM %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",
 			room->xs, room->ys,
 			room->pattern_num,
 			room->object_num,
