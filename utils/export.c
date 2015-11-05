@@ -11,10 +11,8 @@
 
 #include "m_scr.c"
 #include "screenlines/m_scr_lines.c"
-#include "../video.h"
 #include "m_data.c"
-#include "../room.h"
-#include "../world.c"
+#include "world.c"
 
 WORLD *world;
 
