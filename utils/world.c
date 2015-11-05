@@ -61,7 +61,10 @@ static CHUNK chunk;
 
 static void fwrite_HEADER(FILE *fp)
 {
-	fwrite(&header, 1, sizeof(HEADER), fp);
+	fputs("# The Last Mission data file, do not edit!\n",fp);
+	fputs("\n",fp);
+
+	fputs("LASTMISSION 1\n", fp);
 }
 
 // don't use sizeof(WORLD) because it saves pointers, trim them instead
@@ -69,22 +72,21 @@ static void fwrite_HEADER(FILE *fp)
 
 static void fwrite_WORLD(WORLD *world, FILE *fp)
 {
-	world_chunk.size = SIZEOF_WORLD; // 6 int variables
-	fwrite(&world_chunk, 1, sizeof(CHUNK), fp);
-	fwrite(world, 1, world_chunk.size, fp);
+	char g_string[256];
+
+	sprintf(g_string, "WORLD %d %d %d %d %d %d\n",
+		world->room_num,
+		world->patternset_num,
+		world->spriteset_num,
+		world->tileset_num,
+		world->fontset_num,
+		world->bgspriteset_num);
+
+	fputs(g_string, fp);
 }
 
 static void fread_WORLD(WORLD *world, FILE *fp)
 {
-	size_t res;
-
-	res = fread(world, 1, SIZEOF_WORLD, fp);
-
-	// allocate all necessary pointers
-	world->room = (ROOM *)calloc(world->room_num, sizeof(ROOM));
-	world->patternset = (PATTERNSET *)calloc(world->patternset_num, sizeof(PATTERNSET));
-
-	(void)res; /* silence warning */
 }
 
 // don't use sizeof(ROOM) because it saves pointers, trim them instead
@@ -92,70 +94,50 @@ static void fread_WORLD(WORLD *world, FILE *fp)
 
 static void fwrite_ROOM(WORLD *world, FILE *fp)
 {
+	char g_string[256];
 	int i;
 
-	room_chunk.size = SIZEOF_ROOM * world->room_num;
-	fwrite(&room_chunk, 1, sizeof(CHUNK), fp);
+	for (i = 0; i < world->room_num; i++) {
+		ROOM *room = world->room + i;
 
-	for (i = 0; i < world->room_num; i++)
-		fwrite(world->room + i, 1, SIZEOF_ROOM, fp);
+		sprintf(g_string, "ROOM %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",
+			room->xs, room->ys,
+			room->pattern_num,
+			room->object_num,
+			room->bg_type,
+			room->bg_num,
+			room->background, room->shadow, room->line_light, room->line_shadow,
+			room->up, room->right, room->down, room->left,
+			room->procedure,
+			room->bonus);
+		fputs(g_string, fp);
+	}
 }
 
 static void fread_ROOM(WORLD *world, FILE *fp)
 {
-	size_t res;
-	int i;
-
-	for (i = 0; i < world->room_num; i++)
-		res = fread(world->room + i, 1, SIZEOF_ROOM, fp);
-
-	// allocate all necessary pointers
-	for (i = 0; i < world->room_num; i++) {
-		(world->room + i)->pattern =
-			(PATTERN *)calloc((world->room + i)->pattern_num, sizeof(PATTERN));
-
-		(world->room + i)->object =
-			(OBJECT *)calloc((world->room + i)->object_num, sizeof(OBJECT));
-
-		(world->room + i)->bgline =
-			(BGLINE *)calloc((world->room + i)->bg_num, sizeof(BGLINE));
-	}
-
-	for (i = 0; i < world->room_num; i++)
-		DPRINTF("ROOM %i, pattern_num: %i; object_num: %i, bg_num: %i\n",
-			i,
-			(world->room + i)->pattern_num,
-			(world->room + i)->object_num,
-			(world->room + i)->bg_num);
-
-	(void)res; /* silence warning */
 }
 
 static void fwrite_ROOM_PATTERN(WORLD *world, FILE *fp)
 {
+	char g_string[256];
 	int i;
 
 	for (i = 0; i < world->room_num; i++) {
-		pattern_chunk.size = sizeof(PATTERN) * (world->room + i)->pattern_num;
-		fwrite(&pattern_chunk, 1, sizeof(CHUNK), fp);
-		fwrite((world->room + i)->pattern, 1, pattern_chunk.size, fp);
+		ROOM *room = world->room + i;
+
+		for (int j = 0; j < room->pattern_num; j++) {
+			sprintf(g_string, "PATTERN %d %d %d \n",
+				(room->pattern + j)->x,
+				(room->pattern + j)->y,
+				(room->pattern + j)->index);
+			fputs(g_string, fp);
+		}
 	}
 }
 
 static void fread_ROOM_PATTERN(WORLD *world, FILE *fp)
 {
-	size_t res;
-	static int i = 0;
-
-	if (chunk.size > 0)
-		res = fread((world->room + i)->pattern, 1, sizeof(PATTERN) * (world->room + i)->pattern_num, fp);
-
-	DPRINTF("PATTERN %i, size %i\n", i, sizeof(PATTERN) * (world->room + i)->pattern_num);
-
-	if (++i > world->room_num)
-		i = 0;
-
-	(void)res; /* silence warning */
 }
 
 static void fwrite_ROOM_OBJECT(WORLD *world, FILE *fp)
@@ -171,18 +153,6 @@ static void fwrite_ROOM_OBJECT(WORLD *world, FILE *fp)
 
 static void fread_ROOM_OBJECT(WORLD *world, FILE *fp)
 {
-	size_t res;
-	static int i = 0;
-
-	if (chunk.size > 0)
-		res = fread((world->room + i)->object, 1, sizeof(OBJECT) * (world->room + i)->object_num, fp);
-
-	DPRINTF("OBJECT %i, size %i\n", i, sizeof(OBJECT) * (world->room + i)->object_num);
-
-	if (++i > world->room_num)
-		i = 0;
-
-	(void)res; /* silence warning */
 }
 
 static void fwrite_ROOM_BGLINE(WORLD *world, FILE *fp)
@@ -198,18 +168,6 @@ static void fwrite_ROOM_BGLINE(WORLD *world, FILE *fp)
 
 static void fread_ROOM_BGLINE(WORLD *world, FILE *fp)
 {
-	size_t res;
-	static int i = 0;
-
-	if (chunk.size > 0)
-		res = fread((world->room + i)->bgline, 1, sizeof(BGLINE) * (world->room + i)->bg_num, fp);
-
-	DPRINTF("BGLINE %i, size %i\n", i, sizeof(BGLINE) * (world->room + i)->bg_num);
-
-	if (++i > world->room_num)
-		i = 0;
-
-	(void)res; /* silence warning */
 }
 
 
@@ -229,23 +187,6 @@ static void fwrite_PATTERNSET(WORLD *world, FILE *fp)
 
 static void fread_PATTERNSET(WORLD *world, FILE *fp)
 {
-	size_t res;
-	static int i = 0;
-
-	if (chunk.size > 0) {
-		res = fread(&(world->patternset + i)->xs, 1, sizeof(int), fp);
-		res = fread(&(world->patternset + i)->ys, 1, sizeof(int), fp);
-
-		(world->patternset + i)->data = (char *)malloc((world->patternset + i)->xs * (world->patternset + i)->ys);
-		res = fread((world->patternset + i)->data, 1, (world->patternset + i)->xs * (world->patternset + i)->ys, fp);
-	}
-
-	DPRINTF("PATTERNSET %i, size %i\n", i, (world->patternset + i)->xs * (world->patternset + i)->ys);
-
-	if (++i > world->patternset_num)
-		i = 0;
-
-	(void)res; /* silence warning */
 }
 
 void save_world(char *name, WORLD *world)
@@ -255,7 +196,7 @@ void save_world(char *name, WORLD *world)
 	if (!world)
 		return;
 
-	fp = fopen(name, "wb");
+	fp = fopen(name, "w");
 
 	// write header
 	fwrite_HEADER(fp);
@@ -268,7 +209,7 @@ void save_world(char *name, WORLD *world)
 
 	// write PATTERN chunks for each room
 	fwrite_ROOM_PATTERN(world, fp);
-
+#if 0
 	// write OBJECT chunks for each room
 	fwrite_ROOM_OBJECT(world, fp);
 
@@ -277,7 +218,7 @@ void save_world(char *name, WORLD *world)
 
 	// write PATTERNSETs for world
 	fwrite_PATTERNSET(world, fp);
-
+#endif
 	fclose(fp);
 }
 
@@ -296,6 +237,7 @@ void save_world(char *name, WORLD *world)
 
 WORLD *load_world(char *name)
 {
+#if 0
 	WORLD *world;
 	FILE *fp;
 	size_t res;
@@ -341,6 +283,7 @@ WORLD *load_world(char *name)
 
 	fclose(fp);
 	return world;
+#endif
 }
 
 void free_world(WORLD *world)
