@@ -100,8 +100,11 @@ static void fwrite_ROOM_PATTERN(WORLD *world, FILE *fp)
 	for (i = 0; i < world->room_num; i++) {
 		ROOM *room = world->room + i;
 
+		sprintf(g_string, "PATTERN # for ROOM %d\n", i);
+		fputs(g_string, fp);
+
 		for (int j = 0; j < room->pattern_num; j++) {
-			sprintf(g_string, "PATTERN %d %d %d \n",
+			sprintf(g_string, "\t%d %d %d\n",
 				(room->pattern + j)->x,
 				(room->pattern + j)->y,
 				(room->pattern + j)->index);
@@ -122,8 +125,11 @@ static void fwrite_ROOM_OBJECT(WORLD *world, FILE *fp)
 	for (i = 0; i < world->room_num; i++) {
 		ROOM *room = world->room + i;
 
+		sprintf(g_string, "OBJECT # for ROOM %d\n", i);
+		fputs(g_string, fp);
+
 		for (int j = 0; j < room->object_num; j++) {
-			sprintf(g_string, "OBJECT %d %d %d %d %d %d %d %d\n",
+			sprintf(g_string, "\t%d %d %d %d %d %d %d %d\n",
 				(room->object + j)->x,
 				(room->object + j)->y,
 				(room->object + j)->index,
@@ -149,8 +155,11 @@ static void fwrite_ROOM_BGLINE(WORLD *world, FILE *fp)
 	for (i = 0; i < world->room_num; i++) {
 		ROOM *room = world->room + i;
 
+		sprintf(g_string, "BGLINE # for ROOM %d\n", i);
+		fputs(g_string, fp);
+
 		for (int j = 0; j < room->bg_num; j++) {
-			sprintf(g_string, "BGLINE %d %d %d %d\n",
+			sprintf(g_string, "\t%d %d %d %d\n",
 				(room->bgline + j)->x1,
 				(room->bgline + j)->y1,
 				(room->bgline + j)->x2,
