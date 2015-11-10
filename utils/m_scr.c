@@ -2291,7 +2291,7 @@ unsigned char screeninfo1[] = {
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo2[] = {
-	 0, 3, 0, 2,
+	 0, 3, 0, 1,
 	 3,
 	 0, 30, 40, 60,			 4, 0, 5, AI_KAMIKADZE,
 	 0, 3, 30, 40,			 4, 0, 2, AI_KAMIKADZE,
