@@ -12,7 +12,7 @@
 #include "m_scr.c"
 #include "screenlines/m_scr_lines.c"
 #include "m_data.c"
-#include "world.c"
+#include "../world.c"
 
 WORLD *world;
 
