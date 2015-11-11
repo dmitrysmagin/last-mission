@@ -653,6 +653,7 @@ void InitShip()
 	ship->x = 148 + ShipBaseOffset(ship, base);
 	ship->y = 68;
 	ship->base = base;
+	ship->smoke = NULL;
 
 	switch (ship->i) {
 	case SHIP_TYPE_LASER:
@@ -689,9 +690,13 @@ void InitEnemies()
 	TSHIP *gobj = gObj_First();
 	for (; gobj; gobj = gObj_Next(gobj)) {
 		switch (gobj->ai_type) {
+		case AI_SMOKE:
+			/* reset smoke animation, otherwise it appears at wrong
+			   place when changing screen */
+			gobj->anim_speed_cnt = 0;
+			gobj->cur_frame = gobj->max_frame;
 		case AI_SHIP:
 		case AI_BASE:
-		case AI_SMOKE:
 			break;
 		default:
 			gObj_DestroyObject(gobj);

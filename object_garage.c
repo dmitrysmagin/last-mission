@@ -12,6 +12,7 @@
 #include "sprites.h"
 #include "engine.h"
 #include "object.h"
+#include "object_enemy.h"
 #include "object_garage.h"
 #include "room.h"
 
@@ -221,6 +222,7 @@ void Update_Garage(TSHIP *gobj)
 			gObj_Constructor(spare, AI_SHIP);
 			spare->garage = NULL;
 			spare->base = ship->base;
+			spare->smoke = NULL;
 
 			gObj_Constructor(ship, AI_SPARE_SHIP);
 			ship->garage = gobj;
@@ -228,6 +230,7 @@ void Update_Garage(TSHIP *gobj)
 
 			// restore HP
 			game->health = 3;
+			Destroy_Smoke(ship);
 
 			PlaySoundEffect(SND_CONTACT);
 		}

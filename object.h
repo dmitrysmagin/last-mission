@@ -86,6 +86,7 @@ struct tship_t {
 	TSHIP *base;	/* Used by AI_SHIP */
 	TSHIP *parent; /* Used by AI_CEILING_CANNON and AI_CANNON */
 	TSHIP *garage;
+	TSHIP *smoke;  /* Used by AI_SHIP */
 };
 
 

@@ -241,20 +241,34 @@ void Update_Bonus(TSHIP *gobj)
 	}
 }
 
+/* FIXME: this should belong to ship code */
 void Create_Smoke(TSHIP *gobj)
 {
-	TSHIP *i = gObj_CreateObject();
-	i->i = 46;
-	i->x = gobj->x + 8;
-	i->y = gobj->y - 8;
-	i->dy = -1;
-	i->dx = FacingRight(gobj) ? -1 : (FacingLeft(gobj) ? 1 : 0);
-	i->anim_speed = 4;
-	i->anim_speed_cnt = i->anim_speed;
-	i->cur_frame = 0;
-	i->max_frame = 4;
-	gObj_Constructor(i, AI_SMOKE);
-	i->parent = gobj;
+	if (gobj->smoke)
+		return;
+
+	TSHIP *smoke = gObj_CreateObject();
+	gobj->smoke = smoke;
+	smoke->i = 46;
+	smoke->x = gobj->x + 8;
+	smoke->y = gobj->y - 8;
+	smoke->dy = -1;
+	smoke->dx = FacingRight(gobj) ? -1 : (FacingLeft(gobj) ? 1 : 0);
+	smoke->anim_speed = 4;
+	smoke->anim_speed_cnt = smoke->anim_speed;
+	smoke->cur_frame = 0;
+	smoke->max_frame = 4;
+	gObj_Constructor(smoke, AI_SMOKE);
+	smoke->parent = gobj;
+}
+
+void Destroy_Smoke(TSHIP *gobj)
+{
+	if (!gobj->smoke)
+		return;
+
+	gObj_DestroyObject(gobj->smoke);
+	gobj->smoke = NULL;
 }
 
 void Update_Smoke(TSHIP *gobj)
@@ -306,6 +320,10 @@ void Update_Explosion(TSHIP *gobj)
 					++game->health;
 					if (game->health > 3)
 						game->health = 3;
+
+					if (game->health > 1)
+						Destroy_Smoke(gObj_Ship());
+
 					break;
 
 				case BONUS_FACEBOOK:
