@@ -48,7 +48,7 @@ static int fread_HEADER(FILE *fp)
 	int  arg2;
 
 	while (fgets(g_string, sizeof(g_string), fp)) {
-		sscanf(g_string, "%s %d", &arg1, &arg2);
+		sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
 
 		if (strcmp(arg1, "#") != 0) {
 			if (arg2 == 1) {
@@ -86,7 +86,7 @@ static int fread_WORLD(WORLD *world, FILE *fp)
 
 	while (fgets(g_string, sizeof(g_string), fp)) {
 		sscanf(g_string, "%s %d %d %d %d %d %d",
-			&arg1,
+			(char *)&arg1,
 			&world->room_num,
 			&world->patternset_num,
 			&world->spriteset_num,
@@ -146,7 +146,7 @@ static int fread_ROOM(WORLD *world, FILE *fp)
 
 		fgets(g_string, sizeof(g_string), fp);
 		sscanf(g_string, "%s %d %d %d %d %d %d %x %x %x %x %d %d %d %d %d %d",
-			&arg1,
+			(char *)&arg1,
 			&room->xs, &room->ys,
 			&room->pattern_num,
 			&room->object_num,
@@ -210,7 +210,7 @@ static int fread_ROOM_PATTERN(WORLD *world, FILE *fp)
 		ROOM *room = world->room + i;
 
 		fgets(g_string, sizeof(g_string), fp);
-		sscanf(g_string, "%s %d", &arg1, &arg2);
+		sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
 
 		if (strcmp(arg1, "PATTERN") != 0 && arg2 != i) {
 			DPRINTF("Error reading PATTERN chunk %d\n", i);
@@ -266,7 +266,7 @@ static int fread_ROOM_OBJECT(WORLD *world, FILE *fp)
 		ROOM *room = world->room + i;
 
 		fgets(g_string, sizeof(g_string), fp);
-		sscanf(g_string, "%s %d", &arg1, &arg2);
+		sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
 
 		if (strcmp(arg1, "OBJECT") != 0 && arg2 != i) {
 			DPRINTF("Error reading OBJECT chunk %d\n", i);
@@ -323,7 +323,7 @@ static int fread_ROOM_BGLINE(WORLD *world, FILE *fp)
 		ROOM *room = world->room + i;
 
 		fgets(g_string, sizeof(g_string), fp);
-		sscanf(g_string, "%s %d", &arg1, &arg2);
+		sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
 
 		if (strcmp(arg1, "BGLINE") != 0 && arg2 != i) {
 			DPRINTF("Error reading BGLINE chunk %d\n", i);
@@ -402,7 +402,7 @@ static int fread_PATTERNSET(WORLD *world, FILE *fp)
 
 		fgets(g_string, sizeof(g_string), fp);
 		sscanf(g_string, "%s %d %d",
-			&arg1,
+			(char *)&arg1,
 			&patternset->xs, &patternset->ys);
 
 		if (strcmp(arg1, "PATTERNSET") != 0) {
