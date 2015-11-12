@@ -654,6 +654,7 @@ void InitShip()
 	ship->y = 68;
 	ship->base = base;
 	ship->smoke = NULL;
+	ship->laser = NULL;
 
 	switch (ship->i) {
 	case SHIP_TYPE_LASER:
@@ -695,7 +696,9 @@ void InitEnemies()
 			   place when changing screen */
 			gobj->anim_speed_cnt = 0;
 			gobj->cur_frame = gobj->max_frame;
+			break;
 		case AI_SHIP:
+			gobj->laser = NULL;
 		case AI_BASE:
 			break;
 		default:
@@ -755,8 +758,6 @@ void InitNewScreen()
 	UnpackLevel(game->world, game->ship_screen);
 
 	InitEnemies();
-
-	laser_dir = 0;
 
 	if (game->ship_screen == 92) {
 		// Memorize that we entered the hidden area once.

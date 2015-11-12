@@ -3,9 +3,6 @@
 
 #include "object.h"
 
-/* FIXME: eliminate later */
-extern int laser_dir;
-
 void DoLaser(TSHIP *ship);
 void ResetLaser();
 int UpdateLaser(int i);

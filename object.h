@@ -76,17 +76,17 @@ struct tship_t {
 	int ai_type;
 
 	// AI-type specific data. Just to make code a bit more readable.
-	union {
-		int ticks_passed; // used by AI_HOMING_SHOT
-		int garage_inactive; // used by AI_GARAGE
-		int restart_level; // used by AI_EXPLOSION
-		TEXPLOSION explosion; // used by AI_BONUS & AI_EXPLOSION
-	};
+	int dir, phase; // used by AI_LASER
+	int ticks_passed; // used by AI_HOMING_SHOT
+	int garage_inactive; // used by AI_GARAGE
+	int restart_level; // used by AI_EXPLOSION
+	TEXPLOSION explosion; // used by AI_BONUS & AI_EXPLOSION
 
 	TSHIP *base;	/* Used by AI_SHIP */
 	TSHIP *parent; /* Used by AI_CEILING_CANNON and AI_CANNON */
 	TSHIP *garage;
 	TSHIP *smoke;  /* Used by AI_SHIP */
+	TSHIP *laser;	/* Used by AI_SHIP */
 };
 
 

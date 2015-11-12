@@ -11,7 +11,6 @@
 #include "room.h"
 
 static int laser_overload = 0;
-int laser_dir = 0;
 
 int UpdateLaser(int i)
 {
@@ -28,8 +27,6 @@ int UpdateLaser(int i)
 	return 0;
 }
 
-static int laser_phase = 0;
-
 /* FIXME: this should belong to ship code in fact */
 void DoLaser(TSHIP *ship)
 {
@@ -42,33 +39,33 @@ void DoLaser(TSHIP *ship)
 		}
 
 		/* 0 - no shooting, 1 - shooting right, -1 - shooting left */
-		if (laser_dir == 0) {
-			if (!game->elevator_flag) { /* HACK: or you will shoot your base */
-				//if ship facing right
-				if (FacingRight(ship)) {
-					TSHIP *laser = gObj_CreateObject();
-					gObj_Constructor(laser, AI_LASER);
-					laser->parent = ship;
-					laser->x = ship->x + 32;
-					laser->dx = 1;
-					laser->y = ship->y + 6;
-					laser->dy = 1;
-					laser_dir = 1;
-					laser_phase = 0;
-					PlaySoundEffect(SND_LASER_SHOOT);
-				// if facing left
-				} else if (FacingLeft(ship)) {
-					TSHIP *laser = gObj_CreateObject();
-					gObj_Constructor(laser, AI_LASER);
-					laser->parent = ship;
-					laser->x = ship->x - 1;
-					laser->dx = 1;
-					laser->y = ship->y + 6;
-					laser->dy = 1;
-					laser_dir = -1;
-					laser_phase = 0;
-					PlaySoundEffect(SND_LASER_SHOOT);
-				}
+		if (!ship->laser && !game->elevator_flag) { /* HACK: or you will shoot your base */
+			//if ship facing right
+			if (FacingRight(ship)) {
+				TSHIP *laser = gObj_CreateObject();
+				gObj_Constructor(laser, AI_LASER);
+				ship->laser = laser;
+				laser->parent = ship;
+				laser->x = ship->x + 32;
+				laser->dx = 1;
+				laser->y = ship->y + 6;
+				laser->dy = 1;
+				laser->dir = 1;
+				laser->phase = 0;
+				PlaySoundEffect(SND_LASER_SHOOT);
+			// if facing left
+			} else if (FacingLeft(ship)) {
+				TSHIP *laser = gObj_CreateObject();
+				gObj_Constructor(laser, AI_LASER);
+				ship->laser = laser;
+				laser->parent = ship;
+				laser->x = ship->x - 1;
+				laser->dx = 1;
+				laser->y = ship->y + 6;
+				laser->dy = 1;
+				laser->dir = -1;
+				laser->phase = 0;
+				PlaySoundEffect(SND_LASER_SHOOT);
 			}
 		}
 	} else {
@@ -78,7 +75,7 @@ void DoLaser(TSHIP *ship)
 
 void BlitLaser(TSHIP *gobj)
 {
-	if (laser_dir != 0) {
+	if (gobj->dir != 0) {
 		DrawLine(gobj->x, gobj->y,
 			 gobj->x + gobj->dx, gobj->y, RGB(170, 170, 170));
 	}
@@ -106,23 +103,22 @@ void Update_Laser(TSHIP *gobj)
 	TSHIP *ship = gobj->parent;
 	int dx;
 
-	/* HACK: destroy laser if not our ship, otherwise weird behavior */
-	if (ship->i != SHIP_TYPE_LASER) {
-		laser_dir = 0;
+	if (!ship) {
+		gobj->dir = 0;
 		gObj_DestroyObject(gobj);
 		return;
 	}
 
 	// animate laser
 	// shooting right
-	if (laser_dir == 1) {
-		if (laser_phase == 0) {
+	if (gobj->dir == 1) {
+		if (gobj->phase == 0) {
 			gobj->x = ship->x + 32;
 
 			for (dx = 0; dx <= 11; dx++) {
 				gobj->dx++;
 				if (gObj_CheckTouch(gobj->x, gobj->y, gobj) == 1) {
-					laser_phase = 1;
+					gobj->phase = 1;
 					break;
 				}
 			}
@@ -132,7 +128,9 @@ void Update_Laser(TSHIP *gobj)
 				gobj->dx--;
 
 				if (gobj->dx <= 0) {
-					laser_dir = 0;
+					gobj->dir = 0;
+					if (gobj->parent)
+						gobj->parent->laser = NULL;
 					gObj_DestroyObject(gobj);
 					break;
 				}
@@ -142,8 +140,8 @@ void Update_Laser(TSHIP *gobj)
 		}
 
 	} else { // shooting left
-		if (laser_dir == -1) {
-			if (laser_phase == 0) {
+		if (gobj->dir == -1) {
+			if (gobj->phase == 0) {
 				gobj->dx = ship->x - gobj->x - 1;
 
 				for (dx = 0; dx <= 11; dx++) {
@@ -151,7 +149,7 @@ void Update_Laser(TSHIP *gobj)
 					gobj->dx++;
 
 					if (gObj_CheckTouch(gobj->x, gobj->y, gobj) == 1) {
-						laser_phase = 1;
+						gobj->phase = 1;
 						break;
 					}
 				}
@@ -159,7 +157,9 @@ void Update_Laser(TSHIP *gobj)
 				for (dx = 0; dx <= 11; dx++) {
 					gobj->dx--;
 					if (gobj->dx <= 0) {
-						laser_dir = 0;
+						gobj->dir = 0;
+						if (gobj->parent)
+							gobj->parent->laser = NULL;
 						gObj_DestroyObject(gobj);
 						break;
 					}
