@@ -716,10 +716,10 @@ void InitEnemies()
 
 		TSHIP *en = gObj_CreateObject();
 		en->i = object->index;
-		en->x = object->x << 2;
+		en->x = object->x;
 		en->y = object->y;
-		en->anim_speed = object->speed * 2;
-		en->anim_speed_cnt = object->speed * 2;
+		en->anim_speed = object->speed;
+		en->anim_speed_cnt = object->speed;
 		en->min_frame = object->minframe;
 		en->cur_frame = object->minframe;
 		en->max_frame = object->maxframe;
