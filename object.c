@@ -348,7 +348,7 @@ void gObj_Explode(TSHIP *gobj)
 
 	case AI_BONUS:
 		// Memorize bonus type.
-		gobj->explosion.bonus_type = gobj->i;
+		gobj->bonus_type = gobj->i;
 		break;
 
 	case AI_RANDOM_MOVE:
@@ -372,8 +372,8 @@ void gObj_Explode(TSHIP *gobj)
 			}
 
 			if (!alive_ship) {
-				gobj->explosion.bonus_type = game->screen_bonus;
-				gobj->explosion.regenerate_bonus = 1;
+				gobj->bonus_type = game->screen_bonus;
+				gobj->regenerate_bonus = 1;
 			}
 		}
 
@@ -494,7 +494,7 @@ static int gObj_CheckDestruction(TSHIP *gobj1, TSHIP *gobj2)
 	if (gobj1->ai_type == AI_BONUS) {
 		/* Bonus hit by a bullet. Swap bonus. */
 		if (obj2_type == 2) {
-			gobj1->explosion.regenerate_bonus = 1;
+			gobj1->regenerate_bonus = 1;
 		}
 
 		gObj_Explode(gobj1);
@@ -502,7 +502,7 @@ static int gObj_CheckDestruction(TSHIP *gobj1, TSHIP *gobj2)
 	} else if (gobj2->ai_type == AI_BONUS) {
 		/* Bonus hit by a bullet. Swap bonus. */
 		if (obj1_type == 2) {
-			gobj2->explosion.regenerate_bonus = 1;
+			gobj2->regenerate_bonus = 1;
 		}
 
 		gObj_Explode(gobj2);

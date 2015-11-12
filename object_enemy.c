@@ -286,11 +286,11 @@ void Update_Smoke(TSHIP *gobj)
 void Update_Explosion(TSHIP *gobj)
 {
 	if (UpdateAnimation(gobj) == 1) {
-		if (gobj->explosion.bonus_type) {
-			if (gobj->explosion.regenerate_bonus) {
+		if (gobj->bonus_type) {
+			if (gobj->regenerate_bonus) {
 				// Hit with laser, restore the other bonus.
 				gObj_Constructor(gobj, AI_BONUS);
-				switch (gobj->explosion.bonus_type) {
+				switch (gobj->bonus_type) {
 				case BONUS_FACEBOOK:
 					gobj->i = BONUS_TWITTER;
 					break;
@@ -298,12 +298,12 @@ void Update_Explosion(TSHIP *gobj)
 					gobj->i = BONUS_FACEBOOK;
 					break;
 				default:
-					gobj->i = gobj->explosion.bonus_type;
+					gobj->i = gobj->bonus_type;
 					break;
 				}
 
-				gobj->explosion.bonus_type = 0;
-				gobj->explosion.regenerate_bonus = 0;
+				gobj->bonus_type = 0;
+				gobj->regenerate_bonus = 0;
 				gobj->dx = 0;
 				gobj->dy = 0;
 				gobj->max_frame = 0;
@@ -314,7 +314,7 @@ void Update_Explosion(TSHIP *gobj)
 			} else {
 				PlaySoundEffect(SND_BONUS);
 
-				switch (gobj->explosion.bonus_type) {
+				switch (gobj->bonus_type) {
 				case BONUS_HP:
 					// add HP
 					++game->health;
@@ -328,7 +328,7 @@ void Update_Explosion(TSHIP *gobj)
 
 				case BONUS_FACEBOOK:
 				case BONUS_TWITTER:
-					//HitTheBonus(gobj->explosion.bonus_type);
+					//HitTheBonus(gobj->bonus_type);
 					break;
 				}
 			}

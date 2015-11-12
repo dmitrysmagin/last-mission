@@ -47,11 +47,6 @@
 #define BONUS_TWITTER			48
 #define BONUS_HP			52
 
-typedef struct {
-	int regenerate_bonus;
-	int bonus_type;
-} TEXPLOSION;
-
 typedef struct tship_t TSHIP;
 
 struct tship_t {
@@ -80,7 +75,11 @@ struct tship_t {
 	int ticks_passed; // used by AI_HOMING_SHOT
 	int garage_inactive; // used by AI_GARAGE
 	int restart_level; // used by AI_EXPLOSION
-	TEXPLOSION explosion; // used by AI_BONUS & AI_EXPLOSION
+
+	/* used by AI_BONUS & AI_EXPLOSION */
+	int regenerate_bonus;
+	int bonus_type;
+
 
 	TSHIP *base;	/* Used by AI_SHIP */
 	TSHIP *parent; /* Used by AI_CEILING_CANNON and AI_CANNON */
