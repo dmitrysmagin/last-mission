@@ -21,99 +21,102 @@ int main()
 	int i, j;
 
 	// allocate WORLD structure
-	world = (WORLD *)malloc(sizeof(WORLD));
-	memset(world, 0, sizeof(WORLD));
+	world = (WORLD *)calloc(1, sizeof(WORLD));
 
 	// allocate an array of ROOM's
 	world->room_num = NUM_SCREENS;
-	world->room = (ROOM *)malloc(sizeof(ROOM) * NUM_SCREENS);
-	memset(world->room, 0, sizeof(ROOM) * NUM_SCREENS);
+	world->room = (ROOM *)calloc(NUM_SCREENS, sizeof(ROOM));
 
 	// fill room data
 	for(i = 0; i < NUM_SCREENS; i++) {
+		ROOM *room = world->room + i;
 		unsigned char *p;
 
 		// fill info on patterns
 		p = SCREENS[i];
 
-		(world->room + i)->pattern_num = j = *(p+0);
-		(world->room + i)->pattern = (PATTERN *)malloc(sizeof(PATTERN) * j);
+		room->pattern_num = p[0];
+		room->pattern = (PATTERN *)calloc(p[0], sizeof(PATTERN));
 
-		for(j = 0, p += 1; j < (world->room + i)->pattern_num; j++, p += 4) {
-			((world->room + i)->pattern + j)->x = *(p+0);
-			((world->room + i)->pattern + j)->y = *(p+1);
-			((world->room + i)->pattern + j)->index = *(p+2);
+		for(j = 0, p += 1; j < room->pattern_num; j++, p += 4) {
+			PATTERN *pattern = room->pattern + j;
+
+			pattern->x = p[0];
+			pattern->y = p[1];
+			pattern->index = p[2];
 		}
 
 		// fill info on moving objects (enemies)
 		p = SCREENINFOS[i];
 
-		(world->room + i)->up = *p;
-		(world->room + i)->right = *(p+1);
-		(world->room + i)->down = *(p+2);
-		(world->room + i)->left = *(p+3);
+		room->up    = p[0];
+		room->right = p[1];
+		room->down  = p[2];
+		room->left  = p[3];
 
-		(world->room + i)->object_num = j = *(p+4);
-		(world->room + i)->object = (OBJECT *)malloc(sizeof(OBJECT) * j);
+		room->object_num = p[4];
+		room->object     = (OBJECT *)calloc(p[4], sizeof(OBJECT));
 
-		for(j = 0, p += 5; j < (world->room + i)->object_num; j++, p += 8) {
-			((world->room + i)->object + j)->garage_id = *(p+0);
-			((world->room + i)->object + j)->index = *(p+1);
-			((world->room + i)->object + j)->x = *(p+2);
-			((world->room + i)->object + j)->y = *(p+3);
+		for(j = 0, p += 5; j < room->object_num; j++, p += 8) {
+			OBJECT *object = room->object + j;
 
-			((world->room + i)->object + j)->speed = *(p+4);
-			((world->room + i)->object + j)->minframe = *(p+5);
-			((world->room + i)->object + j)->maxframe = *(p+6);
-			((world->room + i)->object + j)->ai = *(p+7);
+			object->garage_id = p[0];
+			object->index     = p[1];
+			object->x         = p[2] * 4;
+			object->y         = p[3];
+			object->speed     = p[4] * 2;
+			object->minframe  = p[5];
+			object->maxframe  = p[6];
+			object->ai        = p[7];
 		}
 
-		(world->room + i)->procedure = *(p+0);
-		(world->room + i)->bonus = *(p+1);
+		room->procedure = p[0];
+		room->bonus     = p[1];
 
 		// fill info on background
 		if (i <= 69 || i >= 92) { // if not on planet surface
 			short *p = SCREENLINES[i];
-			short j = *(p++);
 
-			(world->room + i)->bg_type = 1; // generated background
-			(world->room + i)->bg_num = j; // number of BGLINE * entries
-			(world->room + i)->background = GetScreenDrawInfo(i)->background;
-			(world->room + i)->shadow = GetScreenDrawInfo(i)->shadow;
-			(world->room + i)->line_light = GetScreenDrawInfo(i)->line_light;
-			(world->room + i)->line_shadow = GetScreenDrawInfo(i)->line_shadow;
+			room->bg_type     = 1; // generated background
+			room->bg_num      = p[0]; // number of BGLINE * entries
+			room->background  = GetScreenDrawInfo(i)->background;
+			room->shadow      = GetScreenDrawInfo(i)->shadow;
+			room->line_light  = GetScreenDrawInfo(i)->line_light;
+			room->line_shadow = GetScreenDrawInfo(i)->line_shadow;
 
-			(world->room + i)->bgline = (BGLINE *)malloc(sizeof(BGLINE) * j);
+			room->bgline = (BGLINE *)calloc(p[0], sizeof(BGLINE));
 
-			for (j = 0; j < (world->room + i)->bg_num; j++, p += 4) {
-				((world->room + i)->bgline + j)->x1 = *(p+0);
-				((world->room + i)->bgline + j)->y1 = *(p+1);
-				((world->room + i)->bgline + j)->x2 = *(p+2);
-				((world->room + i)->bgline + j)->y2 = *(p+3);
+			for (j = 0, p++; j < room->bg_num; j++, p += 4) {
+				BGLINE *bgline = room->bgline + j;
+
+				bgline->x1 = p[0];
+				bgline->y1 = p[1];
+				bgline->x2 = p[2];
+				bgline->y2 = p[3];
 			}
 		} else {
-			(world->room + i)->bg_type = 0;
-			(world->room + i)->bg_num = 0;
+			room->bg_type = 0;
+			room->bg_num  = 0;
 		}
 	}
 
 	// allocate an array of PATTERNSET's
 	world->patternset_num = NUM_PATTERNS;
-	world->patternset = (PATTERNSET *)malloc(sizeof(PATTERNSET) * NUM_PATTERNS);
-	memset(world->patternset, 0, sizeof(PATTERNSET) * NUM_PATTERNS);
+	world->patternset = (PATTERNSET *)calloc(NUM_PATTERNS, sizeof(PATTERNSET));
 
 	// fill PATTERNSET data
 	for(i = 0; i < NUM_PATTERNS; i++) {
-		char *p;
+		PATTERNSET *patternset = world->patternset + i;
+		unsigned char *p;
 		int size;
 
 		p = PATTERNS[i];
-		(world->patternset + i)->xs = *(p+0);
-		(world->patternset + i)->ys = *(p+1);
-		size = *(p+0) * *(p+1);
+		patternset->xs = p[0];
+		patternset->ys = p[1];
+		size = p[0] * p[1];
 
-		(world->patternset + i)->data = malloc(size);
-		memcpy((world->patternset + i)->data, p+2, size);
+		patternset->data = malloc(size);
+		memcpy(patternset->data, p+2, size);
 	}
 
 	// save data to file

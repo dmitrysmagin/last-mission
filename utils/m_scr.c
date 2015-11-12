@@ -2285,9 +2285,9 @@ unsigned char screeninfo1[] = {
 	 5,
 	 100, 0, 36, 15,		0, 0, 0, AI_GARAGE,
 	 101, 0, 52, 15,		0, 0, 0, AI_GARAGE,
-	 0, 0, 4, 100,			16, 40, 0, AI_HIDDEN_AREA_ACCESS,
-	 0, 0, 8, 100,			16, 40, 0, AI_HIDDEN_AREA_ACCESS,
-	 0, 0, 12, 100,			16, 40, 0, AI_HIDDEN_AREA_ACCESS,
+	 0, 0, 4, 100,			8, 40, 0, AI_HIDDEN_AREA_ACCESS,
+	 0, 0, 8, 100,			8, 40, 0, AI_HIDDEN_AREA_ACCESS,
+	 0, 0, 12, 100,			8, 40, 0, AI_HIDDEN_AREA_ACCESS,
 	 0, //no screen procedure
 	 0, /* No bonus */ };
 unsigned char screeninfo2[] = {
