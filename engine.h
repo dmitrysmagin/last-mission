@@ -55,6 +55,8 @@ typedef struct TGAMEDATA {
 
 void GameLoop();
 
+#define STATUS_YPOS 184
+
 /* FIXME: this should not be public, remove later */
 #define F_UP 0
 #define F_RIGHT 1

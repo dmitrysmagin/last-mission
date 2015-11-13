@@ -87,9 +87,9 @@ void BlitLaserStatus()
 
 		unsigned int c = ((i < (laser_overload >> 3)) ? RGB(255, 0, 0) : 0);
 
-		PutPixel(i + 192, 162, c);
-		PutPixel(i + 192, 163, c);
-		PutPixel(i + 192, 164, c);
+		PutPixel(i + 192, STATUS_YPOS + 18, c);
+		PutPixel(i + 192, STATUS_YPOS + 19, c);
+		PutPixel(i + 192, STATUS_YPOS + 20, c);
 	}
 }
 

@@ -64,7 +64,7 @@ int LM_GFX_Init()
 #else
 	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE | fullscr);
 #endif
-	small_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320, 200,
+	small_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320, 240,
 					    GAME_SCREEN_BPP, 0, 0, 0, 0);
 
 	SDL_ShowCursor(SDL_DISABLE);
@@ -82,8 +82,6 @@ void LM_GFX_Deinit()
 
 void LM_GFX_Flip()
 {
-	SDL_Rect dst;
-
 #ifndef __DINGUX__
 	/* toggle sizes x1 or x2 and fullscreen, for win32 and unix only */
 	if (Keys[SC_F] == 1) {
@@ -96,20 +94,14 @@ void LM_GFX_Flip()
 	}
 
 	if (scale2x) {
-		dst.x = 0;
-		dst.y = 40;
-
 		SDL_Surface *tmp = zoomSurface(small_screen, 2, 2, 0);
 		SDL_FillRect(screen, NULL, 0);
-		SDL_BlitSurface(tmp, NULL, screen, &dst);
+		SDL_BlitSurface(tmp, NULL, screen, NULL);
 		SDL_FreeSurface(tmp);
 	} else
 #endif
 	{
-		dst.x = 0;
-		dst.y = 20;
-
-		SDL_BlitSurface(small_screen, NULL, screen, &dst);
+		SDL_BlitSurface(small_screen, NULL, screen, NULL);
 	}
 
 	SDL_Flip(screen);
@@ -126,4 +118,9 @@ void LM_GFX_SetScale(int scale)
 	screen = SDL_SetVideoMode(320 << scale, 240 << scale, 32, SDL_SWSURFACE | fullscr);
 	LM_ResetKeys();
 #endif
+}
+
+void ClearScreen()
+{
+	SDL_FillRect(small_screen, NULL, 0);
 }

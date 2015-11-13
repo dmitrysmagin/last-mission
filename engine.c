@@ -39,6 +39,7 @@ void InitEnemies();
 void InitNewGame();
 int UpdateLives();
 void BlitStatus();
+void BlitStatusData();
 void DoTitle();
 void DoWinScreen();
 void DoGame();
@@ -805,9 +806,7 @@ void InitNewGame()
 	InitShip();
 	InitNewScreen();
 
-	for (int f = 0; f <= 6; f++) {
-		PutStream(0, STATUSBAR1[f * 43 + 1] * 8, &STATUSBAR1[f * 43 + 2]);
-	}
+	BlitStatus();
 }
 
 int UpdateLives()
@@ -847,25 +846,32 @@ void RestartLevel()
 
 void BlitStatus()
 {
+	for (int i = 0; i < 7; i++) {
+		PutStream(0, STATUS_YPOS + i * 8, &STATUSBAR1[i * 43 + 2]);
+	}
+}
+
+void BlitStatusData()
+{
 	static char string_buffer[16];
 
 	// level
 	sprintf(string_buffer, "%02d", game->level);
-	PutString(8*16, 8*20, &string_buffer[0]);
+	PutString(8*16, STATUS_YPOS + 16, string_buffer);
 
 	// fuel
 	sprintf(string_buffer, "%04d", game->fuel);
-	PutString(8*14, 8*21, &string_buffer[0]);
+	PutString(8*14, STATUS_YPOS + 24, string_buffer);
 
 	// score
 	sprintf(string_buffer, "%08d", game->score);
-	PutString(8*10, 8*22, &string_buffer[0]);
+	PutString(8*10, STATUS_YPOS + 32, string_buffer);
 
 	// health bar.
 	string_buffer[2] = 0;
 	for (int y = 0; y < 3; ++y) {
 		string_buffer[1] = string_buffer[0] = (game->health > y) ? 84 : 88;
-		PutStream(8*19, 8*(22 - y), (unsigned char *)&string_buffer[0]);
+		PutStream(8*19, STATUS_YPOS + 8 * (4 - y), (unsigned char *)string_buffer);
 	}
 
 	// laser
@@ -873,10 +879,10 @@ void BlitStatus()
 
 	// lives
 	sprintf(string_buffer, "%02d", game->lives);
-	PutString(8*28, 8*21, &string_buffer[0]);
+	PutString(8*28, STATUS_YPOS + 24, string_buffer);
 
 	// score record
-	PutString(8*22, 8*22, "88888888");
+	PutString(8*22, STATUS_YPOS + 32, "88888888");
 
 }
 
@@ -941,7 +947,7 @@ void LoadSplash()
 	SDL_Surface *title = SDL_LoadBMP(name);
 
 	dst.x = (small_screen->w - title->w) / 2;
-	dst.h = (small_screen->h - title->h) / 2;
+	dst.y = (small_screen->h - title->h) / 2;
 
 	SDL_BlitSurface(title, NULL, small_screen, &dst);
 	SDL_FreeSurface(title);
@@ -962,6 +968,7 @@ void DoSplash()
 
 	if (LM_AnyKey() == 1) {
 		LM_ResetKeys();
+		ClearScreen();
 		SetGameMode(GM_TITLE);
 	}
 }
@@ -1013,6 +1020,7 @@ void DoTitle()
 	// start
 	if (Keys[SC_SPACE] == 1 || Keys[SC_ENTER] == 1) {
 		game->easy_mode = 1;
+		ClearScreen();
 		SetGameMode(GM_GAME);
 		LM_ResetKeys();
 		InitNewGame();
@@ -1138,7 +1146,7 @@ void RenderGame(int renderStatus)
 	BlitEnemies(); // draw all enemies and cannon+base
 
 	if (renderStatus)
-		BlitStatus(); // draw score etc
+		BlitStatusData(); // draw score etc
 }
 
 void DoGame()
@@ -1180,6 +1188,7 @@ void DoGame()
 		RecordDemo();
 
 		if (Keys[SC_ESCAPE] == 1) {
+			ClearScreen();
 			SetGameMode(GM_TITLE);
 			LM_ResetKeys();
 			break;

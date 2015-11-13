@@ -23,5 +23,6 @@
 int LM_Init();
 void LM_Deinit();
 void LM_GFX_Flip();
+void ClearScreen();
 
 #endif /* _VIDEO_H_ */
