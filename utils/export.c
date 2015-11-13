@@ -35,6 +35,9 @@ int main()
 		// fill info on patterns
 		p = SCREENS[i];
 
+		room->xs = 40; /* default room dimensions in 8x8 chunks */
+		room->ys = 17;
+
 		room->pattern_num = p[0];
 		room->pattern = (PATTERN *)calloc(p[0], sizeof(PATTERN));
 
