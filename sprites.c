@@ -125,7 +125,7 @@ void PutSpriteI(int x, int y, int index, int frame)
 		return;
 
 	dst.x = x;
-	dst.y = y;
+	dst.y = y + GAME_YPOS;
 
 	src.x = SpriteSet[index].x + SpriteSet[index].dx * frame;
 	src.y = SpriteSet[index].y + SpriteSet[index].dy * frame;
@@ -137,7 +137,7 @@ void PutSpriteI(int x, int y, int index, int frame)
 
 #define SET_GAME_AREA_POINT(x, y, color) \
 { if ((x) >= 0 && (x) < SCREEN_WIDTH && (y) >= 0 && (y) < ACTION_SCREEN_HEIGHT) \
-	putpixel(small_screen, x, y, color); }
+	putpixel(small_screen, x, y + GAME_YPOS, color); }
 
 /*
  * getpixel() and putpixel() are taken from
@@ -253,7 +253,7 @@ void PutTileI(int x, int y, int index)
 		return;
 
 	dst.x = x;
-	dst.y = y;
+	dst.y = y + GAME_YPOS;
 
 	src.x = index % 40 * 8;
 	src.y = index / 40 * 8;
@@ -297,7 +297,7 @@ void PutBgI(int x, int y, int index)
 		return;
 
 	dst.x = x;
-	dst.y = y;
+	dst.y = y + GAME_YPOS;
 
 	src.x = index * 16;
 	src.y = 6 * 16;
@@ -375,7 +375,7 @@ void FillScreen(int x, int y, int w, int h, unsigned int color)
 
 void EraseBackground(unsigned int color)
 {
-	FillScreen(0, 0, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT, color);
+	FillScreen(0, GAME_YPOS, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT, color);
 }
 
 void DrawLine(int x1, int y1, int x2, int y2, unsigned int color)

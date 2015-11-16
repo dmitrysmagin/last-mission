@@ -7,6 +7,8 @@
 #define SCREEN_HEIGHT 200
 #define ACTION_SCREEN_HEIGHT 136
 
+#define GAME_YPOS 24
+
 #if GAME_SCREEN_BPP == 16
 #define RGB(r, g, b) ((r & 0xf8) << 8) | ((g & 0xfc) << 3) | (b >> 3)
 #elif GAME_SCREEN_BPP == 32
