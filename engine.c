@@ -27,6 +27,7 @@
 #include "object_laser.h"
 #include "engine.h"
 #include "room.h"
+#include "editor.h"
 
 #define GAME_START_SCREEN 1 // Start of the labyrinth.
 
@@ -1025,6 +1026,12 @@ void DoTitle()
 		LM_ResetKeys();
 		InitNewGame();
 	}
+
+	// launch an editor
+	if (Keys[SC_E]) {
+		SetGameMode(GM_EDITOR);
+		LM_ResetKeys();
+	}
 }
 
 void DoWinScreen()
@@ -1235,6 +1242,10 @@ void DoGame()
 
 	case GM_SPLASH:
 		DoSplash();
+		break;
+
+	case GM_EDITOR:
+		DoEdit();
 		break;
 	}
 

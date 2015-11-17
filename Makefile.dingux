@@ -11,7 +11,7 @@ LFLAGS = -s -lSDL_gfx -lSDL -lSDL_mixer -lm
 
 # source files
 
-OBJ =	data.o demo.o engine.o input.o main.o random.o \
+OBJ =	data.o demo.o editor.o engine.o input.o main.o random.o \
 	room.o sound.o sprites.o video.o world.o object.o \
 	object_bfg.o object_enemy.o object_garage.o \
 	object_laser.o

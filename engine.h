@@ -13,6 +13,7 @@
 #define GM_DEMO		5
 #define GM_PAUSE	6
 #define GM_SPLASH	7
+#define GM_EDITOR	8
 
 #define SND_LASER_SHOOT		1
 #define SND_SHORT_LASER_SHOOT	2
@@ -53,6 +54,7 @@ typedef struct TGAMEDATA {
 	WORLD *world;
 } TGAMEDATA;
 
+void SetGameMode(int mode);
 void GameLoop();
 
 #define STATUS_YPOS 184

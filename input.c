@@ -88,6 +88,9 @@ char LM_PollEvents()
 				case SDLK_SPACE:
 					key_scan = SC_SPACE;
 					break;
+				case SDLK_e:
+					key_scan = SC_E;
+					break;
 				case SDLK_s:
 					key_scan = SC_S;
 					break;
