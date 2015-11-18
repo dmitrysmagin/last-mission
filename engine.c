@@ -36,7 +36,6 @@ void ReEnableBase(TSHIP *base);
 void DoMachineGun(TSHIP *ship);
 void DoRocketLauncher(TSHIP *ship);
 void InitShip();
-void InitEnemies();
 void InitNewGame();
 int UpdateLives();
 void BlitStatus();
@@ -683,9 +682,9 @@ void InitShip()
 	gObj_Constructor(ship, AI_SHIP);
 }
 
-void InitEnemies()
+void InitEnemies(int screen)
 {
-	ROOM *room = game->world->room + game->ship_screen;
+	ROOM *room = game->world->room + screen;
 	OBJECT *object = room->object;
 	int count = room->object_num;
 
@@ -759,7 +758,7 @@ void InitNewScreen()
 {
 	UnpackLevel(game->world, game->ship_screen);
 
-	InitEnemies();
+	InitEnemies(game->ship_screen);
 
 	if (game->ship_screen == 92) {
 		// Memorize that we entered the hidden area once.

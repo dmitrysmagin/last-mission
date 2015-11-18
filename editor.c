@@ -18,13 +18,49 @@
 #include <SDL/SDL.h>
 #include "input.h"
 #include "engine.h"
+#include "object.h"
+#include "object_garage.h"
+#include "sprites.h"
 #include "editor.h"
+#include "room.h"
+
+static int reinit = 1;
+static int screen = 1;
 
 void DoEdit()
 {
+	if (reinit) {
+		EraseBackground(0);
+		UnpackLevel(game->world, screen);
+		InitGaragesForNewGame();
+		GarageRestore();
+		gObj_DestroyAll();
+		InitEnemies(screen);
+		BlitLevel(screen);
+		BlitEnemies();
+		reinit = 0;
+	}
+
 	if (Keys[SC_ESCAPE]) {
 		SetGameMode(GM_TITLE);
 		LM_ResetKeys();
+		reinit = 1;
+	}
+
+	if (Keys[SC_LEFT]) {
+		if (screen > 0) {
+			LM_ResetKeys();
+			reinit = 1;
+			screen--;
+		}
+	}
+
+	if (Keys[SC_RIGHT]) {
+		if (screen < game->world->room_num - 1) {
+			LM_ResetKeys();
+			reinit = 1;
+			screen++;
+		}
 	}
 }
 

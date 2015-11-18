@@ -56,6 +56,8 @@ typedef struct TGAMEDATA {
 
 void SetGameMode(int mode);
 void GameLoop();
+void InitEnemies(int screen);
+void BlitEnemies();
 
 #define STATUS_YPOS 184
 
