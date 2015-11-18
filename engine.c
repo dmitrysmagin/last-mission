@@ -1028,6 +1028,7 @@ void DoTitle()
 
 	// launch an editor
 	if (Keys[SC_E]) {
+		ClearScreen();
 		SetGameMode(GM_EDITOR);
 		LM_ResetKeys();
 	}

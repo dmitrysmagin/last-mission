@@ -17,6 +17,7 @@
 
 #include <SDL/SDL.h>
 #include "input.h"
+#include "sprites.h"
 #include "engine.h"
 #include "object.h"
 #include "object_garage.h"
@@ -26,6 +27,13 @@
 
 static int reinit = 1;
 static int screen = 1;
+
+static void ShowEditInfo()
+{
+	static char string[32];
+	sprintf(string, "ROOM %03i:%03i", screen, game->world->room_num - 1);
+	PutString(0*8, 21*8, string);
+}
 
 void DoEdit()
 {
@@ -38,6 +46,7 @@ void DoEdit()
 		InitEnemies(screen);
 		BlitLevel(screen);
 		BlitEnemies();
+		ShowEditInfo();
 		reinit = 0;
 	}
 
