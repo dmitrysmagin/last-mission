@@ -26,11 +26,11 @@
 #include "room.h"
 
 static int reinit = 1;
-static int screen = 1;
-static int pattern = 0;
-static int sprite = 0;
+static int cur_room = 1;
+static int cur_patternset = 0;
+static int cur_sprite = 0;
 static int editmode = 0; /* 0 - view, 1 - edit room */
-static int cpattern = 0;
+static int cur_pattern = 0;
 
 static void ShowEditInfo()
 {
@@ -38,7 +38,7 @@ static void ShowEditInfo()
 
 	switch (editmode) {
 	case 0: {
-		PATTERNSET *patternset = game->world->patternset + pattern;
+		PATTERNSET *patternset = game->world->patternset + cur_patternset;
 		unsigned char *data = (unsigned char *)patternset->data;
 
 		for (int y = 0; y < patternset->ys; y++) {
@@ -47,26 +47,26 @@ static void ShowEditInfo()
 			}
 		}
 
-		PutSpriteI(30*8, 22*8, sprite, 0);
+		PutSpriteI(30*8, 22*8, cur_sprite, 0);
 		}
 
-		sprintf(string, "ROOM %03i:%03i", screen, game->world->room_num - 1);
+		sprintf(string, "ROOM    %03i:%03i", cur_room, game->world->room_num - 1);
 		PutString(0*8, 21*8, string);
-		sprintf(string, "PTRN %03i:%03i", pattern, game->world->patternset_num - 1);
+		sprintf(string, "PTRNSET %03i:%03i", cur_patternset, game->world->patternset_num - 1);
 		PutString(0*8, 22*8, string);
-		sprintf(string, "SPRT %03i:%03i", sprite, SPRITE_NUMBER - 1);
+		sprintf(string, "SPRTSET %03i:%03i", cur_sprite, SPRITE_NUMBER - 1);
 		PutString(0*8, 23*8, string);
 
 		PutString(16*8, 20*8, "VIEW MODE");
 		break;
 	case 1: {
-			ROOM *room = game->world->room + screen;
-			PATTERN *pattern = room->pattern + cpattern;
+			ROOM *room = game->world->room + cur_room;
+			PATTERN *pattern = room->pattern + cur_pattern;
 			PATTERNSET *patternset = game->world->patternset + pattern->index;
 
 			PutString(16*8, 20*8, "ROOM EDIT");
 
-			sprintf(string, "PATTERN %03i:%03i", cpattern, room->pattern_num - 1);
+			sprintf(string, "PATTERN %03i:%03i", cur_pattern, room->pattern_num - 1);
 			PutString(0*8, 21*8, string);
 
 			DrawRect(pattern->x*8,
@@ -82,7 +82,7 @@ static void ViewMode()
 {
 	if (Keys[SC_ENTER]) {
 		editmode = 1;
-		cpattern = 0;
+		cur_pattern = 0;
 		LM_ResetKeys();
 		reinit = 1;
 	}
@@ -94,50 +94,50 @@ static void ViewMode()
 	}
 
 	if (Keys[SC_Z]) {
-		if (pattern > 0) {
+		if (cur_patternset > 0) {
 			LM_ResetKeys();
 			reinit = 1;
-			pattern--;
+			cur_patternset--;
 		}
 	}
 
 	if (Keys[SC_X]) {
-		if (pattern < game->world->patternset_num - 1) {
+		if (cur_patternset < game->world->patternset_num - 1) {
 			LM_ResetKeys();
 			reinit = 1;
-			pattern++;
+			cur_patternset++;
 		}
 	}
 
 	if (Keys[SC_C]) {
-		if (sprite > 0) {
+		if (cur_sprite > 0) {
 			LM_ResetKeys();
 			reinit = 1;
-			sprite--;
+			cur_sprite--;
 		}
 	}
 
 	if (Keys[SC_V]) {
-		if (sprite < SPRITE_NUMBER - 1) {
+		if (cur_sprite < SPRITE_NUMBER - 1) {
 			LM_ResetKeys();
 			reinit = 1;
-			sprite++;
+			cur_sprite++;
 		}
 	}
 
 	if (Keys[SC_LEFT]) {
-		if (screen > 0) {
+		if (cur_room > 0) {
 			LM_ResetKeys();
 			reinit = 1;
-			screen--;
+			cur_room--;
 		}
 	}
 
 	if (Keys[SC_RIGHT]) {
-		if (screen < game->world->room_num - 1) {
+		if (cur_room < game->world->room_num - 1) {
 			LM_ResetKeys();
 			reinit = 1;
-			screen++;
+			cur_room++;
 		}
 	}
 
@@ -145,7 +145,7 @@ static void ViewMode()
 
 static void RoomPatternEdit()
 {
-	ROOM *room = game->world->room + screen;
+	ROOM *room = game->world->room + cur_room;
 
 	if (Keys[SC_ESCAPE]) {
 		editmode = 0;
@@ -154,18 +154,18 @@ static void RoomPatternEdit()
 	}
 
 	if (Keys[SC_LEFT]) {
-		if (cpattern > 0) {
+		if (cur_pattern > 0) {
 			LM_ResetKeys();
 			reinit = 1;
-			cpattern--;
+			cur_pattern--;
 		}
 	}
 
 	if (Keys[SC_RIGHT]) {
-		if (cpattern < room->pattern_num - 1) {
+		if (cur_pattern < room->pattern_num - 1) {
 			LM_ResetKeys();
 			reinit = 1;
-			cpattern++;
+			cur_pattern++;
 		}
 	}
 }
@@ -174,12 +174,12 @@ void DoEdit()
 {
 	if (reinit) {
 		ClearScreen();
-		UnpackLevel(game->world, screen);
+		UnpackLevel(game->world, cur_room);
 		InitGaragesForNewGame();
 		GarageRestore();
 		gObj_DestroyAll();
-		InitEnemies(screen);
-		BlitLevel(screen);
+		InitEnemies(cur_room);
+		BlitLevel(cur_room);
 		BlitEnemies();
 		ShowEditInfo();
 		reinit = 0;
