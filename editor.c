@@ -29,30 +29,38 @@ static int reinit = 1;
 static int screen = 1;
 static int pattern = 0;
 static int sprite = 0;
-
-static void BlitPatternSet()
-{
-	PATTERNSET *patternset = game->world->patternset + pattern;
-	unsigned char *data = (unsigned char *)patternset->data;
-
-	for (int y = 0; y < patternset->ys; y++) {
-		for (int x = 0; x < patternset->xs; x++) {
-			PutTileI(x*8 + 130, y*8 + 18*8, *data++);
-		}
-	}
-
-	PutSpriteI(30*8, 19*8, sprite, 0);
-}
+static int editmode = 0; /* 0 - view, 1 - edit room */
 
 static void ShowEditInfo()
 {
-	static char string[32];
-	sprintf(string, "ROOM %03i:%03i", screen, game->world->room_num - 1);
-	PutString(0*8, 21*8, string);
-	sprintf(string, "PTRN %03i:%03i", pattern, game->world->patternset_num - 1);
-	PutString(0*8, 22*8, string);
-	sprintf(string, "SPRT %03i:%03i", sprite, SPRITE_NUMBER - 1);
-	PutString(0*8, 23*8, string);
+	switch (editmode) {
+	case 0: {
+		PATTERNSET *patternset = game->world->patternset + pattern;
+		unsigned char *data = (unsigned char *)patternset->data;
+
+		for (int y = 0; y < patternset->ys; y++) {
+			for (int x = 0; x < patternset->xs; x++) {
+				PutTileI(x*8 + 132, y*8 + 19*8, *data++);
+			}
+		}
+
+		PutSpriteI(30*8, 19*8, sprite, 0);
+		}
+
+		static char string[32];
+		sprintf(string, "ROOM %03i:%03i", screen, game->world->room_num - 1);
+		PutString(0*8, 21*8, string);
+		sprintf(string, "PTRN %03i:%03i", pattern, game->world->patternset_num - 1);
+		PutString(0*8, 22*8, string);
+		sprintf(string, "SPRT %03i:%03i", sprite, SPRITE_NUMBER - 1);
+		PutString(0*8, 23*8, string);
+
+		PutString(16*8, 20*8, "VIEW MODE");
+		break;
+	case 1:
+		PutString(16*8, 20*8, "EDIT MODE");
+		break;
+	}
 }
 
 void DoEdit()
@@ -67,62 +75,76 @@ void DoEdit()
 		BlitLevel(screen);
 		BlitEnemies();
 		ShowEditInfo();
-		BlitPatternSet();
 		reinit = 0;
 	}
 
-	if (Keys[SC_ESCAPE]) {
-		SetGameMode(GM_TITLE);
-		LM_ResetKeys();
-		reinit = 1;
-	}
+	switch (editmode) {
+	case 0:
+		if (Keys[SC_ENTER]) {
+			editmode = 1;
+			LM_ResetKeys();
+			reinit = 1;		}
 
-	if (Keys[SC_Z]) {
-		if (pattern > 0) {
+		if (Keys[SC_ESCAPE]) {
+			SetGameMode(GM_TITLE);
 			LM_ResetKeys();
 			reinit = 1;
-			pattern--;
 		}
-	}
 
-	if (Keys[SC_X]) {
-		if (pattern < game->world->patternset_num - 1) {
+		if (Keys[SC_Z]) {
+			if (pattern > 0) {
+				LM_ResetKeys();
+				reinit = 1;
+				pattern--;
+			}
+		}
+
+		if (Keys[SC_X]) {
+			if (pattern < game->world->patternset_num - 1) {
+				LM_ResetKeys();
+				reinit = 1;
+				pattern++;
+			}
+		}
+
+		if (Keys[SC_C]) {
+			if (sprite > 0) {
+				LM_ResetKeys();
+				reinit = 1;
+				sprite--;
+			}
+		}
+
+		if (Keys[SC_V]) {
+			if (sprite < SPRITE_NUMBER - 1) {
+				LM_ResetKeys();
+				reinit = 1;
+				sprite++;
+			}
+		}
+
+		if (Keys[SC_LEFT]) {
+			if (screen > 0) {
+				LM_ResetKeys();
+				reinit = 1;
+				screen--;
+			}
+		}
+
+		if (Keys[SC_RIGHT]) {
+			if (screen < game->world->room_num - 1) {
+				LM_ResetKeys();
+				reinit = 1;
+				screen++;
+			}
+		}
+	case 1:
+		if (Keys[SC_ESCAPE]) {
+			editmode = 0;
 			LM_ResetKeys();
 			reinit = 1;
-			pattern++;
 		}
-	}
-
-	if (Keys[SC_C]) {
-		if (sprite > 0) {
-			LM_ResetKeys();
-			reinit = 1;
-			sprite--;
-		}
-	}
-
-	if (Keys[SC_V]) {
-		if (sprite < SPRITE_NUMBER - 1) {
-			LM_ResetKeys();
-			reinit = 1;
-			sprite++;
-		}
-	}
-
-	if (Keys[SC_LEFT]) {
-		if (screen > 0) {
-			LM_ResetKeys();
-			reinit = 1;
-			screen--;
-		}
-	}
-
-	if (Keys[SC_RIGHT]) {
-		if (screen < game->world->room_num - 1) {
-			LM_ResetKeys();
-			reinit = 1;
-			screen++;
-		}
+		break;
 	}
 }
 
