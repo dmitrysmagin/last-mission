@@ -69,6 +69,13 @@ static void ShowEditInfo()
 			sprintf(string, "PATTERN %03i:%03i", cur_pattern, room->pattern_num - 1);
 			PutString(0*8, 21*8, string);
 
+			sprintf(string, "X %03i", pattern->x * 8);
+			PutString(0*8, 22*8, string);
+			sprintf(string, "Y %03i", pattern->y * 8);
+			PutString(0*8, 23*8, string);
+			sprintf(string, "I %03i:%03i", pattern->index, game->world->patternset_num - 1);
+			PutString(0*8, 24*8, string);
+
 			DrawRect(pattern->x*8,
 				 pattern->y*8,
 				 patternset->xs * 8 - 1,
@@ -146,6 +153,7 @@ static void ViewMode()
 static void RoomPatternEdit()
 {
 	ROOM *room = game->world->room + cur_room;
+	PATTERN *pattern = room->pattern + cur_pattern;
 
 	if (Keys[SC_ESCAPE]) {
 		editmode = 0;
@@ -153,7 +161,31 @@ static void RoomPatternEdit()
 		reinit = 1;
 	}
 
+	if (Keys[SC_Z]) {
+		if (pattern->index > 0) {
+			pattern->index--;
+			LM_ResetKeys();
+			reinit = 1;
+		}
+	}
+
+	if (Keys[SC_X]) {
+		if (pattern->index < game->world->patternset_num - 1) {
+			pattern->index++;
+			LM_ResetKeys();
+			reinit = 1;
+		}
+	}
+
 	if (Keys[SC_LEFT]) {
+		if (Keys[SC_SPACE]) {
+			if (pattern->x > 0) {
+				LM_ResetKeys();
+				reinit = 1;
+				pattern->x--;
+				Keys[SC_SPACE] = 1;
+			}
+		} else
 		if (cur_pattern > 0) {
 			LM_ResetKeys();
 			reinit = 1;
@@ -162,10 +194,36 @@ static void RoomPatternEdit()
 	}
 
 	if (Keys[SC_RIGHT]) {
+		if (Keys[SC_SPACE]) {
+			if (pattern->x < 320/8 - 1) {
+				LM_ResetKeys();
+				reinit = 1;
+				pattern->x++;
+				Keys[SC_SPACE] = 1;
+			}
+		} else
 		if (cur_pattern < room->pattern_num - 1) {
 			LM_ResetKeys();
 			reinit = 1;
 			cur_pattern++;
+		}
+	}
+
+	if (Keys[SC_UP] && Keys[SC_SPACE]) {
+		if (pattern->y > 0) {
+			LM_ResetKeys();
+			reinit = 1;
+			pattern->y--;
+			Keys[SC_SPACE] = 1;
+		}
+	}
+
+	if (Keys[SC_DOWN] && Keys[SC_SPACE]) {
+		if (pattern->y < 136/8 - 1) {
+			LM_ResetKeys();
+			reinit = 1;
+			pattern->y++;
+			Keys[SC_SPACE] = 1;
 		}
 	}
 }
