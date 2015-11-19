@@ -19,8 +19,6 @@
 
 #include "sprites.h"
 
-#define SPRITE_NUMBER 57
-
 typedef struct {
 	int x, y, w, h;
 	int dx, dy;

@@ -91,11 +91,23 @@ char LM_PollEvents()
 				case SDLK_e:
 					key_scan = SC_E;
 					break;
+				case SDLK_c:
+					key_scan = SC_C;
+					break;
+				case SDLK_v:
+					key_scan = SC_V;
+					break;
 				case SDLK_s:
 					key_scan = SC_S;
 					break;
 				case SDLK_f:
 					key_scan = SC_F;
+					break;
+				case SDLK_x:
+					key_scan = SC_X;
+					break;
+				case SDLK_z:
+					key_scan = SC_Z;
 					break;
 				case SDLK_TAB: // LEFT SHOULDER
 					key_scan = SC_TAB;
