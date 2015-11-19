@@ -924,7 +924,7 @@ void RotateLogo()
 	}
 
 	dst.x = 96;
-	dst.y = 142 + GAME_YPOS;
+	dst.y = 142;
 	dst.w = logo->w;
 	dst.h = logo->h;
 
@@ -989,11 +989,11 @@ void DoTitle()
 		InitNewScreen();
 		BlitLevel(game->ship_screen);
 		PutSpriteI(50*4, 108, 45, 0);
-		PutString(76, 88 + GAME_YPOS, "ESPACIO PARA COMENZAR");
-		PutString(60, 24 + GAME_YPOS, "ORIGINAL GAME: PEDRO RUIZ");
-		PutString(76, 36 + GAME_YPOS, "REMAKE: DMITRY SMAGIN");
-		PutString(140, 44 + GAME_YPOS, "ALEXEY PAVLOV");
-		PutString(60, 56 + GAME_YPOS, "MUSIC AND SFX: MARK BRAGA");
+		PutString(76, 88 , "ESPACIO PARA COMENZAR");
+		PutString(60, 24, "ORIGINAL GAME: PEDRO RUIZ");
+		PutString(76, 36, "REMAKE: DMITRY SMAGIN");
+		PutString(140, 44, "ALEXEY PAVLOV");
+		PutString(60, 56, "MUSIC AND SFX: MARK BRAGA");
 		ResetDemoTicksCounter();
 	}
 

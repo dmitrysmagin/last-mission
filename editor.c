@@ -43,11 +43,11 @@ static void ShowEditInfo()
 
 		for (int y = 0; y < patternset->ys; y++) {
 			for (int x = 0; x < patternset->xs; x++) {
-				PutTileI(x*8 + 132, y*8 + 19*8, *data++);
+				PutTileI(x*8 + 132, y*8 + 22*8, *data++);
 			}
 		}
 
-		PutSpriteI(30*8, 19*8, sprite, 0);
+		PutSpriteI(30*8, 22*8, sprite, 0);
 		}
 
 		sprintf(string, "ROOM %03i:%03i", screen, game->world->room_num - 1);
