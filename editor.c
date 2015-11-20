@@ -32,56 +32,85 @@ static int cur_sprite = 0;
 static int editmode = 0; /* 0 - view, 1 - edit room */
 static int cur_pattern = 0;
 
-static void ShowEditInfo()
+static void ShowMap()
 {
+	ROOM *room = game->world->room + cur_room;
+	int map[3][3];
 	static char string[32];
 
-	switch (editmode) {
-	case 0: {
-		PATTERNSET *patternset = game->world->patternset + cur_patternset;
-		unsigned char *data = (unsigned char *)patternset->data;
+	memset(map, 0, sizeof(map));
 
-		for (int y = 0; y < patternset->ys; y++) {
-			for (int x = 0; x < patternset->xs; x++) {
-				PutTileI(x*8 + 132, y*8 + 22*8, *data++);
+	map[1][0] = room->up;
+	map[1][1] = cur_room;
+	map[1][2] = room->down;
+	map[0][1] = room->left;
+	map[2][1] = room->right;
+
+	for (int y = 0; y < 3; y++)
+		for (int x = 0; x < 3; x++) {
+			if (map[x][y]) {
+				sprintf(string, "%03i", map[x][y]);
+				PutString(x*8*4 + 16, y*8 + 25*8, string);
 			}
 		}
+}
 
-		PutSpriteI(30*8, 22*8, cur_sprite, 0);
+static void ShowViewModeInfo()
+{
+	static char string[32];
+	PATTERNSET *patternset = game->world->patternset + cur_patternset;
+	unsigned char *data = (unsigned char *)patternset->data;
+
+	for (int y = 0; y < patternset->ys; y++) {
+		for (int x = 0; x < patternset->xs; x++) {
+			PutTileI(x*8 + 132, y*8 + 22*8, *data++);
 		}
+	}
 
-		sprintf(string, "ROOM    %03i:%03i", cur_room, game->world->room_num - 1);
-		PutString(0*8, 21*8, string);
-		sprintf(string, "PTRNSET %03i:%03i", cur_patternset, game->world->patternset_num - 1);
-		PutString(0*8, 22*8, string);
-		sprintf(string, "SPRTSET %03i:%03i", cur_sprite, SPRITE_NUMBER - 1);
-		PutString(0*8, 23*8, string);
+	PutSpriteI(30*8, 22*8, cur_sprite, 0);
 
-		PutString(16*8, 20*8, "VIEW MODE");
-		break;
-	case 1: {
-			ROOM *room = game->world->room + cur_room;
-			PATTERN *pattern = room->pattern + cur_pattern;
-			PATTERNSET *patternset = game->world->patternset + pattern->index;
+	sprintf(string, "ROOM    %03i:%03i", cur_room, game->world->room_num - 1);
+	PutString(0*8, 21*8, string);
+	sprintf(string, "PTRNSET %03i:%03i", cur_patternset, game->world->patternset_num - 1);
+	PutString(0*8, 22*8, string);
+	sprintf(string, "SPRTSET %03i:%03i", cur_sprite, SPRITE_NUMBER - 1);
+	PutString(0*8, 23*8, string);
 
-			PutString(16*8, 20*8, "ROOM EDIT");
+	PutString(16*8, 20*8, "VIEW MODE");
 
-			sprintf(string, "PATTERN %03i:%03i", cur_pattern, room->pattern_num - 1);
-			PutString(0*8, 21*8, string);
+	ShowMap();
+}
 
-			sprintf(string, "X %03i", pattern->x * 8);
-			PutString(0*8, 22*8, string);
-			sprintf(string, "Y %03i", pattern->y * 8);
-			PutString(0*8, 23*8, string);
-			sprintf(string, "I %03i:%03i", pattern->index, game->world->patternset_num - 1);
-			PutString(0*8, 24*8, string);
+static void ShowEditModeInfo()
+{
+	static char string[32];
+	ROOM *room = game->world->room + cur_room;
+	PATTERN *pattern = room->pattern + cur_pattern;
+	PATTERNSET *patternset = game->world->patternset + pattern->index;
 
-			DrawRect(pattern->x*8,
-				 pattern->y*8,
-				 patternset->xs * 8 - 1,
-				 patternset->ys * 8 - 1, RGB(255, 0, 255));
-			break;
-		}
+	PutString(16*8, 20*8, "ROOM EDIT");
+
+	sprintf(string, "PATTERN %03i:%03i", cur_pattern, room->pattern_num - 1);
+	PutString(0*8, 21*8, string);
+
+	sprintf(string, "X %03i", pattern->x * 8);
+	PutString(0*8, 22*8, string);
+	sprintf(string, "Y %03i", pattern->y * 8);
+	PutString(0*8, 23*8, string);
+	sprintf(string, "I %03i:%03i", pattern->index, game->world->patternset_num - 1);
+	PutString(0*8, 24*8, string);
+
+	DrawRect(pattern->x*8,
+		 pattern->y*8,
+		 patternset->xs * 8 - 1,
+		 patternset->ys * 8 - 1, RGB(255, 0, 255));
+}
+
+static void ShowInfo()
+{
+	switch (editmode) {
+	case 0: ShowViewModeInfo(); break;
+	case 1: ShowEditModeInfo(); break;
 	}
 }
 
@@ -239,7 +268,7 @@ void DoEdit()
 		InitEnemies(cur_room);
 		BlitLevel(cur_room);
 		BlitEnemies();
-		ShowEditInfo();
+		ShowInfo();
 		reinit = 0;
 	}
 
