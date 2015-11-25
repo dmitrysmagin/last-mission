@@ -70,7 +70,7 @@ typedef struct {
 
 typedef struct {
 	int xs, ys;
-	char *data;
+	unsigned short *data;
 } PATTERNSET;
 
 typedef struct {

@@ -110,16 +110,20 @@ int main()
 	// fill PATTERNSET data
 	for(i = 0; i < NUM_PATTERNS; i++) {
 		PATTERNSET *patternset = world->patternset + i;
-		unsigned char *p;
+		unsigned char *src;
+		unsigned short *dst;
 		int size;
 
-		p = PATTERNS[i];
-		patternset->xs = p[0];
-		patternset->ys = p[1];
-		size = p[0] * p[1];
+		src = PATTERNS[i];
+		patternset->xs = src[0];
+		patternset->ys = src[1];
+		size = src[0] * src[1];
 
-		patternset->data = malloc(size);
-		memcpy(patternset->data, p+2, size);
+		patternset->data = dst = malloc(size * sizeof(short));
+		src += 2;
+
+		while(size--)
+			*dst++ = *src++;
 	}
 
 	// save data to file

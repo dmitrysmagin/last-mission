@@ -59,7 +59,7 @@ static void ShowViewModeInfo()
 {
 	static char string[32];
 	PATTERNSET *patternset = game->world->patternset + cur_patternset;
-	unsigned char *data = (unsigned char *)patternset->data;
+	unsigned short *data = (unsigned short *)patternset->data;
 
 	for (int y = 0; y < patternset->ys; y++) {
 		for (int x = 0; x < patternset->xs; x++) {

@@ -39,23 +39,20 @@ void UnpackLevel(WORLD *world, int room)
 	int count = (world->room + room)->pattern_num;
 
 	for (;count-- > 0; pattern++) {
-		int xPos = pattern->x;
-		int yPos = pattern->y;
-
 		PATTERNSET *patternset = world->patternset + pattern->index;
-		unsigned char *ps = (unsigned char *)patternset->data;
-		unsigned short *dst = (unsigned short *)&screen[yPos * ROOM_WIDTH + xPos];
+		unsigned short *src = patternset->data;
+		unsigned short *dst = &screen[pattern->y * ROOM_WIDTH + pattern->x];
 
 		int dy = patternset->ys;
 		int dx = patternset->xs;
 
 		for (int y = 0; y < dy; y++, dst += ROOM_WIDTH - dx)
-			for (int x = 0; x < dx; x++, ps++, dst++) {
+			for (int x = 0; x < dx; x++, src++, dst++) {
 				if (dst >= end)
 					break;
 
-				if (x + xPos < ROOM_WIDTH && *ps)
-					*dst = *ps;
+				if (x + pattern->x < ROOM_WIDTH && *src)
+					*dst = *src;
 			}
 	}
 }

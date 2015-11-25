@@ -367,14 +367,14 @@ static int fread_ROOM_BGLINE(WORLD *world, FILE *fp)
 	return 1;
 }
 
-static void fwrite_PATTERNSET_array(int pxs, int ys, char *data, FILE *fp)
+static void fwrite_PATTERNSET_array(int pxs, int ys, unsigned short *data, FILE *fp)
 {
 	char g_string[256];
 
 	for (; ys > 0; ys--) {
 		strcpy(g_string, "\t");
 		for (int xs = pxs; xs > 0; xs--) {
-			sprintf(g_string + strlen(g_string), " %hhu", *data++);
+			sprintf(g_string + strlen(g_string), " %hu", *data++);
 		}
 		strcat(g_string, "\n");
 		fputs(g_string, fp);
@@ -399,7 +399,7 @@ static void fwrite_PATTERNSET(WORLD *world, FILE *fp)
 	}
 }
 
-static int fread_PATTERNSET_array(int pxs, int ys, char *data, FILE *fp)
+static int fread_PATTERNSET_array(int pxs, int ys, unsigned short *data, FILE *fp)
 {
 	char g_string[256];
 
@@ -440,8 +440,8 @@ static int fread_PATTERNSET(WORLD *world, FILE *fp)
 			goto _again;
 
 		/* Allocate patternset data */
-		patternset->data = (char *)
-			calloc(patternset->ys, patternset->xs);
+		patternset->data = (unsigned short *)
+			calloc(patternset->ys, patternset->xs * sizeof(short));
 
 		if (!fread_PATTERNSET_array(patternset->xs,
 					    patternset->ys,
