@@ -10,7 +10,7 @@
 #define ROOM_WIDTH (SCREEN_WIDTH/8)
 #define ROOM_HEIGHT (ACTION_SCREEN_HEIGHT/8)
 
-static unsigned char ScreenTilesBuffer[ROOM_WIDTH * ROOM_HEIGHT];
+static unsigned short screen[ROOM_WIDTH * ROOM_HEIGHT];
 
 int GetTileI(int x, int y)
 {
@@ -18,7 +18,7 @@ int GetTileI(int x, int y)
 	    y < 0 || y > ROOM_HEIGHT)
 		return 0;
 
-	return ScreenTilesBuffer[y * ROOM_WIDTH + x];
+	return screen[y * ROOM_WIDTH + x];
 }
 
 void SetTileI(int x, int y, int i)
@@ -27,14 +27,14 @@ void SetTileI(int x, int y, int i)
 	    y < 0 || y > ROOM_HEIGHT)
 		return;
 
-	ScreenTilesBuffer[y * ROOM_WIDTH + x] = i;
+	screen[y * ROOM_WIDTH + x] = i;
 }
 
 void UnpackLevel(WORLD *world, int room)
 {
-	memset(ScreenTilesBuffer, 0x00, sizeof(ScreenTilesBuffer));
+	memset(screen, 0, sizeof(screen));
 
-	unsigned char *endOfScreen = ScreenTilesBuffer + sizeof(ScreenTilesBuffer);
+	unsigned short *end = screen + sizeof(screen);
 	PATTERN *pattern = (world->room + room)->pattern;
 	int count = (world->room + room)->pattern_num;
 
@@ -44,18 +44,18 @@ void UnpackLevel(WORLD *world, int room)
 
 		PATTERNSET *patternset = world->patternset + pattern->index;
 		unsigned char *ps = (unsigned char *)patternset->data;
-		unsigned char *pd = (unsigned char *)&ScreenTilesBuffer[yPos * ROOM_WIDTH + xPos];
+		unsigned short *dst = (unsigned short *)&screen[yPos * ROOM_WIDTH + xPos];
 
 		int dy = patternset->ys;
 		int dx = patternset->xs;
 
-		for (int y = 0; y < dy; y++, pd += ROOM_WIDTH - dx)
-			for (int x = 0; x < dx; x++, ps++, pd++) {
-				if (pd >= endOfScreen)
+		for (int y = 0; y < dy; y++, dst += ROOM_WIDTH - dx)
+			for (int x = 0; x < dx; x++, ps++, dst++) {
+				if (dst >= end)
 					break;
 
 				if (x + xPos < ROOM_WIDTH && *ps)
-					*pd = *ps;
+					*dst = *ps;
 			}
 	}
 }
@@ -64,7 +64,7 @@ void BlitLevel(int room)
 {
 	for (int y = 0; y < ROOM_HEIGHT; y++)
 		for (int x = 0; x < ROOM_WIDTH; x++)
-			PutTileI(x*8, y*8, ScreenTilesBuffer[y*ROOM_WIDTH+x]);
+			PutTileI(x*8, y*8, screen[y*ROOM_WIDTH+x]);
 }
 
 void BlitLevelOutlines(WORLD *world, int room)
@@ -73,7 +73,7 @@ void BlitLevelOutlines(WORLD *world, int room)
 
 	for (int y = 0; y < ROOM_HEIGHT; y++)
 		for (int x = 0; x < ROOM_WIDTH; x++)
-			PutTileS(x*8, y*8, ScreenTilesBuffer[y*ROOM_WIDTH+x], shadow);
+			PutTileS(x*8, y*8, screen[y*ROOM_WIDTH+x], shadow);
 }
 
 void BlitBackground(WORLD *world, int room)
