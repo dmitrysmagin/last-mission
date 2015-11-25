@@ -90,7 +90,9 @@ typedef struct {
 	int tileset_num;	// not used yet
 	int fontset_num;	// not used yet
 	int bgspriteset_num;	// not used yet
+	int maph, mapw;
 
+	unsigned short *map;
 	ROOM *room;
 	PATTERNSET *patternset;
 	SPRITESET *spriteset;	// not used yet

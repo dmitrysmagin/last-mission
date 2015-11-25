@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "map.c"
 #include "m_scr.c"
 #include "screenlines/m_scr_lines.c"
 #include "m_data.c"
@@ -22,6 +23,12 @@ int main()
 
 	// allocate WORLD structure
 	world = (WORLD *)calloc(1, sizeof(WORLD));
+
+	// allocate map
+	world->maph = 14;
+	world->mapw = 24;
+	world->map = (unsigned short *)calloc(14, 24 * sizeof(short));
+	memcpy(world->map, defaultmap, 14 * 24 * sizeof(short));
 
 	// allocate an array of ROOM's
 	world->room_num = NUM_SCREENS;
