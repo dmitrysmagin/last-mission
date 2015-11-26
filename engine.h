@@ -50,6 +50,8 @@ typedef struct TGAMEDATA {
 	int hidden_level_entered;
 	int ticks_for_damage;
 	int garages[MAX_GARAGES][2];
+	int mapx, mapy; /* current position in map */
+	int rmapx, rmapy;
 
 	WORLD *world;
 } TGAMEDATA;

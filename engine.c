@@ -107,26 +107,36 @@ void SetGameMode(int mode)
 	}
 }
 
-unsigned char ChangeScreen(int flag)
+int getscreen(int mapx, int mapy)
 {
 	WORLD *world = game->world;
-	int result;
+
+	if (mapx < 0 || mapx >= world->mapw)
+		return 0;
+
+	if (mapy < 0 || mapy >= world->maph)
+		return 0;
+
+	return world->map[mapy * world->mapw + mapx];
+}
+
+unsigned char ChangeScreen(int flag)
+{
+	int result = 0;
 
 	switch (flag) {
 	case F_UP:
-		result = (world->room + game->ship_screen)->up;
+		result = getscreen(game->mapx, game->mapy - 1);
 		break;
 	case F_RIGHT:
-		result = (world->room + game->ship_screen)->right;
+		result = getscreen(game->mapx + 1, game->mapy);
 		break;
 	case F_DOWN:
-		result = (world->room + game->ship_screen)->down;
+		result = getscreen(game->mapx, game->mapy + 1);
 		break;
 	case F_LEFT:
-		result = (world->room + game->ship_screen)->left;
+		result = getscreen(game->mapx - 1, game->mapy);
 		break;
-	default:
-		result = 0;
 	}
 
 	if (result == 0)
@@ -150,6 +160,13 @@ unsigned char ChangeScreen(int flag)
 	}
 
 	game->ship_screen = result;
+
+	switch (flag) {
+	case F_UP:	game->mapy--; break;
+	case F_RIGHT:	game->mapx++; break;
+	case F_DOWN:	game->mapy++; break;
+	case F_LEFT:	game->mapx--; break;
+	}
 
 	return 1;
 }
@@ -802,6 +819,9 @@ void InitNewGame()
 	game->player_attached = 0;
 	game->hidden_level_entered = 0;
 
+	game->rmapx = game->mapx = 0;
+	game->rmapy = game->mapy = 11;
+
 	InitGaragesForNewGame();
 	InitShip();
 	InitNewScreen();
@@ -839,6 +859,9 @@ void RestartLevel()
 	game->ship_screen = game->base_restart_screen;
 	game->base_screen = game->base_restart_screen;
 	game->elevator_flag = 0;
+
+	game->mapx = game->rmapx;
+	game->mapy = game->rmapy;
 
 	InitShip();
 	InitNewScreen();
