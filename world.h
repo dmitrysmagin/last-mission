@@ -55,7 +55,6 @@ typedef struct {
 	unsigned int line_light;
 	unsigned int line_shadow;
 
-	int up, right, down, left; // screens
 	int procedure; // 3 - win screen
 	int bonus;
 

@@ -202,14 +202,13 @@ static void fwrite_ROOM(WORLD *world, FILE *fp)
 	for (i = 0; i < world->room_num; i++) {
 		ROOM *room = world->room + i;
 
-		sprintf(g_string, "ROOM %d %d %d %d %d %d %x %x %x %x %d %d %d %d %d %d\n",
+		sprintf(g_string, "ROOM %d %d %d %d %d %d %x %x %x %x %d %d\n",
 			room->xs, room->ys,
 			room->pattern_num,
 			room->object_num,
 			room->bg_type,
 			room->bg_num,
 			room->background, room->shadow, room->line_light, room->line_shadow,
-			room->up, room->right, room->down, room->left,
 			room->procedure,
 			room->bonus);
 		fputs(g_string, fp);
@@ -231,7 +230,7 @@ static int fread_ROOM(WORLD *world, FILE *fp)
 			return 0;
 		}
 
-		sscanf(g_string, "%s %d %d %d %d %d %d %x %x %x %x %d %d %d %d %d %d",
+		sscanf(g_string, "%s %d %d %d %d %d %d %x %x %x %x %d %d",
 			(char *)&arg1,
 			&room->xs, &room->ys,
 			&room->pattern_num,
@@ -239,7 +238,6 @@ static int fread_ROOM(WORLD *world, FILE *fp)
 			&room->bg_type,
 			&room->bg_num,
 			&room->background, &room->shadow, &room->line_light, &room->line_shadow,
-			&room->up, &room->right, &room->down, &room->left,
 			&room->procedure,
 			&room->bonus);
 

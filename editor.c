@@ -34,17 +34,10 @@ static int cur_pattern = 0;
 
 static void ShowMap()
 {
-	ROOM *room = game->world->room + cur_room;
 	int map[3][3];
 	static char string[32];
 
 	memset(map, 0, sizeof(map));
-
-	map[1][0] = room->up;
-	map[1][1] = cur_room;
-	map[1][2] = room->down;
-	map[0][1] = room->left;
-	map[2][1] = room->right;
 
 	for (int y = 0; y < 3; y++)
 		for (int x = 0; x < 3; x++) {

@@ -59,11 +59,6 @@ int main()
 		// fill info on moving objects (enemies)
 		p = SCREENINFOS[i];
 
-		room->up    = p[0];
-		room->right = p[1];
-		room->down  = p[2];
-		room->left  = p[3];
-
 		room->object_num = p[4];
 		room->object     = (OBJECT *)calloc(p[4], sizeof(OBJECT));
 
