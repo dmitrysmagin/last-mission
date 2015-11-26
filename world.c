@@ -33,6 +33,39 @@
 #define DPRINTF(...)
 #endif
 
+static void fwrite_array(int pxs, int ys, unsigned short *data, FILE *fp)
+{
+	char g_string[256];
+
+	for (; ys > 0; ys--) {
+		strcpy(g_string, "\t");
+		for (int xs = pxs; xs > 0; xs--) {
+			sprintf(g_string + strlen(g_string), " %hu", *data++);
+		}
+		strcat(g_string, "\n");
+		fputs(g_string, fp);
+	}
+}
+
+static int fread_array(int pxs, int ys, unsigned short *data, FILE *fp)
+{
+	char g_string[256];
+
+	for (; ys > 0; ys--) {
+		char *p = g_string;
+
+		if (!fgets(g_string, sizeof(g_string), fp))
+			return 0;
+
+		/* FIXME: Check for errors here */
+		for (int xs = pxs; xs > 0; xs--) {
+			*data++ = strtoul(p, &p, 10);
+		}
+	}
+
+	return 1;
+}
+
 static void fwrite_HEADER(FILE *fp)
 {
 	fputs("# The Last Mission data file, do not edit!\n",fp);
@@ -112,6 +145,51 @@ _again:
 		calloc(world->room_num, sizeof(ROOM));
 	world->patternset = (PATTERNSET *)
 		calloc(world->patternset_num, sizeof(PATTERNSET));
+
+	return 1;
+}
+
+static void fwrite_MAP(WORLD *world, FILE *fp)
+{
+	char g_string[256];
+
+	sprintf(g_string, "MAP %d %d\n", world->maph, world->mapw);
+	fputs(g_string, fp);
+
+	fwrite_array(world->mapw, world->maph, world->map, fp);
+}
+
+static int fread_MAP(WORLD *world, FILE *fp)
+{
+	char g_string[256];
+	char arg1[128];
+
+_again:
+	if (!fgets(g_string, sizeof(g_string), fp)) {
+		DPRINTF("Error reading MAP chunk\n");
+		return 0;
+	}
+
+	sscanf(g_string, "%s %d %d",
+		(char *)&arg1,
+		&world->maph, &world->mapw);
+
+
+	if (strcmp(arg1, "MAP"))
+		goto _again;
+
+	DPRINTF("MAP chunk found; width: %d, height: %d\n",
+		world->maph, world->mapw);
+
+	world->map = (unsigned short *)
+		calloc(world->maph, world->mapw * sizeof(short));
+
+	if (!fread_array(world->mapw,
+			    world->maph,
+			    world->map, fp)) {
+		DPRINTF("Error reading MAP chunk %d\n", i);
+		return 0;
+	}
 
 	return 1;
 }
@@ -367,20 +445,6 @@ static int fread_ROOM_BGLINE(WORLD *world, FILE *fp)
 	return 1;
 }
 
-static void fwrite_PATTERNSET_array(int pxs, int ys, unsigned short *data, FILE *fp)
-{
-	char g_string[256];
-
-	for (; ys > 0; ys--) {
-		strcpy(g_string, "\t");
-		for (int xs = pxs; xs > 0; xs--) {
-			sprintf(g_string + strlen(g_string), " %hu", *data++);
-		}
-		strcat(g_string, "\n");
-		fputs(g_string, fp);
-	}
-}
-
 static void fwrite_PATTERNSET(WORLD *world, FILE *fp)
 {
 	char g_string[256];
@@ -393,29 +457,10 @@ static void fwrite_PATTERNSET(WORLD *world, FILE *fp)
 			patternset->xs, patternset->ys);
 		fputs(g_string, fp);
 
-		fwrite_PATTERNSET_array(patternset->xs,
+		fwrite_array(patternset->xs,
 					patternset->ys,
 					patternset->data, fp);
 	}
-}
-
-static int fread_PATTERNSET_array(int pxs, int ys, unsigned short *data, FILE *fp)
-{
-	char g_string[256];
-
-	for (; ys > 0; ys--) {
-		char *p = g_string;
-
-		if (!fgets(g_string, sizeof(g_string), fp))
-			return 0;
-
-		/* FIXME: Check for errors here */
-		for (int xs = pxs; xs > 0; xs--) {
-			*data++ = strtoul(p, &p, 10);
-		}
-	}
-
-	return 1;
 }
 
 static int fread_PATTERNSET(WORLD *world, FILE *fp)
@@ -443,7 +488,7 @@ static int fread_PATTERNSET(WORLD *world, FILE *fp)
 		patternset->data = (unsigned short *)
 			calloc(patternset->ys, patternset->xs * sizeof(short));
 
-		if (!fread_PATTERNSET_array(patternset->xs,
+		if (!fread_array(patternset->xs,
 					    patternset->ys,
 					    patternset->data, fp)) {
 			DPRINTF("Error reading PATTERNSET chunk %d\n", i);
@@ -465,6 +510,7 @@ void save_world(char *name, WORLD *world)
 
 	fwrite_HEADER(fp);
 	fwrite_WORLD(world, fp);
+	fwrite_MAP(world, fp);
 	fwrite_ROOM(world, fp);
 	fwrite_ROOM_PATTERN(world, fp);
 	fwrite_ROOM_OBJECT(world, fp);
@@ -492,6 +538,9 @@ WORLD *load_world(char *name)
 		goto _exit_sub;
 
 	if (!fread_WORLD(world, fp))
+		goto _exit_sub;
+
+	if (!fread_MAP(world, fp))
 		goto _exit_sub;
 
 	if (!fread_ROOM(world, fp))
@@ -535,6 +584,11 @@ void free_world(WORLD *world)
 			free(room->bgline);
 			room->bgline = NULL;
 		}
+	}
+
+	if (world->map) {
+		free(world->map);
+		world->map = NULL;
 	}
 
 	if (world->room) {
