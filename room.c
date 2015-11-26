@@ -14,8 +14,8 @@ static unsigned short screen[ROOM_WIDTH * ROOM_HEIGHT];
 
 int GetTileI(int x, int y)
 {
-	if (x < 0 || x > ROOM_WIDTH ||
-	    y < 0 || y > ROOM_HEIGHT)
+	if (x < 0 || x >= ROOM_WIDTH ||
+	    y < 0 || y >= ROOM_HEIGHT)
 		return 0;
 
 	return screen[y * ROOM_WIDTH + x];
@@ -23,8 +23,8 @@ int GetTileI(int x, int y)
 
 void SetTileI(int x, int y, int i)
 {
-	if (x < 0 || x > ROOM_WIDTH ||
-	    y < 0 || y > ROOM_HEIGHT)
+	if (x < 0 || x >= ROOM_WIDTH ||
+	    y < 0 || y >= ROOM_HEIGHT)
 		return;
 
 	screen[y * ROOM_WIDTH + x] = i;
