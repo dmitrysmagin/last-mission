@@ -30,7 +30,7 @@ void SetTileI(int x, int y, int i)
 	screen[y * ROOM_WIDTH + x] = i;
 }
 
-void UnpackLevel(WORLD *world, int room)
+void UnpackRoom(WORLD *world, int room)
 {
 	memset(screen, 0, sizeof(screen));
 
@@ -57,14 +57,14 @@ void UnpackLevel(WORLD *world, int room)
 	}
 }
 
-void BlitLevel(int room)
+void BlitRoom()
 {
 	for (int y = 0; y < ROOM_HEIGHT; y++)
 		for (int x = 0; x < ROOM_WIDTH; x++)
 			PutTileI(x*8, y*8, screen[y*ROOM_WIDTH+x]);
 }
 
-void BlitLevelOutlines(WORLD *world, int room)
+void BlitRoomOutlines(WORLD *world, int room)
 {
 	unsigned int shadow = (world->room + room)->shadow;
 

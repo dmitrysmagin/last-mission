@@ -5,9 +5,9 @@
 
 int GetTileI(int x, int y);
 void SetTileI(int x, int y, int i);
-void UnpackLevel(WORLD *world, int room);
-void BlitLevel(int room);
-void BlitLevelOutlines(WORLD *world, int room);
+void UnpackRoom(WORLD *world, int room);
+void BlitRoom();
+void BlitRoomOutlines(WORLD *world, int room);
 void BlitBackground(WORLD *world, int room);
 
 #endif //_ROOM_H_

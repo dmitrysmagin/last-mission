@@ -254,12 +254,12 @@ void DoEdit()
 {
 	if (reinit) {
 		ClearScreen();
-		UnpackLevel(game->world, cur_room);
+		UnpackRoom(game->world, cur_room);
+		BlitRoom();
 		InitGaragesForNewGame();
 		GarageRestore();
 		gObj_DestroyAll();
 		InitEnemies(cur_room);
-		BlitLevel(cur_room);
 		BlitEnemies();
 		ShowInfo();
 		reinit = 0;
