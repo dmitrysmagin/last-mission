@@ -32,8 +32,41 @@ static int cur_sprite = 0;
 static int editmode = 0; /* 0 - view, 1 - edit room */
 static int cur_pattern = 0;
 
+/* FIXME: eliminate later */
+extern SDL_Surface *small_screen;
+
+void ReDraw()
+{
+	ClearScreen();
+	UnpackRoom(game->world, cur_room);
+	BlitRoom();
+	InitGaragesForNewGame();
+	GarageRestore();
+	gObj_DestroyAll();
+	InitEnemies(cur_room);
+	BlitEnemies();
+}
+
 static void ShowMap()
 {
+	SDL_Rect dst;
+	/* Backup small_screen */
+	SDL_Surface *old_screen = small_screen;
+
+	/* Reassign it temporarily */
+	small_screen =
+		SDL_CreateRGBSurface(SDL_SWSURFACE, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT,
+				     GAME_SCREEN_BPP, 0, 0, 0, 0);
+
+	ReDraw();
+
+	dst.x = 0;
+	dst.y = 0;
+	dst.w = SCREEN_WIDTH/2;
+	dst.h = ACTION_SCREEN_HEIGHT/2;
+	SDL_SoftStretch(small_screen, NULL, old_screen, &dst);
+
+#if 0
 	int map[3][3];
 	static char string[32];
 
@@ -46,6 +79,9 @@ static void ShowMap()
 				PutString(x*8*4 + 16, y*8 + 25*8, string);
 			}
 		}
+#endif
+	SDL_FreeSurface(small_screen);
+	small_screen = old_screen;
 }
 
 static void ShowViewModeInfo()
@@ -70,8 +106,6 @@ static void ShowViewModeInfo()
 	PutString(0*8, 23*8, string);
 
 	PutString(16*8, 20*8, "VIEW MODE");
-
-	ShowMap();
 }
 
 static void ShowEditModeInfo()
@@ -253,15 +287,9 @@ static void RoomPatternEdit()
 void DoEdit()
 {
 	if (reinit) {
-		ClearScreen();
-		UnpackRoom(game->world, cur_room);
-		BlitRoom();
-		InitGaragesForNewGame();
-		GarageRestore();
-		gObj_DestroyAll();
-		InitEnemies(cur_room);
-		BlitEnemies();
+		ReDraw();
 		ShowInfo();
+		ShowMap();
 		reinit = 0;
 	}
 
