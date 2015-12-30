@@ -69,6 +69,7 @@ void BlitEnemies();
 #define F_DOWN 2
 #define F_LEFT 3
 
+int getscreen(int mapx, int mapy);
 unsigned char ChangeScreen(int flag);
 void RestartLevel();
 void InitNewScreen();

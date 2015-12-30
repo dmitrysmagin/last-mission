@@ -25,25 +25,36 @@
 #include "editor.h"
 #include "room.h"
 
+#define EDIT_MAP	0
+#define EDIT_ROOMVIEW	1
+#define EDIT_ROOM	2
+#define EDIT_MACROTILE	3
+#define EDIT_SPRITESET	4
+
+/* Scary macro to make code more readable */
+#define ON_PRESS(SC, COND, ACT) \
+if (Keys[SC] && (COND)) { ACT; LM_ResetKeys(); reinit = 1; }
+
 static int reinit = 1;
 static int cur_room = 1;
 static int cur_patternset = 0;
 static int cur_sprite = 0;
-static int editmode = 0; /* 0 - view, 1 - edit room */
+static int editmode = EDIT_ROOMVIEW;
 static int cur_pattern = 0;
+static int cur_mapx = 0, cur_mapy = 11;
 
 /* FIXME: eliminate later */
 extern SDL_Surface *small_screen;
 
-void ReDraw()
+void ReDraw(int roomnum)
 {
 	ClearScreen();
-	UnpackRoom(game->world, cur_room);
+	UnpackRoom(game->world, roomnum);
 	BlitRoom();
 	InitGaragesForNewGame();
 	GarageRestore();
 	gObj_DestroyAll();
-	InitEnemies(cur_room);
+	InitEnemies(roomnum);
 	BlitEnemies();
 }
 
@@ -58,30 +69,40 @@ static void ShowMap()
 		SDL_CreateRGBSurface(SDL_SWSURFACE, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT,
 				     GAME_SCREEN_BPP, 0, 0, 0, 0);
 
-	ReDraw();
-
-	dst.x = 0;
-	dst.y = 0;
-	dst.w = SCREEN_WIDTH/2;
-	dst.h = ACTION_SCREEN_HEIGHT/2;
-	SDL_SoftStretch(small_screen, NULL, old_screen, &dst);
-
-#if 0
-	int map[3][3];
-	static char string[32];
-
-	memset(map, 0, sizeof(map));
-
-	for (int y = 0; y < 3; y++)
+	for (int y = 0; y < 5; y++)
 		for (int x = 0; x < 3; x++) {
-			if (map[x][y]) {
-				sprintf(string, "%03i", map[x][y]);
-				PutString(x*8*4 + 16, y*8 + 25*8, string);
+			int roomnum = getscreen(cur_mapx + x - 1, cur_mapy + y - 2);
+
+			if (roomnum) {
+				ReDraw(roomnum);
+
+				dst.x = 107 * x;
+				dst.y = 46 * y;
+				dst.w = SCREEN_WIDTH/3;
+				dst.h = ACTION_SCREEN_HEIGHT/3;
+				SDL_SoftStretch(small_screen, NULL, old_screen, &dst);
 			}
 		}
-#endif
+
 	SDL_FreeSurface(small_screen);
 	small_screen = old_screen;
+
+	DrawRect(107, 46*2, 106, 45, RGB(255, 0, 255));
+}
+
+static void MapEdit()
+{
+	if (reinit) {
+		ClearScreen();
+		ShowMap();
+		reinit = 0;
+	}
+
+	ON_PRESS(SC_LEFT, cur_mapx > 0, cur_mapx--);
+	ON_PRESS(SC_RIGHT, cur_mapx < game->world->mapw - 1, cur_mapx++);
+	ON_PRESS(SC_UP, cur_mapy > 0, cur_mapy--);
+	ON_PRESS(SC_DOWN, cur_mapy < game->world->maph - 1, cur_mapy++);
+	ON_PRESS(SC_ESCAPE, 1, SetGameMode(GM_TITLE));
 }
 
 static void ShowViewModeInfo()
@@ -133,18 +154,16 @@ static void ShowEditModeInfo()
 		 patternset->ys * 8 - 1, RGB(255, 0, 255));
 }
 
-static void ShowInfo()
+static void RoomView()
 {
-	switch (editmode) {
-	case 0: ShowViewModeInfo(); break;
-	case 1: ShowEditModeInfo(); break;
+	if (reinit) {
+		ReDraw(cur_room);
+		ShowViewModeInfo();
+		reinit = 0;
 	}
-}
 
-static void ViewMode()
-{
 	if (Keys[SC_ENTER]) {
-		editmode = 1;
+		editmode = EDIT_ROOM;
 		cur_pattern = 0;
 		LM_ResetKeys();
 		reinit = 1;
@@ -206,24 +225,22 @@ static void ViewMode()
 
 }
 
-static void RoomPatternEdit()
+static void RoomEdit()
 {
 	ROOM *room = game->world->room + cur_room;
 	PATTERN *pattern = room->pattern + cur_pattern;
 
-	if (Keys[SC_ESCAPE]) {
-		editmode = 0;
-		LM_ResetKeys();
-		reinit = 1;
+	if (reinit) {
+		ReDraw(cur_room);
+		ShowEditModeInfo();
+		reinit = 0;
 	}
 
-	if (Keys[SC_Z]) {
-		if (pattern->index > 0) {
-			pattern->index--;
-			LM_ResetKeys();
-			reinit = 1;
-		}
-	}
+	ON_PRESS(SC_ESCAPE, 1, editmode = EDIT_ROOMVIEW);
+	ON_PRESS(SC_Z, pattern->index > 0, pattern->index--);
+	ON_PRESS(SC_X, pattern->index < game->world->patternset_num - 1,
+		pattern->index++)
+
 
 	if (Keys[SC_X]) {
 		if (pattern->index < game->world->patternset_num - 1) {
@@ -286,20 +303,14 @@ static void RoomPatternEdit()
 
 void DoEdit()
 {
-	if (reinit) {
-		ReDraw();
-		ShowInfo();
-		ShowMap();
-		reinit = 0;
-	}
+	/* Check changing edit mode */
+	ON_PRESS(SC_TAB, editmode > 0, editmode--);
+	ON_PRESS(SC_BACKSPACE, editmode < EDIT_SPRITESET, editmode++);
 
 	switch (editmode) {
-	case 0:
-		ViewMode();
-		break;
-	case 1:
-		RoomPatternEdit();
-		break;
+	case EDIT_MAP:		MapEdit(); break;
+	case EDIT_ROOMVIEW:	RoomView(); break;
+	case EDIT_ROOM:		RoomEdit(); break;
 	}
 }
 
