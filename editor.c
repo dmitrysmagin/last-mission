@@ -33,7 +33,10 @@
 
 /* Scary macro to make code more readable */
 #define ON_PRESS(SC, COND, ACT) \
-if (Keys[SC] && (COND)) { ACT; LM_ResetKeys(); reinit = 1; }
+if (Keys[SC] && (COND)) { LM_ResetKeys(); reinit = 1; ACT; }
+
+#define ELSE(COND, ACT) \
+else if (COND) {ACT; LM_ResetKeys(); reinit = 1; }
 
 static int reinit = 1;
 static int cur_room = 1;
@@ -162,67 +165,16 @@ static void RoomView()
 		reinit = 0;
 	}
 
-	if (Keys[SC_ENTER]) {
-		editmode = EDIT_ROOM;
-		cur_pattern = 0;
-		LM_ResetKeys();
-		reinit = 1;
-	}
-
-	if (Keys[SC_ESCAPE]) {
-		SetGameMode(GM_TITLE);
-		LM_ResetKeys();
-		reinit = 1;
-	}
-
-	if (Keys[SC_Z]) {
-		if (cur_patternset > 0) {
-			LM_ResetKeys();
-			reinit = 1;
-			cur_patternset--;
-		}
-	}
-
-	if (Keys[SC_X]) {
-		if (cur_patternset < game->world->patternset_num - 1) {
-			LM_ResetKeys();
-			reinit = 1;
-			cur_patternset++;
-		}
-	}
-
-	if (Keys[SC_C]) {
-		if (cur_sprite > 0) {
-			LM_ResetKeys();
-			reinit = 1;
-			cur_sprite--;
-		}
-	}
-
-	if (Keys[SC_V]) {
-		if (cur_sprite < SPRITE_NUMBER - 1) {
-			LM_ResetKeys();
-			reinit = 1;
-			cur_sprite++;
-		}
-	}
-
-	if (Keys[SC_LEFT]) {
-		if (cur_room > 0) {
-			LM_ResetKeys();
-			reinit = 1;
-			cur_room--;
-		}
-	}
-
-	if (Keys[SC_RIGHT]) {
-		if (cur_room < game->world->room_num - 1) {
-			LM_ResetKeys();
-			reinit = 1;
-			cur_room++;
-		}
-	}
-
+	ON_PRESS(SC_ENTER, 1, editmode = EDIT_ROOM; cur_pattern = 0);
+	ON_PRESS(SC_ESCAPE, 1, SetGameMode(GM_TITLE));
+	ON_PRESS(SC_Z, cur_patternset > 0, cur_patternset--);
+	ON_PRESS(SC_X, cur_patternset < game->world->patternset_num - 1,
+		cur_patternset++);
+	ON_PRESS(SC_C, cur_sprite > 0, cur_sprite--);
+	ON_PRESS(SC_V, cur_sprite < SPRITE_NUMBER - 1, cur_sprite++);
+	ON_PRESS(SC_LEFT, cur_room > 0, cur_room--);
+	ON_PRESS(SC_RIGHT, cur_room < game->world->room_num - 1,
+		cur_room++);
 }
 
 static void RoomEdit()
@@ -241,63 +193,26 @@ static void RoomEdit()
 	ON_PRESS(SC_X, pattern->index < game->world->patternset_num - 1,
 		pattern->index++)
 
-
-	if (Keys[SC_X]) {
-		if (pattern->index < game->world->patternset_num - 1) {
-			pattern->index++;
-			LM_ResetKeys();
-			reinit = 1;
-		}
-	}
-
 	if (Keys[SC_LEFT]) {
-		if (Keys[SC_SPACE]) {
-			if (pattern->x > 0) {
-				LM_ResetKeys();
-				reinit = 1;
-				pattern->x--;
-				Keys[SC_SPACE] = 1;
-			}
-		} else
-		if (cur_pattern > 0) {
-			LM_ResetKeys();
-			reinit = 1;
-			cur_pattern--;
-		}
+		ON_PRESS(SC_SPACE, pattern->x > 0,
+			pattern->x--; Keys[SC_SPACE] = 1)
+		ELSE(cur_pattern > 0, cur_pattern--);
 	}
 
 	if (Keys[SC_RIGHT]) {
-		if (Keys[SC_SPACE]) {
-			if (pattern->x < 320/8 - 1) {
-				LM_ResetKeys();
-				reinit = 1;
-				pattern->x++;
-				Keys[SC_SPACE] = 1;
-			}
-		} else
-		if (cur_pattern < room->pattern_num - 1) {
-			LM_ResetKeys();
-			reinit = 1;
-			cur_pattern++;
-		}
+		ON_PRESS(SC_SPACE, pattern->x < 320/8 - 1,
+			pattern->x++; Keys[SC_SPACE] = 1)
+		ELSE(cur_pattern < room->pattern_num - 1, cur_pattern++);
 	}
 
-	if (Keys[SC_UP] && Keys[SC_SPACE]) {
-		if (pattern->y > 0) {
-			LM_ResetKeys();
-			reinit = 1;
-			pattern->y--;
-			Keys[SC_SPACE] = 1;
-		}
+	if (Keys[SC_UP]) {
+		ON_PRESS(SC_SPACE, pattern->y > 0,
+			pattern->y--; Keys[SC_SPACE] = 1);
 	}
 
-	if (Keys[SC_DOWN] && Keys[SC_SPACE]) {
-		if (pattern->y < 136/8 - 1) {
-			LM_ResetKeys();
-			reinit = 1;
-			pattern->y++;
-			Keys[SC_SPACE] = 1;
-		}
+	if (Keys[SC_DOWN]) {
+		ON_PRESS(SC_SPACE, pattern->y < 136/8 - 1,
+			pattern->y++; Keys[SC_SPACE] = 1);
 	}
 }
 
