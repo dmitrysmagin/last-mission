@@ -23,9 +23,9 @@
 #define ACTION_SCREEN_HEIGHT 136
 #define GAME_SCREEN_BPP 16
 
-int LM_Init();
-void LM_Deinit();
-void LM_GFX_Flip();
+int gfx_init();
+void gfx_quit();
+void gfx_flip();
 void ClearScreen();
 
 #endif /* _VIDEO_H_ */

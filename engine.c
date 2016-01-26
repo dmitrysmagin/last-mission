@@ -1322,7 +1322,7 @@ void GameLoop()
 		if (show_fps == 1)
 			PutString(8*0, 8*17, &infostring[0]);
 
-		LM_GFX_Flip();
+		gfx_flip();
 
 		next_game_tick += 17; // gcc rounds (1000 / 60) to 16, but we need 17
 

@@ -22,7 +22,7 @@
 int main(int argc, char *argv[])
 {
 
-	if (LM_Init() == 0)
+	if (!gfx_init())
 		return -1;
 
 	LM_SND_Init();
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	GameLoop();
 
 	LM_SND_Deinit();
-	LM_Deinit();
+	gfx_quit();
 
 	return 0;
 }

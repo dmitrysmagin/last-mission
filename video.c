@@ -30,30 +30,11 @@ int scale2x = 1; // 0 - no scale 320x200; 1 - upscale to 640x400
 int fullscr = 0; // or SDL_FULLSCREEN
 #endif
 
-int LM_GFX_Init();
-void LM_GFX_Deinit();
-void LM_GFX_SetScale(int scale);
-
 SDL_Surface *small_screen = NULL;
 SDL_Surface *screen = NULL;
 
-int LM_Init()
+int gfx_init()
 {
-	if (LM_GFX_Init() == 0)
-		return 0;
-
-	return 1;
-}
-
-void LM_Deinit()
-{
-	LM_GFX_Deinit();
-}
-
-int LM_GFX_Init()
-{
-	//Start SDL
-	//if(SDL_Init(SDL_INIT_EVERYTHING) < 0) return 0;
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0)
 		return 0;
 
@@ -79,22 +60,37 @@ int LM_GFX_Init()
 	return 1;
 }
 
-void LM_GFX_Deinit()
+void gfx_quit()
 {
 	//SDL_Quit();
 }
 
-void LM_GFX_Flip()
+static void set_scale(int scale)
+{
+#ifndef __DINGUX__
+	scale2x = scale &= 1;
+
+	if (fullscr == SDL_FULLSCREEN)
+		scale = 1;
+
+	screen = SDL_SetVideoMode(SCREEN_WIDTH << scale,
+				  SCREEN_HEIGHT << scale,
+				  GAME_SCREEN_BPP, SDL_SWSURFACE | fullscr);
+	LM_ResetKeys();
+#endif
+}
+
+void gfx_flip()
 {
 #ifndef __DINGUX__
 	/* toggle sizes x1 or x2 and fullscreen, for win32 and unix only */
 	if (Keys[SC_F] == 1) {
 		fullscr ^= SDL_FULLSCREEN;
 		Keys[SC_F] = 0;
-		LM_GFX_SetScale(1);
+		set_scale(1);
 	} else if (Keys[SC_S] == 1 && fullscr == 0) {
 		Keys[SC_S] = 0;
-		LM_GFX_SetScale(scale2x ^ 1);
+		set_scale(scale2x ^ 1);
 	}
 
 	if (scale2x) {
@@ -109,21 +105,6 @@ void LM_GFX_Flip()
 	}
 
 	SDL_Flip(screen);
-}
-
-void LM_GFX_SetScale(int scale)
-{
-#ifndef __DINGUX__
-	scale2x = scale &= 1;
-
-	if (fullscr == SDL_FULLSCREEN)
-		scale = 1;
-
-	screen = SDL_SetVideoMode(SCREEN_WIDTH << scale,
-				  SCREEN_HEIGHT << scale,
-				  GAME_SCREEN_BPP, SDL_SWSURFACE | fullscr);
-	LM_ResetKeys();
-#endif
 }
 
 void ClearScreen()
