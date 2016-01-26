@@ -3,10 +3,6 @@
 
 #include "video.h"
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 200
-#define ACTION_SCREEN_HEIGHT 136
-
 #define SPRITE_NUMBER 57
 
 #if GAME_SCREEN_BPP == 16

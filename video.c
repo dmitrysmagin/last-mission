@@ -60,11 +60,15 @@ int LM_GFX_Init()
 	atexit(SDL_Quit);
 
 #ifdef __DINGUX__
-	screen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
+	screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT,
+				  GAME_SCREEN_BPP, SDL_SWSURFACE);
 #else
-	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE | fullscr);
+	screen = SDL_SetVideoMode(SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2,
+				  GAME_SCREEN_BPP, SDL_SWSURFACE | fullscr);
 #endif
-	small_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320, 240,
+	small_screen = SDL_CreateRGBSurface(SDL_SWSURFACE,
+					    SCREEN_WIDTH,
+					    SCREEN_HEIGHT,
 					    GAME_SCREEN_BPP, 0, 0, 0, 0);
 
 	SDL_ShowCursor(SDL_DISABLE);
@@ -115,7 +119,9 @@ void LM_GFX_SetScale(int scale)
 	if (fullscr == SDL_FULLSCREEN)
 		scale = 1;
 
-	screen = SDL_SetVideoMode(320 << scale, 240 << scale, 32, SDL_SWSURFACE | fullscr);
+	screen = SDL_SetVideoMode(SCREEN_WIDTH << scale,
+				  SCREEN_HEIGHT << scale,
+				  GAME_SCREEN_BPP, SDL_SWSURFACE | fullscr);
 	LM_ResetKeys();
 #endif
 }

@@ -18,6 +18,9 @@
 #ifndef _VIDEO_H_
 #define _VIDEO_H_
 
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
+#define ACTION_SCREEN_HEIGHT 136
 #define GAME_SCREEN_BPP 16
 
 int LM_Init();

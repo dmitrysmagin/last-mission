@@ -1006,7 +1006,7 @@ void ResetDemoTicksCounter()
 void DoTitle()
 {
 	if (title_start_flag == 0) {
-		FillScreen(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+		ClearScreen();
 		game->ship_screen = 0;
 		title_start_flag = 1;
 		InitNewScreen();
