@@ -93,11 +93,25 @@ static void ShowMap()
 	DrawRect(107, 46*2, 106, 45, RGB(255, 0, 255));
 }
 
+static void ShowMapInfo()
+{
+	static char string[32];
+	int roomnum = getscreen(cur_mapx, cur_mapy);
+
+	sprintf(string, "ROOM    %03i:%03i", roomnum, game->world->room_num - 1);
+	PutString(0*8, 29*8, string);
+	sprintf(string, "X %03i", cur_mapx);
+	PutString(18*8, 29*8, string);
+	sprintf(string, "Y %03i", cur_mapy);
+	PutString(26*8, 29*8, string);
+}
+
 static void MapEdit()
 {
 	if (reinit) {
 		ClearScreen();
 		ShowMap();
+		ShowMapInfo();
 		reinit = 0;
 	}
 
