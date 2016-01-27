@@ -200,7 +200,7 @@ static void RoomEdit()
 	}
 
 	if (Keys[SC_RIGHT]) {
-		ON_PRESS(SC_SPACE, pattern->x < 320/8 - 1,
+		ON_PRESS(SC_SPACE, pattern->x < SCREEN_WIDTH/8 - 1,
 			pattern->x++; Keys[SC_SPACE] = 1)
 		ELSE(cur_pattern < room->pattern_num - 1, cur_pattern++);
 	}
@@ -211,7 +211,7 @@ static void RoomEdit()
 	}
 
 	if (Keys[SC_DOWN]) {
-		ON_PRESS(SC_SPACE, pattern->y < 136/8 - 1,
+		ON_PRESS(SC_SPACE, pattern->y < ACTION_SCREEN_HEIGHT/8 - 1,
 			pattern->y++; Keys[SC_SPACE] = 1);
 	}
 }
