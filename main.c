@@ -25,11 +25,11 @@ int main(int argc, char *argv[])
 	if (!gfx_init())
 		return -1;
 
-	LM_SND_Init();
+	snd_init();
 
 	GameLoop();
 
-	LM_SND_Deinit();
+	snd_quit();
 	gfx_quit();
 
 	return 0;

@@ -119,7 +119,7 @@ void PlayMusic(int music)
 	}
 }
 
-int LM_SND_Init()
+int snd_init()
 {
 	if ((Mix_Init(MIX_INIT_OGG) & MIX_INIT_OGG) != MIX_INIT_OGG) {
 		printf("Failed to init OGG support\n");
@@ -130,7 +130,7 @@ int LM_SND_Init()
 	return 1;
 }
 
-int LM_SND_Deinit()
+int snd_quit()
 {
 	Mix_CloseAudio();
 	Mix_Quit();
