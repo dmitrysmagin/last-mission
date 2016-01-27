@@ -34,7 +34,7 @@ void UnpackRoom(WORLD *world, int room)
 {
 	memset(screen, 0, sizeof(screen));
 
-	unsigned short *end = screen + sizeof(screen);
+	unsigned short *end = screen + ROOM_WIDTH * ROOM_HEIGHT;
 	PATTERN *pattern = (world->room + room)->pattern;
 	int count = (world->room + room)->pattern_num;
 
