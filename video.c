@@ -19,7 +19,6 @@
  * Note: define __DINGUX__ to build for low resolutions like 320x240
  */
 #include <SDL/SDL.h>
-#include <SDL/SDL_rotozoom.h>
 
 #include "video.h"
 #include "input.h"
@@ -94,10 +93,24 @@ void gfx_flip()
 	}
 
 	if (scale2x) {
-		SDL_Surface *tmp = zoomSurface(small_screen, 2, 2, 0);
-		SDL_FillRect(screen, NULL, 0);
-		SDL_BlitSurface(tmp, NULL, screen, NULL);
-		SDL_FreeSurface(tmp);
+#if GAME_SCREEN_BPP == 16
+		#define PIXEL Uint16
+#elif GAME_SCREEN_BPP == 32
+		#define PIXEL Uint32
+#else
+	#error GAME_SCREEN_BPP could be 16 or 32
+#endif
+
+		PIXEL *s = (PIXEL *)small_screen->pixels;
+		PIXEL *d = (PIXEL *)screen->pixels;
+
+		for (int y = 240; y--; d += 640)
+			for (int x = 320; x--; d += 2, s++) {
+				d[0] = *s;
+				d[1] = *s;
+				d[640] = *s;
+				d[641] = *s;
+			}
 	} else
 #endif
 	{
