@@ -11,7 +11,6 @@
 #include <string.h>
 #include <math.h>
 #include <SDL/SDL.h>
-#include <SDL/SDL_rotozoom.h>
 
 #include "data.h"
 #include "demo.h"
@@ -910,21 +909,36 @@ void BlitStatusData()
 }
 
 SDL_Surface *logo;
-float factor, delta;
 
 void LoadLogo()
 {
 	logo = SDL_LoadBMP("graphics/logo.bmp");
+}
 
-	factor = 1.0;
-	delta = -1.0 / (float)(logo->h / 2);
+void PutLine(int x, int y, int line)
+{
+	extern SDL_Surface *small_screen;
+	SDL_Rect src, dst;
+
+	src.x = 0;
+	src.y = line;
+	src.w = logo->w;
+	src.h = 1;
+
+	dst.x = x;
+	dst.y = y;
+
+	SDL_BlitSurface(logo, &src, small_screen, &dst);
 }
 
 void RotateLogo()
 {
+	static float divisor, iterator;
+	static int num_of_lines = 0;
 	static int speed = 2;
+	static int mirror = 0;
+	static int sign = 1;
 	extern SDL_Surface *small_screen;
-	SDL_Surface *scaled_logo;
 	SDL_Rect dst;
 
 	if (speed > 0) {
@@ -934,30 +948,33 @@ void RotateLogo()
 
 	speed = 2;
 
-	factor += delta;
-
-	if (factor >= 1.0) {
-		factor = 1.0;
-		delta = -delta;
-	}
-
-	if (factor <= -1.0) {
-		factor = -1.0;
-		delta = -delta;
-	}
+	divisor = 23.0 / (23.0 - num_of_lines);
+	iterator = 0.0;
 
 	dst.x = 96;
 	dst.y = 142;
 	dst.w = logo->w;
-	dst.h = logo->h;
+	dst.h = logo->h + 1; /* FIXME: we have extra line at the bottom */
 
 	SDL_FillRect(small_screen, &dst, 0);
 
-	dst.y += logo->h / 2 - fabs(factor) * logo->h / 2;
+	for (int i = num_of_lines; i < 24; i++) {
+		PutLine(96, (mirror == 0 ? 142 + i : 142 + 46 - i), (int)iterator);
+		PutLine(96, (mirror == 0 ? 142 + 46 - i : 142 + i), 46 - (int)iterator);
 
-	scaled_logo = zoomSurface(logo, 1.0, factor, 0);
-	SDL_BlitSurface(scaled_logo, 0, small_screen, &dst);
-	SDL_FreeSurface(scaled_logo);
+		iterator += divisor;
+	}
+
+	num_of_lines += sign;
+	if (num_of_lines >= 23) {
+		mirror ^= 1;
+		sign = -sign;
+	}
+
+	if (num_of_lines <= 0) {
+		num_of_lines = 0;
+		sign = -sign;
+	}
 }
 
 void LoadSplash()
