@@ -27,6 +27,7 @@
 #include "engine.h"
 #include "room.h"
 #include "editor.h"
+#include "timer.h"
 
 #define GAME_START_SCREEN 1 // Start of the labyrinth.
 
@@ -1314,67 +1315,19 @@ void GameLevelUp()
 
 void GameLoop()
 {
-	static char infostring[16] = "FPS: ";
-	static int next_game_tick = 0;
-	static int sleep_time = 0, frames = 0, frame_end = 0, frame_start = 0;
-	static int show_fps = 0, max_frameskip = 0;
-
 	SetGameMode(GM_SPLASH);
 	game->world = load_world("data/lastmission.dat");
 
 	LoadLogo();
 	LoadSprites();
 
-	next_game_tick = SDL_GetTicks();
-
 	// main loop
-	while (1) {
-		if (frames == 0)
-			frame_start = next_game_tick;
-
-		frame_skip = 0;
+	do {
 		LM_PollEvents();
 		DoGame();
-
-		if (show_fps == 1)
-			PutString(8*0, 8*17, &infostring[0]);
-
 		gfx_flip();
-
-		next_game_tick += 17; // gcc rounds (1000 / 60) to 16, but we need 17
-
-		frames += 1;
-		frame_end = SDL_GetTicks();
-
-		if (frame_end - frame_start >= 1000) {
-			if (show_fps == 1)
-				sprintf(infostring, "FPS: %d", frames);
-			frames = 0;
-		}
-
-		sleep_time = next_game_tick - frame_end;
-
-		if(sleep_time > 0) {
-			SDL_Delay(sleep_time);
-		} else { // slow computer, do frameskip
-			while (sleep_time < 0 && frame_skip < max_frameskip) { // max frame skip
-				sleep_time += 17; // 1000/60
-				frame_skip += 1;
-				SDL_Delay(2);
-				LM_PollEvents();
-				DoGame();
-			}
-			next_game_tick = SDL_GetTicks();
-		}
-
-		if (Keys[SC_BACKSPACE] == 1) {
-			max_frameskip ^= 1;
-			Keys[SC_BACKSPACE] = 0;
-		}
-
-		if (game->mode == GM_EXIT)
-			break;
-	}
+		synchronize_us();
+	} while (game->mode != GM_EXIT);
 
 	free_world(game->world);
 }
