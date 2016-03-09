@@ -3,6 +3,7 @@
 
 #include "world.h"
 #include "object.h"
+#include "video.h"
 
 #define GM_EXIT 	(-1)
 #define GM_TITLE	0
@@ -61,7 +62,7 @@ void GameLoop();
 void InitEnemies(int screen);
 void BlitEnemies();
 
-#define STATUS_YPOS 184
+#define STATUS_YPOS (ACTION_SCREEN_HEIGHT + 8)
 
 /* FIXME: this should not be public, remove later */
 #define F_UP 0
