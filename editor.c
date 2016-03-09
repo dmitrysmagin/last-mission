@@ -33,10 +33,10 @@
 
 /* Scary macro to make code more readable */
 #define ON_PRESS(SC, COND, ACT) \
-if (Keys[SC] && (COND)) { LM_ResetKeys(); reinit = 1; ACT; }
+if (Keys[SC] && (COND)) { input_reset(); reinit = 1; ACT; }
 
 #define ELSE(COND, ACT) \
-else if (COND) {ACT; LM_ResetKeys(); reinit = 1; }
+else if (COND) {ACT; input_reset(); reinit = 1; }
 
 static int reinit = 1;
 static int cur_room = 1;

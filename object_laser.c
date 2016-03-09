@@ -34,7 +34,7 @@ void DoLaser(TSHIP *ship)
 		/* Explode if laser overload */
 		if (UpdateLaser(1)) {
 			gObj_Explode(ship);
-			LM_ResetKeys();
+			input_reset();
 			return;
 		}
 

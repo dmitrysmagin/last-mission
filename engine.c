@@ -208,7 +208,7 @@ int UpdateFuel()
 	if (fuel_cnt == 0) {
 		if (game->fuel == 0) {
 			SetGameMode(GM_GAMEOVER);
-			LM_ResetKeys();
+			input_reset();
 			PutString(8*16, 8*10, "NO FUERZA");
 
 			return 1;
@@ -547,7 +547,7 @@ void DoMachineGun(TSHIP *ship)
 	if (GKeys[KEY_FIRE] == 1) {
 		if (UpdateLaser(1) == 1) {
 			gObj_Explode(ship);
-			LM_ResetKeys();
+			input_reset();
 			return;
 		}
 
@@ -841,7 +841,7 @@ int UpdateLives()
 
 	if (game->lives == 0) {
 		SetGameMode(GM_GAMEOVER);
-		LM_ResetKeys();
+		input_reset();
 		PutString(8*16, 8*10, "HAS PERDIDO");
 
 		return 1;
@@ -1008,7 +1008,7 @@ void DoSplash()
 		SetGameMode(GM_TITLE);
 
 	if (input_anykey() == 1) {
-		LM_ResetKeys();
+		input_reset();
 		ClearScreen();
 		SetGameMode(GM_TITLE);
 	}
@@ -1047,7 +1047,7 @@ void DoTitle()
 		game->easy_mode = 0;
 		ResetDemo();
 		SetGameMode(GM_DEMO);
-		LM_ResetKeys();
+		input_reset();
 		InitNewGame();
 		return;
 	}
@@ -1063,14 +1063,14 @@ void DoTitle()
 		game->easy_mode = 1;
 		ClearScreen();
 		SetGameMode(GM_GAME);
-		LM_ResetKeys();
+		input_reset();
 		InitNewGame();
 	}
 
 	// launch an editor
 	if (Keys[SC_E]) {
 		SetGameMode(GM_EDITOR);
-		LM_ResetKeys();
+		input_reset();
 	}
 }
 
@@ -1104,7 +1104,7 @@ void DoWinScreen()
 
 	if (input_anykey() && win_ticks > 300) { // Ignore input first 5 seconds.
 		SetGameMode(GM_TITLE);
-		LM_ResetKeys();
+		input_reset();
 	} else {
 		TSHIP *ship = gObj_Ship();
 
@@ -1210,7 +1210,7 @@ void DoGame()
 		// if end playing demo
 		if (PlayDemo() || input_anykey()) {
 			SetGameMode(GM_TITLE);
-			LM_ResetKeys();
+			input_reset();
 			game->score = 0;
 			break;
 		}
@@ -1237,7 +1237,7 @@ void DoGame()
 		if (Keys[SC_ESCAPE] == 1) {
 			ClearScreen();
 			SetGameMode(GM_TITLE);
-			LM_ResetKeys();
+			input_reset();
 			break;
 		}
 
@@ -1245,7 +1245,7 @@ void DoGame()
 		if (screen_procedure == 3 /*&& game->base_screen >= 70*/) {
 			SetGameMode(GM_YOUWIN);
 
-			LM_ResetKeys();
+			input_reset();
 			PublishScore();
 			return;
 		}
@@ -1271,7 +1271,7 @@ void DoGame()
 	case GM_GAMEOVER:
 		if (input_anykey()) {
 			InitNewGame();
-			LM_ResetKeys();
+			input_reset();
 			SetGameMode(GM_TITLE);
 		}
 		break;

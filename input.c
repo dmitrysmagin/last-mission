@@ -27,7 +27,7 @@ unsigned char GKeys[7]; // left, right, up, down, fire, pause, quit
 /* system keys */
 unsigned char Keys[128] = {0};
 
-void LM_ResetKeys()
+void input_reset()
 {
 	memset(&Keys[0], 0, 128);
 }

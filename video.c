@@ -75,7 +75,7 @@ static void set_scale(int scale)
 	screen = SDL_SetVideoMode(SCREEN_WIDTH << scale,
 				  SCREEN_HEIGHT << scale,
 				  GAME_SCREEN_BPP, SDL_SWSURFACE | fullscr);
-	LM_ResetKeys();
+	input_reset();
 #endif
 }
 

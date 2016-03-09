@@ -101,7 +101,7 @@
 extern unsigned char GKeys[7];
 extern unsigned char Keys[128];
 
-void LM_ResetKeys();
+void input_reset();
 int input_anykey();
 char input_poll();
 
