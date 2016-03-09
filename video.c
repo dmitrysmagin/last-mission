@@ -104,12 +104,12 @@ void gfx_flip()
 		PIXEL *s = (PIXEL *)small_screen->pixels;
 		PIXEL *d = (PIXEL *)screen->pixels;
 
-		for (int y = 240; y--; d += 640)
-			for (int x = 320; x--; d += 2, s++) {
+		for (int y = SCREEN_HEIGHT; y--; d += SCREEN_WIDTH*2)
+			for (int x = SCREEN_WIDTH; x--; d += 2, s++) {
 				d[0] = *s;
 				d[1] = *s;
-				d[640] = *s;
-				d[641] = *s;
+				d[SCREEN_WIDTH*2] = *s;
+				d[SCREEN_WIDTH*2+1] = *s;
 			}
 	} else
 #endif
