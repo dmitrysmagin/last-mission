@@ -102,7 +102,7 @@ extern unsigned char GKeys[7];
 extern unsigned char Keys[128];
 
 void LM_ResetKeys();
-int LM_AnyKey();
-char LM_PollEvents();
+int input_anykey();
+char input_poll();
 
 #endif /* _INPUT_H_ */

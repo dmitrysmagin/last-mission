@@ -32,7 +32,7 @@ void LM_ResetKeys()
 	memset(&Keys[0], 0, 128);
 }
 
-int LM_AnyKey()
+int input_anykey()
 {
 	for (int i = 0; i < 127; i++) {
 		if (Keys[i] == 1)
@@ -42,7 +42,7 @@ int LM_AnyKey()
 	return 0;
 }
 
-char LM_PollEvents()
+char input_poll()
 {
 	SDL_Event event;
 

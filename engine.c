@@ -1007,7 +1007,7 @@ void DoSplash()
 	if (ticks_for_splash > 350)
 		SetGameMode(GM_TITLE);
 
-	if (LM_AnyKey() == 1) {
+	if (input_anykey() == 1) {
 		LM_ResetKeys();
 		ClearScreen();
 		SetGameMode(GM_TITLE);
@@ -1102,7 +1102,7 @@ void DoWinScreen()
 	else
 		x_string += 1;
 
-	if (LM_AnyKey() == 1 && win_ticks > 300) { // Ignore input first 5 seconds.
+	if (input_anykey() && win_ticks > 300) { // Ignore input first 5 seconds.
 		SetGameMode(GM_TITLE);
 		LM_ResetKeys();
 	} else {
@@ -1208,7 +1208,7 @@ void DoGame()
 		// demo mode here
 
 		// if end playing demo
-		if (PlayDemo() == 1 || LM_AnyKey() == 1) {
+		if (PlayDemo() || input_anykey()) {
 			SetGameMode(GM_TITLE);
 			LM_ResetKeys();
 			game->score = 0;
@@ -1269,7 +1269,7 @@ void DoGame()
 		break;
 
 	case GM_GAMEOVER:
-		if (LM_AnyKey() == 1) {
+		if (input_anykey()) {
 			InitNewGame();
 			LM_ResetKeys();
 			SetGameMode(GM_TITLE);
@@ -1323,7 +1323,7 @@ void GameLoop()
 
 	// main loop
 	do {
-		LM_PollEvents();
+		input_poll();
 		DoGame();
 		gfx_flip();
 		synchronize_us();
