@@ -25,11 +25,11 @@
 #include "editor.h"
 #include "room.h"
 
-#define EDIT_MAP	0
-#define EDIT_ROOMVIEW	1
-#define EDIT_ROOM	2
-#define EDIT_MACROTILE	3
-#define EDIT_SPRITESET	4
+#define MAPEDIT		0
+#define ROOMVIEW	1
+#define MACROTILE	2
+#define SPRITESET	3
+#define ROOMEDIT	4
 
 /* Scary macro to make code more readable */
 #define ON_PRESS(SC, COND, ACT) \
@@ -42,8 +42,8 @@ static int reinit = 1;
 static int cur_room = 1;
 static int cur_patternset = 0;
 static int cur_sprite = 0;
-static int old_editmode = EDIT_MAP;
-static int editmode = EDIT_ROOMVIEW;
+static int old_editmode = MAPEDIT;
+static int editmode = ROOMVIEW;
 static int cur_pattern = 0;
 static int cur_mapx = 0, cur_mapy = 11;
 
@@ -118,7 +118,7 @@ static void MapEdit()
 
 	if (Keys[SC_ENTER]) {
 		input_reset(); reinit = 1;
-		old_editmode = editmode; editmode = EDIT_ROOM;
+		old_editmode = editmode; editmode = ROOMEDIT;
 		cur_room = getscreen(cur_mapx, cur_mapy);
 	}
 
@@ -186,7 +186,7 @@ static void RoomView()
 		reinit = 0;
 	}
 
-	ON_PRESS(SC_ENTER, 1, old_editmode = editmode; editmode = EDIT_ROOM; cur_pattern = 0);
+	ON_PRESS(SC_ENTER, 1, old_editmode = editmode; editmode = ROOMEDIT; cur_pattern = 0);
 	ON_PRESS(SC_ESCAPE, 1, SetGameMode(GM_TITLE));
 	ON_PRESS(SC_Z, cur_patternset > 0, cur_patternset--);
 	ON_PRESS(SC_X, cur_patternset < game->world->patternset_num - 1,
@@ -240,13 +240,15 @@ static void RoomEdit()
 void DoEdit()
 {
 	/* Check changing edit mode */
-	ON_PRESS(SC_TAB, editmode > 0, editmode--);
-	ON_PRESS(SC_BACKSPACE, editmode < EDIT_SPRITESET, editmode++);
+	if (editmode <= ROOMVIEW) {
+		ON_PRESS(SC_TAB, editmode > 0, editmode--);
+		ON_PRESS(SC_BACKSPACE, editmode < ROOMVIEW, editmode++);
+	}
 
 	switch (editmode) {
-	case EDIT_MAP:		MapEdit(); break;
-	case EDIT_ROOMVIEW:	RoomView(); break;
-	case EDIT_ROOM:		RoomEdit(); break;
+	case MAPEDIT:	MapEdit(); break;
+	case ROOMVIEW:	RoomView(); break;
+	case ROOMEDIT:	RoomEdit(); break;
 	}
 }
 
