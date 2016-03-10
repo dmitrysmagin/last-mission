@@ -387,39 +387,21 @@ void DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
 	static int temp, i;
 
 	if (deltaX == 0) {
-		if (x1 < 0 || x1 >= SCREEN_WIDTH)
-			return;
-
 		if (y1 > y2) {
 			temp = y2;
 			y2 = y1;
 			y1 = temp;
 		}
 
-		if (y1 < 0)
-			y1 = 0;
-
-		if (y2 >= ACTION_SCREEN_HEIGHT)
-			y2 = ACTION_SCREEN_HEIGHT - 1;
-
 		for (i = y1; i <= y2; ++i) {
 			PutPixel(x1, i, color);
 		}
 	} else if (deltaY == 0) {
-		if (y1 < 0 || y1 >= ACTION_SCREEN_HEIGHT)
-			return;
-
 		if (x1 > x2) {
 			temp = x2;
 			x2 = x1;
 			x1 = temp;
 		}
-
-		if (x1 < 0)
-			x1 = 0;
-
-		if (x2 >= SCREEN_WIDTH)
-			x2 = SCREEN_WIDTH - 1;
 
 		for (i = x1; i <= x2; ++i) {
 			PutPixel(i, y1, color);
