@@ -34,4 +34,6 @@ void DrawRect(int x, int y, int width, int height, unsigned int color);
 
 void PutPixel(int x, int y, unsigned int color);
 
+void SetClipGameArea(int flag);
+
 #endif /* _SPRITES_H_ */

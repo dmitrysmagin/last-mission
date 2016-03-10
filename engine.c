@@ -1180,6 +1180,8 @@ void BlitEnemyOutlines(WORLD *world)
 
 void RenderGame(int renderStatus)
 {
+	SetClipGameArea(1);
+
 	if (modern_background) {
 		BlitBackground(game->world, game->ship_screen); // blit background
 		BlitRoomOutlines(game->world, game->ship_screen);
@@ -1191,6 +1193,8 @@ void RenderGame(int renderStatus)
 	BlitRoom();
 	BlitBfg();
 	BlitEnemies(); // draw all enemies and cannon+base
+
+	SetClipGameArea(0);
 
 	if (renderStatus)
 		BlitStatusData(); // draw score etc

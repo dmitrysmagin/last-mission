@@ -133,9 +133,7 @@ void PutSpriteI(int x, int y, int index, int frame)
 	SDL_BlitSurface(sprites, &src, small_screen, &dst);
 }
 
-#define SET_GAME_AREA_POINT(x, y, color) \
-{ if ((x) >= 0 && (x) < SCREEN_WIDTH && (y) >= 0 && (y) < ACTION_SCREEN_HEIGHT) \
-	putpixel(small_screen, x, y, color); }
+
 
 /*
  * getpixel() and putpixel() are taken from
@@ -148,29 +146,29 @@ void PutSpriteI(int x, int y, int index, int frame)
  */
 Uint32 getpixel(SDL_Surface *surface, int x, int y)
 {
-      int bpp = surface->format->BytesPerPixel;
-      /* Here p is the address to the pixel we want to retrieve */
-      Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+	int bpp = surface->format->BytesPerPixel;
+	/* Here p is the address to the pixel we want to retrieve */
+	Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
 
-      switch(bpp) {
-      case 1:
+	switch(bpp) {
+	case 1:
 		return *p;
 
-      case 2:
+	case 2:
 		return *(Uint16 *)p;
 
-      case 3:
+	case 3:
 		if(SDL_BYTEORDER == SDL_BIG_ENDIAN)
 			return p[0] << 16 | p[1] << 8 | p[2];
 		else
 			return p[0] | p[1] << 8 | p[2] << 16;
 
-      case 4:
+	case 4:
 		return *(Uint32 *)p;
 
-      default:
-		return 0;       /* shouldn't happen, but avoids warnings */
-      }
+	default:
+		return 0;	 /* shouldn't happen, but avoids warnings */
+	}
 }
 
 /*
@@ -182,6 +180,12 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 	int bpp = surface->format->BytesPerPixel;
 	/* Here p is the address to the pixel we want to set */
 	Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+
+	if (x < surface->clip_rect.x ||
+	    y < surface->clip_rect.y ||
+	    x >= surface->clip_rect.x + surface->clip_rect.w ||
+	    y >= surface->clip_rect.y + surface->clip_rect.h)
+		return;
 
 	switch(bpp) {
 	case 1:
@@ -232,11 +236,11 @@ void PutSpriteS(int x, int y, int index, int frame, unsigned int color)
 	for (dy = 0; dy < h; dy++)
 		for (dx = 0; dx < w; dx++) {
 			if (GetSpritePixel(dx, dy, index, frame)) {
-				SET_GAME_AREA_POINT(x + dx - 1, y + dy, color);
-				SET_GAME_AREA_POINT(x + dx + 1, y + dy, color);
-				SET_GAME_AREA_POINT(x + dx, y + dy - 1, color);
-				SET_GAME_AREA_POINT(x + dx, y + dy + 1, color);
-				SET_GAME_AREA_POINT(x + dx, y + dy + 2, color);
+				PutPixel(x + dx - 1, y + dy, color);
+				PutPixel(x + dx + 1, y + dy, color);
+				PutPixel(x + dx, y + dy - 1, color);
+				PutPixel(x + dx, y + dy + 1, color);
+				PutPixel(x + dx, y + dy + 2, color);
 
 			}
 		}
@@ -277,11 +281,11 @@ void PutTileS(int x, int y, int index, unsigned int color)
 	for (dy = 0; dy < h; dy++)
 		for (dx = 0; dx < w; dx++) {
 			if (GetTilePixel(dx, dy, index)) {
-				SET_GAME_AREA_POINT(x + dx - 1, y + dy, color);
-				SET_GAME_AREA_POINT(x + dx + 1, y + dy, color);
-				SET_GAME_AREA_POINT(x + dx, y + dy - 1, color);
-				SET_GAME_AREA_POINT(x + dx, y + dy + 1, color);
-				SET_GAME_AREA_POINT(x + dx, y + dy + 2, color);
+				PutPixel(x + dx - 1, y + dy, color);
+				PutPixel(x + dx + 1, y + dy, color);
+				PutPixel(x + dx, y + dy - 1, color);
+				PutPixel(x + dx, y + dy + 1, color);
+				PutPixel(x + dx, y + dy + 2, color);
 
 			}
 		}
@@ -399,7 +403,7 @@ void DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
 			y2 = ACTION_SCREEN_HEIGHT - 1;
 
 		for (i = y1; i <= y2; ++i) {
-			SET_GAME_AREA_POINT(x1, i, color);
+			PutPixel(x1, i, color);
 		}
 	} else if (deltaY == 0) {
 		if (y1 < 0 || y1 >= ACTION_SCREEN_HEIGHT)
@@ -418,17 +422,17 @@ void DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
 			x2 = SCREEN_WIDTH - 1;
 
 		for (i = x1; i <= x2; ++i) {
-			SET_GAME_AREA_POINT(i, y1, color);
+			PutPixel(i, y1, color);
 		}
 	} else {
 		const int signX = x1 < x2 ? 1 : -1;
 		const int signY = y1 < y2 ? 1 : -1;
 
 		int error = deltaX - deltaY;
-		SET_GAME_AREA_POINT(x2, y2, color);
+		PutPixel(x2, y2, color);
 
 		while (x1 != x2 || y1 != y2) {
-			SET_GAME_AREA_POINT(x1, y1, color);
+			PutPixel(x1, y1, color);
 			const int error2 = error * 2;
 
 			if (error2 > -deltaY) {
@@ -450,6 +454,20 @@ void DrawRect(int x, int y, int width, int height, unsigned int color)
 	DrawLine(x + width, y, x + width, y + height, color);
 	DrawLine(x + width, y + height, x, y + height, color);
 	DrawLine(x, y + height, x, y, color);
+}
+
+void SetClipGameArea(int flag)
+{
+	if (flag) {
+		SDL_Rect dst;
+
+		dst.x = dst.y = 0;
+		dst.w = small_screen->w;
+		dst.h = ACTION_SCREEN_HEIGHT;
+		SDL_SetClipRect(small_screen, &dst);
+	} else {
+		SDL_SetClipRect(small_screen, NULL);
+	}
 }
 
 void LoadSprites()
