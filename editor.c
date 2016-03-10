@@ -91,7 +91,7 @@ static void ShowMap()
 	SDL_FreeSurface(small_screen);
 	small_screen = old_screen;
 
-	DrawRect(107, 46*2, 106, 45, RGB(255, 0, 255));
+	DrawRect(107, 46*2, 107, 46, RGB(255, 0, 255));
 }
 
 static void ShowMapInfo()
@@ -174,8 +174,8 @@ static void ShowEditModeInfo()
 
 	DrawRect(pattern->x*8,
 		 pattern->y*8,
-		 patternset->xs * 8 - 1,
-		 patternset->ys * 8 - 1, RGB(255, 0, 255));
+		 patternset->xs * 8,
+		 patternset->ys * 8, RGB(255, 0, 255));
 }
 
 static void RoomView()

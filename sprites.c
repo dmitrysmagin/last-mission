@@ -432,6 +432,7 @@ void DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
 
 void DrawRect(int x, int y, int width, int height, unsigned int color)
 {
+	width--; height--;
 	DrawLine(x, y, x + width, y, color);
 	DrawLine(x + width, y, x + width, y + height, color);
 	DrawLine(x + width, y + height, x, y + height, color);
