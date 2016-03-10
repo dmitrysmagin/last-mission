@@ -42,6 +42,7 @@ static int reinit = 1;
 static int cur_room = 1;
 static int cur_patternset = 0;
 static int cur_sprite = 0;
+static int old_editmode = EDIT_MAP;
 static int editmode = EDIT_ROOMVIEW;
 static int cur_pattern = 0;
 static int cur_mapx = 0, cur_mapy = 11;
@@ -115,6 +116,12 @@ static void MapEdit()
 		reinit = 0;
 	}
 
+	if (Keys[SC_ENTER]) {
+		input_reset(); reinit = 1;
+		old_editmode = editmode; editmode = EDIT_ROOM;
+		cur_room = getscreen(cur_mapx, cur_mapy);
+	}
+
 	ON_PRESS(SC_LEFT, cur_mapx > 0, cur_mapx--);
 	ON_PRESS(SC_RIGHT, cur_mapx < game->world->mapw - 1, cur_mapx++);
 	ON_PRESS(SC_UP, cur_mapy > 0, cur_mapy--);
@@ -179,7 +186,7 @@ static void RoomView()
 		reinit = 0;
 	}
 
-	ON_PRESS(SC_ENTER, 1, editmode = EDIT_ROOM; cur_pattern = 0);
+	ON_PRESS(SC_ENTER, 1, old_editmode = editmode; editmode = EDIT_ROOM; cur_pattern = 0);
 	ON_PRESS(SC_ESCAPE, 1, SetGameMode(GM_TITLE));
 	ON_PRESS(SC_Z, cur_patternset > 0, cur_patternset--);
 	ON_PRESS(SC_X, cur_patternset < game->world->patternset_num - 1,
@@ -202,7 +209,7 @@ static void RoomEdit()
 		reinit = 0;
 	}
 
-	ON_PRESS(SC_ESCAPE, 1, editmode = EDIT_ROOMVIEW);
+	ON_PRESS(SC_ESCAPE, 1, editmode = old_editmode);
 	ON_PRESS(SC_Z, pattern->index > 0, pattern->index--);
 	ON_PRESS(SC_X, pattern->index < game->world->patternset_num - 1,
 		pattern->index++)
