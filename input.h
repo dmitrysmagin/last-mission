@@ -103,6 +103,6 @@ extern unsigned char Keys[128];
 
 void input_reset();
 int input_anykey();
-char input_poll();
+void input_poll();
 
 #endif /* _INPUT_H_ */
