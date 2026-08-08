@@ -40,17 +40,17 @@ void LoadSoundFiles()
     music_intro = Mix_LoadMUS("sound/mission.ogg");
     music_game = Mix_LoadMUS("sound/music.ogg");
 
-    bonus = Mix_LoadWAV("sound/bonus.ogg");
-    laser = Mix_LoadWAV("sound/laser.ogg");
-    short_laser = Mix_LoadWAV("sound/short_laser.ogg");
-    rocket_shot = Mix_LoadWAV("sound/rocket_shot.ogg");
-    cannon_shot = Mix_LoadWAV("sound/cannon_shot.ogg");
-    explosions[0] = Mix_LoadWAV("sound/explode0.ogg");
-    explosions[1] = Mix_LoadWAV("sound/explode1.ogg");
-    explosions[2] = Mix_LoadWAV("sound/explode2.ogg");
-    contact = Mix_LoadWAV("sound/contact.ogg");
-    move = Mix_LoadWAV("sound/move.ogg");
-    elevator = Mix_LoadWAV("sound/elevator.ogg");
+    bonus = Mix_LoadWAV("sound/bonus.wav");
+    laser = Mix_LoadWAV("sound/laser.wav");
+    short_laser = Mix_LoadWAV("sound/short_laser.wav");
+    rocket_shot = Mix_LoadWAV("sound/rocket_shot.wav");
+    cannon_shot = Mix_LoadWAV("sound/cannon_shot.wav");
+    explosions[0] = Mix_LoadWAV("sound/explode0.wav");
+    explosions[1] = Mix_LoadWAV("sound/explode1.wav");
+    explosions[2] = Mix_LoadWAV("sound/explode2.wav");
+    contact = Mix_LoadWAV("sound/contact.wav");
+    move = Mix_LoadWAV("sound/move.wav");
+    elevator = Mix_LoadWAV("sound/elevator.wav");
 }
 
 void PlaySoundEffect(int sound)
