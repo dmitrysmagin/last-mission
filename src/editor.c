@@ -48,6 +48,15 @@ static int cur_pattern = 0;
 static int cur_mapx = 0, cur_mapy = 11;
 static int save_ticks = 0;
 static int save_success = 0;
+static int map_zoom = 0;
+
+static const int zoom_levels[5][2] = {
+    {7, 9},
+    {5, 7},
+    {3, 5},
+    {2, 3},
+    {1, 1},
+};
 
 /* FIXME: eliminate later */
 extern SDL_Surface *small_screen;
@@ -67,25 +76,30 @@ void ReDraw(int roomnum)
 static void ShowMap()
 {
     SDL_Rect dst;
-    /* Backup small_screen */
     SDL_Surface *old_screen = small_screen;
+    int gridw = zoom_levels[map_zoom + 2][0];
+    int gridh = zoom_levels[map_zoom + 2][1];
+    int room_w = SCREEN_WIDTH / gridw;
+    int room_h = ACTION_SCREEN_HEIGHT / gridh;
+    int cur_x = gridw / 2;
+    int cur_y = gridh / 2;
+    int x, y;
 
-    /* Reassign it temporarily */
     small_screen =
         SDL_CreateRGBSurface(SDL_SWSURFACE, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT,
                      GAME_SCREEN_BPP, 0, 0, 0, 0);
 
-    for (int y = 0; y < 5; y++)
-        for (int x = 0; x < 3; x++) {
-            int roomnum = getscreen(cur_mapx + x - 1, cur_mapy + y - 2);
+    for (y = 0; y < gridh; y++)
+        for (x = 0; x < gridw; x++) {
+            int roomnum = getscreen(cur_mapx + x - cur_x, cur_mapy + y - cur_y);
 
             if (roomnum) {
                 ReDraw(roomnum);
 
-                dst.x = 107 * x;
-                dst.y = 46 * y;
-                dst.w = SCREEN_WIDTH/3;
-                dst.h = ACTION_SCREEN_HEIGHT/3;
+                dst.x = room_w * x;
+                dst.y = room_h * y;
+                dst.w = room_w;
+                dst.h = room_h;
                 SDL_SoftStretch(small_screen, NULL, old_screen, &dst);
             }
         }
@@ -93,7 +107,7 @@ static void ShowMap()
     SDL_FreeSurface(small_screen);
     small_screen = old_screen;
 
-    DrawRect(107, 46*2, 107, 46, RGB(255, 0, 255));
+    DrawRect(room_w * cur_x, room_h * cur_y, room_w, room_h, RGB(255, 0, 0));
 }
 
 static void ShowMapInfo()
@@ -107,6 +121,8 @@ static void ShowMapInfo()
     PutString(18*8, 29*8, string);
     sprintf(string, "Y %03i", cur_mapy);
     PutString(26*8, 29*8, string);
+    sprintf(string, "ZOOM %c%i", map_zoom >= 0 ? '+' : ' ', map_zoom);
+    PutString(0*8, 30*8, string);
 }
 
 static void MapEdit()
@@ -129,6 +145,8 @@ static void MapEdit()
     ON_PRESS(SC_UP, cur_mapy > 0, cur_mapy--);
     ON_PRESS(SC_DOWN, cur_mapy < game->world->maph - 1, cur_mapy++);
     ON_PRESS(SC_ESCAPE, 1, SetGameMode(GM_TITLE));
+    ON_PRESS(SC_EQUALS, map_zoom < 2, map_zoom++);
+    ON_PRESS(SC_MINUS, map_zoom > -2, map_zoom--);
 }
 
 static void ShowViewModeInfo()

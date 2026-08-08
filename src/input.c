@@ -84,6 +84,8 @@ void input_poll()
             case SDLK_z:        key_scan = SC_Z;    break;
             case SDLK_TAB:        key_scan = SC_TAB;    break;
             case SDLK_BACKSPACE:    key_scan = SC_BACKSPACE; break;
+            case SDLK_EQUALS:    key_scan = SC_EQUALS;    break;
+            case SDLK_MINUS:    key_scan = SC_MINUS;    break;
             default:        break;
             }
 
