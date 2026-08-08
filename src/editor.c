@@ -46,6 +46,8 @@ static int old_editmode = MAPEDIT;
 static int editmode = ROOMVIEW;
 static int cur_pattern = 0;
 static int cur_mapx = 0, cur_mapy = 11;
+static int save_ticks = 0;
+static int save_success = 0;
 
 /* FIXME: eliminate later */
 extern SDL_Surface *small_screen;
@@ -209,8 +211,13 @@ static void RoomEdit()
         reinit = 0;
     }
 
+    if (save_ticks > 0) {
+        save_ticks--;
+        PutString(0, 0, save_success ? "SAVED!" : "SAVE FAILED!");
+    }
+
     ON_PRESS(SC_ESCAPE, 1, editmode = old_editmode);
-    ON_PRESS(SC_W, 1, save_world("data/lastmission.dat", game->world));
+    ON_PRESS(SC_W, 1, save_success = save_world("data/lastmission.dat", game->world); save_ticks = 60;);
     ON_PRESS(SC_Z, pattern->index > 0, pattern->index--);
     ON_PRESS(SC_X, pattern->index < game->world->patternset_num - 1,
         pattern->index++)

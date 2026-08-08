@@ -497,14 +497,17 @@ static int fread_PATTERNSET(WORLD *world, FILE *fp)
     return 1;
 }
 
-void save_world(char *name, WORLD *world)
+int save_world(char *name, WORLD *world)
 {
     FILE *fp;
 
     if (!world)
-        return;
+        return 0;
 
     fp = fopen(name, "w");
+
+    if (!fp)
+        return 0;
 
     fwrite_HEADER(fp);
     fwrite_WORLD(world, fp);
@@ -516,6 +519,7 @@ void save_world(char *name, WORLD *world)
     fwrite_PATTERNSET(world, fp);
 
     fclose(fp);
+    return 1;
 }
 
 

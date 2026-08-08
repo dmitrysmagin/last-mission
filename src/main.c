@@ -18,9 +18,36 @@
 #include "video.h"
 #include "sound.h"
 #include "engine.h"
+#include "world.h"
+
+#include <string.h>
+#include <stdio.h>
 
 int main(int argc, char *argv[])
 {
+    int i;
+
+    for (i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--save-as") == 0 && i + 1 < argc) {
+            WORLD *world;
+            char *filename = argv[++i];
+
+            world = load_world("data/lastmission.dat");
+            if (!world) {
+                printf("Failed to load data/lastmission.dat\n");
+                return -1;
+            }
+
+            if (save_world(filename, world)) {
+                printf("Saved to %s\n", filename);
+            } else {
+                printf("Failed to save to %s\n", filename);
+            }
+
+            free_world(world);
+            return 0;
+        }
+    }
 
     if (!gfx_init())
         return -1;
