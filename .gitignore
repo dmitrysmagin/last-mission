@@ -1,10 +1,6 @@
-dingux/*
-*.bat
-*.dat
-*.opk
 *.exe
 *.dll
-*.dge
-*.o
+src/*.o
 *~.*
-last-mission
+last-mission-sdl
+.tmp

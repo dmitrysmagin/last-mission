@@ -129,7 +129,7 @@ int main()
 	}
 
 	// save data to file
-	save_world("lastmission.dat", world);
+	save_world("../../data/lastmission.dat", world);
 
 	// deallocate everything
 	for(i = 0; i < NUM_PATTERNS; i++) {
@@ -145,7 +145,7 @@ int main()
 	free(world);
 
 	// load again for testing :)
-	world = load_world("lastmission.dat");
+	world = load_world("../../data/lastmission.dat");
 
 	return 0;
 }

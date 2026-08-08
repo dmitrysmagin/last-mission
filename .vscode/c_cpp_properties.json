@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${default}",
+                "C:/Users/user/msys64/ucrt64/include/SDL2",
+                "C:/Users/user/msys64/ucrt64/include",
+                "./"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/Users/user/msys64/ucrt64/bin/gcc.exe",
+            "intelliSenseMode": "windows-gcc-x64",
+            "cppStandard": "c++11"
+        }
+    ],
+    "version": 4
+}
