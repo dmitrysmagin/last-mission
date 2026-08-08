@@ -210,6 +210,7 @@ static void RoomEdit()
     }
 
     ON_PRESS(SC_ESCAPE, 1, editmode = old_editmode);
+    ON_PRESS(SC_W, 1, save_world("data/lastmission.dat", game->world));
     ON_PRESS(SC_Z, pattern->index > 0, pattern->index--);
     ON_PRESS(SC_X, pattern->index < game->world->patternset_num - 1,
         pattern->index++)
