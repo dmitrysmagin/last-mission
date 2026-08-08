@@ -107,6 +107,16 @@ static void ShowMap()
     SDL_FreeSurface(small_screen);
     small_screen = old_screen;
 
+    for (y = 0; y < gridh; y++)
+        for (x = 0; x < gridw; x++) {
+            int roomnum = getscreen(cur_mapx + x - cur_x, cur_mapy + y - cur_y);
+            if (roomnum) {
+                static char numstr[16];
+                sprintf(numstr, "%d", roomnum);
+                PutString(room_w * x, room_h * y, numstr);
+            }
+        }
+
     DrawRect(room_w * cur_x, room_h * cur_y, room_w, room_h, RGB(255, 0, 0));
 }
 
