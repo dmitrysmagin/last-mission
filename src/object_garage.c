@@ -23,249 +23,249 @@ static int main_garage_data[MAX_GARAGES][2];
 
 void GarageRestore()
 {
-	memcpy(garage_data, main_garage_data, sizeof(garage_data));
+    memcpy(garage_data, main_garage_data, sizeof(garage_data));
 }
 
 void GarageSave()
 {
-	memcpy(main_garage_data, garage_data, sizeof(main_garage_data));
+    memcpy(main_garage_data, garage_data, sizeof(main_garage_data));
 }
 
 void BestPositionInGarage(TSHIP *ship, int *x, int *y)
 {
-	int cxShip, cyShip;
+    int cxShip, cyShip;
 
-	cxShip = gObj_GetWidth(ship);
-	cyShip = gObj_GetHeight(ship);
+    cxShip = gObj_GetWidth(ship);
+    cyShip = gObj_GetHeight(ship);
 
-	if (ship->garage == NULL) {
-		// actually, should not happen.
-		*x = ship->x;
-		*y = ship->y;
-	} else {
-		TSHIP *garage = ship->garage;
-		*x = garage->x + ((GARAGE_WIDTH - cxShip) >> 1);
-		*y = garage->y + ((GARAGE_HEIGHT - cyShip) >> 1);
-	}
+    if (ship->garage == NULL) {
+        // actually, should not happen.
+        *x = ship->x;
+        *y = ship->y;
+    } else {
+        TSHIP *garage = ship->garage;
+        *x = garage->x + ((GARAGE_WIDTH - cxShip) >> 1);
+        *y = garage->y + ((GARAGE_HEIGHT - cyShip) >> 1);
+    }
 }
 
 void InitGaragesForNewGame()
 {
-	memset(garage_data, 0, sizeof(garage_data));
+    memset(garage_data, 0, sizeof(garage_data));
 
-	int n = 0;
-	garage_data[n  ][0] = 100;
-	garage_data[n++][1] = -1;
+    int n = 0;
+    garage_data[n  ][0] = 100;
+    garage_data[n++][1] = -1;
 
-	garage_data[n  ][0] = 101;
-	garage_data[n++][1] = SHIP_TYPE_MACHINE_GUN;
+    garage_data[n  ][0] = 101;
+    garage_data[n++][1] = SHIP_TYPE_MACHINE_GUN;
 
-	garage_data[n  ][0] = 110;
-	garage_data[n++][1] = -1;
+    garage_data[n  ][0] = 110;
+    garage_data[n++][1] = -1;
 
-	garage_data[n  ][0] = 111;
-	garage_data[n++][1] = SHIP_TYPE_ROCKET_LAUNCHER;
+    garage_data[n  ][0] = 111;
+    garage_data[n++][1] = SHIP_TYPE_ROCKET_LAUNCHER;
 
-	garage_data[n  ][0] = 120;
-	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
+    garage_data[n  ][0] = 120;
+    garage_data[n++][1] = SHIP_TYPE_OBSERVER;
 
-	garage_data[n  ][0] = 121;
-	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
+    garage_data[n  ][0] = 121;
+    garage_data[n++][1] = SHIP_TYPE_OBSERVER;
 
-	garage_data[n  ][0] = 122;
-	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
+    garage_data[n  ][0] = 122;
+    garage_data[n++][1] = SHIP_TYPE_OBSERVER;
 
-	garage_data[n  ][0] = 123;
-	garage_data[n++][1] = -1;
+    garage_data[n  ][0] = 123;
+    garage_data[n++][1] = -1;
 
-	garage_data[n  ][0] = 124;
-	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
+    garage_data[n  ][0] = 124;
+    garage_data[n++][1] = SHIP_TYPE_OBSERVER;
 
-	garage_data[n  ][0] = 130;
-	garage_data[n++][1] = -1;
+    garage_data[n  ][0] = 130;
+    garage_data[n++][1] = -1;
 
-	garage_data[n  ][0] = 131;
-	garage_data[n++][1] = SHIP_TYPE_OBSERVER;
+    garage_data[n  ][0] = 131;
+    garage_data[n++][1] = SHIP_TYPE_OBSERVER;
 
-	garage_data[n  ][0] = 190;
-	garage_data[n++][1] = -1;
+    garage_data[n  ][0] = 190;
+    garage_data[n++][1] = -1;
 
-	garage_data[n  ][0] = 191;
-	garage_data[n++][1] = SHIP_TYPE_BFG;
+    garage_data[n  ][0] = 191;
+    garage_data[n++][1] = SHIP_TYPE_BFG;
 
-	GarageSave();
+    GarageSave();
 }
 
 void SetGarageShipIndex(int garageId, int shipIndex)
 {
-	for (int i = 0; i < MAX_GARAGES; ++i) {
-		if (garage_data[i][0] == garageId) {
-			garage_data[i][1] = shipIndex;
-		}
-	}
+    for (int i = 0; i < MAX_GARAGES; ++i) {
+        if (garage_data[i][0] == garageId) {
+            garage_data[i][1] = shipIndex;
+        }
+    }
 }
 
 int GarageShipIndex(int garageId)
 {
-	for (int i = 0; i < MAX_GARAGES; ++i) {
-		if (garage_data[i][0] == garageId) {
-			return garage_data[i][1];
-		}
-	}
+    for (int i = 0; i < MAX_GARAGES; ++i) {
+        if (garage_data[i][0] == garageId) {
+            return garage_data[i][1];
+        }
+    }
 
-	return -1;
+    return -1;
 }
 
 void CreateGarage(TSHIP *en, int garage_id)
 {
-	en->i = garage_id;
+    en->i = garage_id;
 
-	int iShip = GarageShipIndex(en->i);
-	if (iShip != -1) {
-		// Find which type of the ship is supposed to be here,
-		// create the ship in the best position inside it.
-		TSHIP *ship = gObj_CreateObject();
-		ship->i = iShip;
-		gObj_Constructor(ship, AI_SPARE_SHIP);
-		ship->garage = en;
+    int iShip = GarageShipIndex(en->i);
+    if (iShip != -1) {
+        // Find which type of the ship is supposed to be here,
+        // create the ship in the best position inside it.
+        TSHIP *ship = gObj_CreateObject();
+        ship->i = iShip;
+        gObj_Constructor(ship, AI_SPARE_SHIP);
+        ship->garage = en;
 
-		switch (iShip) {
-		case SHIP_TYPE_LASER:
-		case SHIP_TYPE_MACHINE_GUN:
-		case SHIP_TYPE_ROCKET_LAUNCHER:
-			ship->max_frame = 6;
-			ship->min_frame = 0;
-			break;
-		case SHIP_TYPE_OBSERVER:
-			ship->max_frame = 3;
-			ship->min_frame = 1;
-			ship->cur_frame = 1;
-			break;
-		case SHIP_TYPE_BFG:
-			ship->max_frame = 4;
-			ship->min_frame = 0;
-			break;
-		}
-		BestPositionInGarage(ship, &ship->x, &ship->y);
-	}
+        switch (iShip) {
+        case SHIP_TYPE_LASER:
+        case SHIP_TYPE_MACHINE_GUN:
+        case SHIP_TYPE_ROCKET_LAUNCHER:
+            ship->max_frame = 6;
+            ship->min_frame = 0;
+            break;
+        case SHIP_TYPE_OBSERVER:
+            ship->max_frame = 3;
+            ship->min_frame = 1;
+            ship->cur_frame = 1;
+            break;
+        case SHIP_TYPE_BFG:
+            ship->max_frame = 4;
+            ship->min_frame = 0;
+            break;
+        }
+        BestPositionInGarage(ship, &ship->x, &ship->y);
+    }
 }
 
 int IsParked(int ship_type)
 {
-	for (int i = 0; i < MAX_GARAGES; ++i) {
-		if (garage_data[i][0] && garage_data[i][1] == ship_type) {
-			return 1;
-		}
-	}
-	return 0;
+    for (int i = 0; i < MAX_GARAGES; ++i) {
+        if (garage_data[i][0] && garage_data[i][1] == ship_type) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 int GetPlayerShipIndex()
 {
-	if (!IsParked(SHIP_TYPE_LASER))
-		return SHIP_TYPE_LASER;
+    if (!IsParked(SHIP_TYPE_LASER))
+        return SHIP_TYPE_LASER;
 
-	if (!IsParked(SHIP_TYPE_MACHINE_GUN))
-		return SHIP_TYPE_MACHINE_GUN;
+    if (!IsParked(SHIP_TYPE_MACHINE_GUN))
+        return SHIP_TYPE_MACHINE_GUN;
 
-	if (!IsParked(SHIP_TYPE_ROCKET_LAUNCHER))
-		return SHIP_TYPE_ROCKET_LAUNCHER;
+    if (!IsParked(SHIP_TYPE_ROCKET_LAUNCHER))
+        return SHIP_TYPE_ROCKET_LAUNCHER;
 
-	if (!IsParked(SHIP_TYPE_BFG))
-		return SHIP_TYPE_BFG;
+    if (!IsParked(SHIP_TYPE_BFG))
+        return SHIP_TYPE_BFG;
 
-	return SHIP_TYPE_OBSERVER;
+    return SHIP_TYPE_OBSERVER;
 }
 
 void Update_Garage(TSHIP *gobj)
 {
-	TSHIP *ship = gObj_Ship();
+    TSHIP *ship = gObj_Ship();
 
-	if (ship == NULL)
-		return;
+    if (ship == NULL)
+        return;
 
-	if (ship->ai_type == AI_EXPLOSION)
-		return;
+    if (ship->ai_type == AI_EXPLOSION)
+        return;
 
-	if (GarageShipIndex(gobj->i) != -1) {
-		return;
-	}
+    if (GarageShipIndex(gobj->i) != -1) {
+        return;
+    }
 
-	int w, h;
+    int w, h;
 
-	w = gObj_GetWidth(ship);
-	h = gObj_GetHeight(ship);
+    w = gObj_GetWidth(ship);
+    h = gObj_GetHeight(ship);
 
-	if (!gobj->garage_inactive &&
-		(ship->x >= gobj->x) &&
-		(ship->x + w < gobj->x + GARAGE_WIDTH) &&
-		(ship->y >= gobj->y) &&
-		(ship->y + h < gobj->y + GARAGE_HEIGHT)) {
-		// Player ship is inside the garage, lets
-		// change the ship if possible.
-		TSHIP *spare = gObj_First();
+    if (!gobj->garage_inactive &&
+        (ship->x >= gobj->x) &&
+        (ship->x + w < gobj->x + GARAGE_WIDTH) &&
+        (ship->y >= gobj->y) &&
+        (ship->y + h < gobj->y + GARAGE_HEIGHT)) {
+        // Player ship is inside the garage, lets
+        // change the ship if possible.
+        TSHIP *spare = gObj_First();
 
-		for (; spare; spare = gObj_Next(spare)) {
-			if (spare->ai_type == AI_SPARE_SHIP)
-				break;
-		}
+        for (; spare; spare = gObj_Next(spare)) {
+            if (spare->ai_type == AI_SPARE_SHIP)
+                break;
+        }
 
-		if (spare) {
-			/* Swap AI_SHIP and AI_SPARE_SHIP */
-			TSHIP *garage = spare->garage;
+        if (spare) {
+            /* Swap AI_SHIP and AI_SPARE_SHIP */
+            TSHIP *garage = spare->garage;
 
-			garage->garage_inactive = 1;
+            garage->garage_inactive = 1;
 
-			SetGarageShipIndex(gobj->i, ship->i);
-			SetGarageShipIndex(garage->i, -1);
+            SetGarageShipIndex(gobj->i, ship->i);
+            SetGarageShipIndex(garage->i, -1);
 
-			gObj_Constructor(spare, AI_SHIP);
-			spare->garage = NULL;
-			spare->base = ship->base;
-			spare->smoke = NULL;
+            gObj_Constructor(spare, AI_SHIP);
+            spare->garage = NULL;
+            spare->base = ship->base;
+            spare->smoke = NULL;
 
-			gObj_Constructor(ship, AI_SPARE_SHIP);
-			ship->garage = gobj;
-			ship->base = NULL;
+            gObj_Constructor(ship, AI_SPARE_SHIP);
+            ship->garage = gobj;
+            ship->base = NULL;
 
-			// restore HP
-			game->health = 3;
-			Destroy_Smoke(ship);
+            // restore HP
+            game->health = 3;
+            Destroy_Smoke(ship);
 
-			PlaySoundEffect(SND_CONTACT);
-		}
-	} else if (gobj->garage_inactive) {
-		if (!gObj_CheckOverlap(ship->x, ship->y, ship, gobj)) {
-			gobj->garage_inactive = 0;
-		}
-	}
+            PlaySoundEffect(SND_CONTACT);
+        }
+    } else if (gobj->garage_inactive) {
+        if (!gObj_CheckOverlap(ship->x, ship->y, ship, gobj)) {
+            gobj->garage_inactive = 0;
+        }
+    }
 }
 
 void Update_SpareShip(TSHIP *gobj)
 {
-	const int speed = 1;
-	int x, y;
-	BestPositionInGarage(gobj, &x, &y);
+    const int speed = 1;
+    int x, y;
+    BestPositionInGarage(gobj, &x, &y);
 
-	if (x > gobj->x) {
-		gobj->x += speed;
-	} else {
-		if (x < gobj->x)
-			gobj->x -= speed;
-	}
+    if (x > gobj->x) {
+        gobj->x += speed;
+    } else {
+        if (x < gobj->x)
+            gobj->x -= speed;
+    }
 
-	if (y > gobj->y) {
-		gobj->y += speed;
-	} else {
-		if (y < gobj->y)
-			gobj->y -= speed;
-	}
+    if (y > gobj->y) {
+        gobj->y += speed;
+    } else {
+        if (y < gobj->y)
+            gobj->y -= speed;
+    }
 
-	int middle_frame = (gobj->max_frame + gobj->min_frame) / 2;
+    int middle_frame = (gobj->max_frame + gobj->min_frame) / 2;
 
-	if (gobj->cur_frame > gobj->min_frame && gobj->cur_frame <= middle_frame)
-		--(gobj->cur_frame);
-	else
-		if (gobj->cur_frame > middle_frame && gobj->cur_frame < gobj->max_frame)
-			++(gobj->cur_frame);
+    if (gobj->cur_frame > gobj->min_frame && gobj->cur_frame <= middle_frame)
+        --(gobj->cur_frame);
+    else
+        if (gobj->cur_frame > middle_frame && gobj->cur_frame < gobj->max_frame)
+            ++(gobj->cur_frame);
 }

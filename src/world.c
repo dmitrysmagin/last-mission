@@ -35,487 +35,487 @@
 
 static void fwrite_array(int pxs, int ys, unsigned short *data, FILE *fp)
 {
-	char g_string[256];
+    char g_string[256];
 
-	for (; ys > 0; ys--) {
-		strcpy(g_string, "\t");
-		for (int xs = pxs; xs > 0; xs--) {
-			sprintf(g_string + strlen(g_string), " %hu", *data++);
-		}
-		strcat(g_string, "\n");
-		fputs(g_string, fp);
-	}
+    for (; ys > 0; ys--) {
+        strcpy(g_string, "\t");
+        for (int xs = pxs; xs > 0; xs--) {
+            sprintf(g_string + strlen(g_string), " %hu", *data++);
+        }
+        strcat(g_string, "\n");
+        fputs(g_string, fp);
+    }
 }
 
 static int fread_array(int pxs, int ys, unsigned short *data, FILE *fp)
 {
-	char g_string[256];
+    char g_string[256];
 
-	for (; ys > 0; ys--) {
-		char *p = g_string;
+    for (; ys > 0; ys--) {
+        char *p = g_string;
 
-		if (!fgets(g_string, sizeof(g_string), fp))
-			return 0;
+        if (!fgets(g_string, sizeof(g_string), fp))
+            return 0;
 
-		/* FIXME: Check for errors here */
-		for (int xs = pxs; xs > 0; xs--) {
-			*data++ = strtoul(p, &p, 10);
-		}
-	}
+        /* FIXME: Check for errors here */
+        for (int xs = pxs; xs > 0; xs--) {
+            *data++ = strtoul(p, &p, 10);
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 static void fwrite_HEADER(FILE *fp)
 {
-	fputs("# The Last Mission data file, do not edit!\n",fp);
-	fputs("\n",fp);
+    fputs("# The Last Mission data file, do not edit!\n",fp);
+    fputs("\n",fp);
 
-	fputs("LASTMISSION 1\n", fp);
+    fputs("LASTMISSION 1\n", fp);
 }
 
 static int fread_HEADER(FILE *fp)
 {
-	char g_string[256];
-	char arg1[128];
-	int  arg2;
+    char g_string[256];
+    char arg1[128];
+    int  arg2;
 
 _again:
-	if (!fgets(g_string, sizeof(g_string), fp)) {
-		DPRINTF("Error reading LASTMISSION header\n");
-		return 0;
-	}
+    if (!fgets(g_string, sizeof(g_string), fp)) {
+        DPRINTF("Error reading LASTMISSION header\n");
+        return 0;
+    }
 
-	sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
+    sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
 
-	if (strcmp(arg1, "LASTMISSION"))
-		goto _again;
+    if (strcmp(arg1, "LASTMISSION"))
+        goto _again;
 
-	if (arg2 == 1) {
-		DPRINTF("LASTMISSION header version %d found\n", arg2);
-	}
+    if (arg2 == 1) {
+        DPRINTF("LASTMISSION header version %d found\n", arg2);
+    }
 
-	return 1;
+    return 1;
 }
 
 static void fwrite_WORLD(WORLD *world, FILE *fp)
 {
-	char g_string[256];
+    char g_string[256];
 
-	sprintf(g_string, "WORLD %d %d %d %d %d %d\n",
-		world->room_num,
-		world->patternset_num,
-		world->spriteset_num,
-		world->tileset_num,
-		world->fontset_num,
-		world->bgspriteset_num);
+    sprintf(g_string, "WORLD %d %d %d %d %d %d\n",
+        world->room_num,
+        world->patternset_num,
+        world->spriteset_num,
+        world->tileset_num,
+        world->fontset_num,
+        world->bgspriteset_num);
 
-	fputs(g_string, fp);
+    fputs(g_string, fp);
 }
 
 static int fread_WORLD(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	char arg1[128];
+    char g_string[256];
+    char arg1[128];
 
 _again:
-	if (!fgets(g_string, sizeof(g_string), fp)) {
-		DPRINTF("Error reading WORLD chunk\n");
-		return 0;
-	}
+    if (!fgets(g_string, sizeof(g_string), fp)) {
+        DPRINTF("Error reading WORLD chunk\n");
+        return 0;
+    }
 
-	sscanf(g_string, "%s %d %d %d %d %d %d",
-		(char *)&arg1,
-		&world->room_num,
-		&world->patternset_num,
-		&world->spriteset_num,
-		&world->tileset_num,
-		&world->fontset_num,
-		&world->bgspriteset_num);
+    sscanf(g_string, "%s %d %d %d %d %d %d",
+        (char *)&arg1,
+        &world->room_num,
+        &world->patternset_num,
+        &world->spriteset_num,
+        &world->tileset_num,
+        &world->fontset_num,
+        &world->bgspriteset_num);
 
 
-	if (strcmp(arg1, "WORLD"))
-		goto _again;
+    if (strcmp(arg1, "WORLD"))
+        goto _again;
 
-	DPRINTF("WORLD chunk found; ROOMs: %d, PATTERNSETs: %d\n",
-		world->room_num, world->patternset_num);
+    DPRINTF("WORLD chunk found; ROOMs: %d, PATTERNSETs: %d\n",
+        world->room_num, world->patternset_num);
 
-	/* allocate all necessary pointers */
-	world->room = (ROOM *)
-		calloc(world->room_num, sizeof(ROOM));
-	world->patternset = (PATTERNSET *)
-		calloc(world->patternset_num, sizeof(PATTERNSET));
+    /* allocate all necessary pointers */
+    world->room = (ROOM *)
+        calloc(world->room_num, sizeof(ROOM));
+    world->patternset = (PATTERNSET *)
+        calloc(world->patternset_num, sizeof(PATTERNSET));
 
-	return 1;
+    return 1;
 }
 
 static void fwrite_MAP(WORLD *world, FILE *fp)
 {
-	char g_string[256];
+    char g_string[256];
 
-	sprintf(g_string, "MAP %d %d\n", world->maph, world->mapw);
-	fputs(g_string, fp);
+    sprintf(g_string, "MAP %d %d\n", world->maph, world->mapw);
+    fputs(g_string, fp);
 
-	fwrite_array(world->mapw, world->maph, world->map, fp);
+    fwrite_array(world->mapw, world->maph, world->map, fp);
 }
 
 static int fread_MAP(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	char arg1[128];
+    char g_string[256];
+    char arg1[128];
 
 _again:
-	if (!fgets(g_string, sizeof(g_string), fp)) {
-		DPRINTF("Error reading MAP chunk\n");
-		return 0;
-	}
+    if (!fgets(g_string, sizeof(g_string), fp)) {
+        DPRINTF("Error reading MAP chunk\n");
+        return 0;
+    }
 
-	sscanf(g_string, "%s %d %d",
-		(char *)&arg1,
-		&world->maph, &world->mapw);
+    sscanf(g_string, "%s %d %d",
+        (char *)&arg1,
+        &world->maph, &world->mapw);
 
 
-	if (strcmp(arg1, "MAP"))
-		goto _again;
+    if (strcmp(arg1, "MAP"))
+        goto _again;
 
-	DPRINTF("MAP chunk found; width: %d, height: %d\n",
-		world->maph, world->mapw);
+    DPRINTF("MAP chunk found; width: %d, height: %d\n",
+        world->maph, world->mapw);
 
-	world->map = (unsigned short *)
-		calloc(world->maph, world->mapw * sizeof(short));
+    world->map = (unsigned short *)
+        calloc(world->maph, world->mapw * sizeof(short));
 
-	if (!fread_array(world->mapw,
-			    world->maph,
-			    world->map, fp)) {
-		DPRINTF("Error reading MAP chunk %d\n", i);
-		return 0;
-	}
+    if (!fread_array(world->mapw,
+                world->maph,
+                world->map, fp)) {
+        DPRINTF("Error reading MAP chunk %d\n", i);
+        return 0;
+    }
 
-	return 1;
+    return 1;
 }
 
 static void fwrite_ROOM(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	int i;
+    char g_string[256];
+    int i;
 
-	for (i = 0; i < world->room_num; i++) {
-		ROOM *room = world->room + i;
+    for (i = 0; i < world->room_num; i++) {
+        ROOM *room = world->room + i;
 
-		sprintf(g_string, "ROOM %d %d %d %d %d %d %x %x %x %x %d %d\n",
-			room->xs, room->ys,
-			room->pattern_num,
-			room->object_num,
-			room->bg_type,
-			room->bg_num,
-			room->background, room->shadow, room->line_light, room->line_shadow,
-			room->procedure,
-			room->bonus);
-		fputs(g_string, fp);
-	}
+        sprintf(g_string, "ROOM %d %d %d %d %d %d %x %x %x %x %d %d\n",
+            room->xs, room->ys,
+            room->pattern_num,
+            room->object_num,
+            room->bg_type,
+            room->bg_num,
+            room->background, room->shadow, room->line_light, room->line_shadow,
+            room->procedure,
+            room->bonus);
+        fputs(g_string, fp);
+    }
 }
 
 static int fread_ROOM(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	char arg1[128];
-	int i;
+    char g_string[256];
+    char arg1[128];
+    int i;
 
-	for (i = 0; i < world->room_num; i++) {
-		ROOM *room = world->room + i;
+    for (i = 0; i < world->room_num; i++) {
+        ROOM *room = world->room + i;
 
-	_again:
-		if (!fgets(g_string, sizeof(g_string), fp)) {
-			DPRINTF("Error reading ROOM chunk %d\n", i);
-			return 0;
-		}
+    _again:
+        if (!fgets(g_string, sizeof(g_string), fp)) {
+            DPRINTF("Error reading ROOM chunk %d\n", i);
+            return 0;
+        }
 
-		sscanf(g_string, "%s %d %d %d %d %d %d %x %x %x %x %d %d",
-			(char *)&arg1,
-			&room->xs, &room->ys,
-			&room->pattern_num,
-			&room->object_num,
-			&room->bg_type,
-			&room->bg_num,
-			&room->background, &room->shadow, &room->line_light, &room->line_shadow,
-			&room->procedure,
-			&room->bonus);
+        sscanf(g_string, "%s %d %d %d %d %d %d %x %x %x %x %d %d",
+            (char *)&arg1,
+            &room->xs, &room->ys,
+            &room->pattern_num,
+            &room->object_num,
+            &room->bg_type,
+            &room->bg_num,
+            &room->background, &room->shadow, &room->line_light, &room->line_shadow,
+            &room->procedure,
+            &room->bonus);
 
-		if (strcmp(arg1, "ROOM"))
-			goto _again;
+        if (strcmp(arg1, "ROOM"))
+            goto _again;
 
-		/* allocate all necessary pointers */
-		room->pattern = (PATTERN *)
-			calloc(room->pattern_num, sizeof(PATTERN));
-		room->object = (OBJECT *)
-			calloc(room->object_num, sizeof(OBJECT));
+        /* allocate all necessary pointers */
+        room->pattern = (PATTERN *)
+            calloc(room->pattern_num, sizeof(PATTERN));
+        room->object = (OBJECT *)
+            calloc(room->object_num, sizeof(OBJECT));
 
-		room->bgline = (BGLINE *)
-			calloc(room->bg_num, sizeof(BGLINE));
+        room->bgline = (BGLINE *)
+            calloc(room->bg_num, sizeof(BGLINE));
 
-		DPRINTF("ROOM chunk %d found; PATTERNs: %d; OBJECTs: %d; BGLINEs: %d\n",
-			i, room->pattern_num, room->object_num, room->bg_num);
-	}
+        DPRINTF("ROOM chunk %d found; PATTERNs: %d; OBJECTs: %d; BGLINEs: %d\n",
+            i, room->pattern_num, room->object_num, room->bg_num);
+    }
 
-	return 1;
+    return 1;
 }
 
 static void fwrite_ROOM_PATTERN(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	int i;
+    char g_string[256];
+    int i;
 
-	for (i = 0; i < world->room_num; i++) {
-		ROOM *room = world->room + i;
+    for (i = 0; i < world->room_num; i++) {
+        ROOM *room = world->room + i;
 
-		sprintf(g_string, "PATTERN %d\n", i);
-		fputs(g_string, fp);
+        sprintf(g_string, "PATTERN %d\n", i);
+        fputs(g_string, fp);
 
-		for (int j = 0; j < room->pattern_num; j++) {
-			sprintf(g_string, "\t%d %d %d\n",
-				(room->pattern + j)->x,
-				(room->pattern + j)->y,
-				(room->pattern + j)->index);
-			fputs(g_string, fp);
-		}
-	}
+        for (int j = 0; j < room->pattern_num; j++) {
+            sprintf(g_string, "\t%d %d %d\n",
+                (room->pattern + j)->x,
+                (room->pattern + j)->y,
+                (room->pattern + j)->index);
+            fputs(g_string, fp);
+        }
+    }
 }
 
 static int fread_ROOM_PATTERN(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	char arg1[128];
-	int  arg2;
+    char g_string[256];
+    char arg1[128];
+    int  arg2;
 
-	for (int i = 0; i < world->room_num; i++) {
-		ROOM *room = world->room + i;
+    for (int i = 0; i < world->room_num; i++) {
+        ROOM *room = world->room + i;
 
-	_again:
-		if (!fgets(g_string, sizeof(g_string), fp)) {
-			DPRINTF("Error reading PATTERN chunk %d\n", i);
-			return 0;
-		}
+    _again:
+        if (!fgets(g_string, sizeof(g_string), fp)) {
+            DPRINTF("Error reading PATTERN chunk %d\n", i);
+            return 0;
+        }
 
-		sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
+        sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
 
-		if (strcmp(arg1, "PATTERN") && arg2 != i)
-			goto _again;
+        if (strcmp(arg1, "PATTERN") && arg2 != i)
+            goto _again;
 
-		for (int j = 0; j < room->pattern_num; j++) {
-			if (!fgets(g_string, sizeof(g_string), fp)) {
-				DPRINTF("Error reading PATTERN chunk %d\n", i);
-				return 0;
-			}
+        for (int j = 0; j < room->pattern_num; j++) {
+            if (!fgets(g_string, sizeof(g_string), fp)) {
+                DPRINTF("Error reading PATTERN chunk %d\n", i);
+                return 0;
+            }
 
-			sscanf(g_string, "%d %d %d",
-				&(room->pattern + j)->x,
-				&(room->pattern + j)->y,
-				&(room->pattern + j)->index);
-		}
-	}
+            sscanf(g_string, "%d %d %d",
+                &(room->pattern + j)->x,
+                &(room->pattern + j)->y,
+                &(room->pattern + j)->index);
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 static void fwrite_ROOM_OBJECT(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	int i;
+    char g_string[256];
+    int i;
 
-	for (i = 0; i < world->room_num; i++) {
-		ROOM *room = world->room + i;
+    for (i = 0; i < world->room_num; i++) {
+        ROOM *room = world->room + i;
 
-		sprintf(g_string, "OBJECT %d\n", i);
-		fputs(g_string, fp);
+        sprintf(g_string, "OBJECT %d\n", i);
+        fputs(g_string, fp);
 
-		for (int j = 0; j < room->object_num; j++) {
-			sprintf(g_string, "\t%d %d %d %d %d %d %d %d\n",
-				(room->object + j)->x,
-				(room->object + j)->y,
-				(room->object + j)->index,
-				(room->object + j)->speed,
-				(room->object + j)->minframe,
-				(room->object + j)->maxframe,
-				(room->object + j)->ai,
-				(room->object + j)->garage_id);
-			fputs(g_string, fp);
-		}
-	}
+        for (int j = 0; j < room->object_num; j++) {
+            sprintf(g_string, "\t%d %d %d %d %d %d %d %d\n",
+                (room->object + j)->x,
+                (room->object + j)->y,
+                (room->object + j)->index,
+                (room->object + j)->speed,
+                (room->object + j)->minframe,
+                (room->object + j)->maxframe,
+                (room->object + j)->ai,
+                (room->object + j)->garage_id);
+            fputs(g_string, fp);
+        }
+    }
 }
 
 static int fread_ROOM_OBJECT(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	char arg1[128];
-	int  arg2;
+    char g_string[256];
+    char arg1[128];
+    int  arg2;
 
-	for (int i = 0; i < world->room_num; i++) {
-		ROOM *room = world->room + i;
+    for (int i = 0; i < world->room_num; i++) {
+        ROOM *room = world->room + i;
 
-	_again:
-		if (!fgets(g_string, sizeof(g_string), fp)) {
-			DPRINTF("Error reading OBJECT chunk %d\n", i);
-			return 0;
-		}
+    _again:
+        if (!fgets(g_string, sizeof(g_string), fp)) {
+            DPRINTF("Error reading OBJECT chunk %d\n", i);
+            return 0;
+        }
 
-		sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
+        sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
 
-		if (strcmp(arg1, "OBJECT") && arg2 != i)
-			goto _again;
+        if (strcmp(arg1, "OBJECT") && arg2 != i)
+            goto _again;
 
-		for (int j = 0; j < room->object_num; j++) {
-			if (!fgets(g_string, sizeof(g_string), fp)) {
-				DPRINTF("Error reading OBJECT chunk %d\n", i);
-				return 0;
-			}
+        for (int j = 0; j < room->object_num; j++) {
+            if (!fgets(g_string, sizeof(g_string), fp)) {
+                DPRINTF("Error reading OBJECT chunk %d\n", i);
+                return 0;
+            }
 
-			sscanf(g_string, "%d %d %d %d %d %d %d %d",
-				&(room->object + j)->x,
-				&(room->object + j)->y,
-				&(room->object + j)->index,
-				&(room->object + j)->speed,
-				&(room->object + j)->minframe,
-				&(room->object + j)->maxframe,
-				&(room->object + j)->ai,
-				&(room->object + j)->garage_id);
-		}
-	}
+            sscanf(g_string, "%d %d %d %d %d %d %d %d",
+                &(room->object + j)->x,
+                &(room->object + j)->y,
+                &(room->object + j)->index,
+                &(room->object + j)->speed,
+                &(room->object + j)->minframe,
+                &(room->object + j)->maxframe,
+                &(room->object + j)->ai,
+                &(room->object + j)->garage_id);
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 static void fwrite_ROOM_BGLINE(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	int i;
+    char g_string[256];
+    int i;
 
-	for (i = 0; i < world->room_num; i++) {
-		ROOM *room = world->room + i;
+    for (i = 0; i < world->room_num; i++) {
+        ROOM *room = world->room + i;
 
-		sprintf(g_string, "BGLINE %d\n", i);
-		fputs(g_string, fp);
+        sprintf(g_string, "BGLINE %d\n", i);
+        fputs(g_string, fp);
 
-		for (int j = 0; j < room->bg_num; j++) {
-			sprintf(g_string, "\t%d %d %d %d\n",
-				(room->bgline + j)->x1,
-				(room->bgline + j)->y1,
-				(room->bgline + j)->x2,
-				(room->bgline + j)->y2);
-			fputs(g_string, fp);
-		}
-	}
+        for (int j = 0; j < room->bg_num; j++) {
+            sprintf(g_string, "\t%d %d %d %d\n",
+                (room->bgline + j)->x1,
+                (room->bgline + j)->y1,
+                (room->bgline + j)->x2,
+                (room->bgline + j)->y2);
+            fputs(g_string, fp);
+        }
+    }
 }
 
 static int fread_ROOM_BGLINE(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	char arg1[128];
-	int  arg2;
+    char g_string[256];
+    char arg1[128];
+    int  arg2;
 
-	for (int i = 0; i < world->room_num; i++) {
-		ROOM *room = world->room + i;
+    for (int i = 0; i < world->room_num; i++) {
+        ROOM *room = world->room + i;
 
-	_again:
-		if (!fgets(g_string, sizeof(g_string), fp)) {
-			DPRINTF("Error reading BGLINE chunk %d\n", i);
-			return 0;
-		}
+    _again:
+        if (!fgets(g_string, sizeof(g_string), fp)) {
+            DPRINTF("Error reading BGLINE chunk %d\n", i);
+            return 0;
+        }
 
-		sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
+        sscanf(g_string, "%s %d", (char *)&arg1, &arg2);
 
-		if (strcmp(arg1, "BGLINE") && arg2 != i)
-			goto _again;
+        if (strcmp(arg1, "BGLINE") && arg2 != i)
+            goto _again;
 
-		for (int j = 0; j < room->bg_num; j++) {
-			if (!fgets(g_string, sizeof(g_string), fp)) {
-				DPRINTF("Error reading BGLINE chunk %d\n", i);
-				return 0;
-			}
+        for (int j = 0; j < room->bg_num; j++) {
+            if (!fgets(g_string, sizeof(g_string), fp)) {
+                DPRINTF("Error reading BGLINE chunk %d\n", i);
+                return 0;
+            }
 
-			sscanf(g_string, "%d %d %d %d",
-				&(room->bgline + j)->x1,
-				&(room->bgline + j)->y1,
-				&(room->bgline + j)->x2,
-				&(room->bgline + j)->y2);
-		}
-	}
+            sscanf(g_string, "%d %d %d %d",
+                &(room->bgline + j)->x1,
+                &(room->bgline + j)->y1,
+                &(room->bgline + j)->x2,
+                &(room->bgline + j)->y2);
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 static void fwrite_PATTERNSET(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	int i;
+    char g_string[256];
+    int i;
 
-	for (i = 0; i < world->patternset_num; i++) {
-		PATTERNSET *patternset = world->patternset + i;
+    for (i = 0; i < world->patternset_num; i++) {
+        PATTERNSET *patternset = world->patternset + i;
 
-		sprintf(g_string, "PATTERNSET %d %d\n",
-			patternset->xs, patternset->ys);
-		fputs(g_string, fp);
+        sprintf(g_string, "PATTERNSET %d %d\n",
+            patternset->xs, patternset->ys);
+        fputs(g_string, fp);
 
-		fwrite_array(patternset->xs,
-					patternset->ys,
-					patternset->data, fp);
-	}
+        fwrite_array(patternset->xs,
+                    patternset->ys,
+                    patternset->data, fp);
+    }
 }
 
 static int fread_PATTERNSET(WORLD *world, FILE *fp)
 {
-	char g_string[256];
-	char arg1[128];
+    char g_string[256];
+    char arg1[128];
 
-	for (int i = 0; i < world->patternset_num; i++) {
-		PATTERNSET *patternset = world->patternset + i;
+    for (int i = 0; i < world->patternset_num; i++) {
+        PATTERNSET *patternset = world->patternset + i;
 
-	_again:
-		if (!fgets(g_string, sizeof(g_string), fp)) {
-			DPRINTF("Error reading PATTERNSET chunk %d\n", i);
-			return 0;
-		}
+    _again:
+        if (!fgets(g_string, sizeof(g_string), fp)) {
+            DPRINTF("Error reading PATTERNSET chunk %d\n", i);
+            return 0;
+        }
 
-		sscanf(g_string, "%s %d %d",
-			(char *)&arg1,
-			&patternset->xs, &patternset->ys);
+        sscanf(g_string, "%s %d %d",
+            (char *)&arg1,
+            &patternset->xs, &patternset->ys);
 
-		if (strcmp(arg1, "PATTERNSET"))
-			goto _again;
+        if (strcmp(arg1, "PATTERNSET"))
+            goto _again;
 
-		/* Allocate patternset data */
-		patternset->data = (unsigned short *)
-			calloc(patternset->ys, patternset->xs * sizeof(short));
+        /* Allocate patternset data */
+        patternset->data = (unsigned short *)
+            calloc(patternset->ys, patternset->xs * sizeof(short));
 
-		if (!fread_array(patternset->xs,
-					    patternset->ys,
-					    patternset->data, fp)) {
-			DPRINTF("Error reading PATTERNSET chunk %d\n", i);
-			return 0;
-		}
-	}
+        if (!fread_array(patternset->xs,
+                        patternset->ys,
+                        patternset->data, fp)) {
+            DPRINTF("Error reading PATTERNSET chunk %d\n", i);
+            return 0;
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 void save_world(char *name, WORLD *world)
 {
-	FILE *fp;
+    FILE *fp;
 
-	if (!world)
-		return;
+    if (!world)
+        return;
 
-	fp = fopen(name, "w");
+    fp = fopen(name, "w");
 
-	fwrite_HEADER(fp);
-	fwrite_WORLD(world, fp);
-	fwrite_MAP(world, fp);
-	fwrite_ROOM(world, fp);
-	fwrite_ROOM_PATTERN(world, fp);
-	fwrite_ROOM_OBJECT(world, fp);
-	fwrite_ROOM_BGLINE(world, fp);
-	fwrite_PATTERNSET(world, fp);
+    fwrite_HEADER(fp);
+    fwrite_WORLD(world, fp);
+    fwrite_MAP(world, fp);
+    fwrite_ROOM(world, fp);
+    fwrite_ROOM_PATTERN(world, fp);
+    fwrite_ROOM_OBJECT(world, fp);
+    fwrite_ROOM_BGLINE(world, fp);
+    fwrite_PATTERNSET(world, fp);
 
-	fclose(fp);
+    fclose(fp);
 }
 
 
@@ -525,79 +525,79 @@ void save_world(char *name, WORLD *world)
 
 WORLD *load_world(char *name)
 {
-	WORLD *world;
-	FILE *fp;
+    WORLD *world;
+    FILE *fp;
 
-	world = (WORLD *)calloc(1, sizeof(WORLD));
+    world = (WORLD *)calloc(1, sizeof(WORLD));
 
-	fp = fopen(name, "r");
+    fp = fopen(name, "r");
 
-	if (!fread_HEADER(fp))
-		goto _exit_sub;
+    if (!fread_HEADER(fp))
+        goto _exit_sub;
 
-	if (!fread_WORLD(world, fp))
-		goto _exit_sub;
+    if (!fread_WORLD(world, fp))
+        goto _exit_sub;
 
-	if (!fread_MAP(world, fp))
-		goto _exit_sub;
+    if (!fread_MAP(world, fp))
+        goto _exit_sub;
 
-	if (!fread_ROOM(world, fp))
-		goto _exit_sub;
+    if (!fread_ROOM(world, fp))
+        goto _exit_sub;
 
-	if (!fread_ROOM_PATTERN(world, fp))
-		goto _exit_sub;
+    if (!fread_ROOM_PATTERN(world, fp))
+        goto _exit_sub;
 
-	if (!fread_ROOM_OBJECT(world, fp))
-		goto _exit_sub;
+    if (!fread_ROOM_OBJECT(world, fp))
+        goto _exit_sub;
 
-	if (!fread_ROOM_BGLINE(world, fp))
-		goto _exit_sub;
+    if (!fread_ROOM_BGLINE(world, fp))
+        goto _exit_sub;
 
-	fread_PATTERNSET(world, fp);
+    fread_PATTERNSET(world, fp);
 
 _exit_sub:
-	fclose(fp);
-	return world;
+    fclose(fp);
+    return world;
 }
 
 void free_world(WORLD *world)
 {
-	int i;
+    int i;
 
-	// roll through all rooms
-	for (i = 0; i < world->room_num; i++) {
-		ROOM *room = world->room + i;
+    // roll through all rooms
+    for (i = 0; i < world->room_num; i++) {
+        ROOM *room = world->room + i;
 
-		if (room->pattern) {
-			free(room->pattern);
-			room->pattern = NULL;
-		}
+        if (room->pattern) {
+            free(room->pattern);
+            room->pattern = NULL;
+        }
 
-		if (room->object) {
-			free(room->object);
-			room->object = NULL;
-		}
+        if (room->object) {
+            free(room->object);
+            room->object = NULL;
+        }
 
-		if (room->bgline) {
-			free(room->bgline);
-			room->bgline = NULL;
-		}
-	}
+        if (room->bgline) {
+            free(room->bgline);
+            room->bgline = NULL;
+        }
+    }
 
-	if (world->map) {
-		free(world->map);
-		world->map = NULL;
-	}
+    if (world->map) {
+        free(world->map);
+        world->map = NULL;
+    }
 
-	if (world->room) {
-		free(world->room);
-		world->room = NULL;
-	}
+    if (world->room) {
+        free(world->room);
+        world->room = NULL;
+    }
 
-	if (world->patternset) {
-		free(world->patternset);
-		world->patternset = NULL;
-	}
+    if (world->patternset) {
+        free(world->patternset);
+        world->patternset = NULL;
+    }
 
-	free(world);
+    free(world);
 }

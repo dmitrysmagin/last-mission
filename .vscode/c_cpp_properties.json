@@ -6,12 +6,13 @@
                 "${default}",
                 "C:/Users/user/msys64/ucrt64/include/SDL2",
                 "C:/Users/user/msys64/ucrt64/include",
-                "./"
+                "./src"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "SDL2"
             ],
             "compilerPath": "C:/Users/user/msys64/ucrt64/bin/gcc.exe",
             "intelliSenseMode": "windows-gcc-x64",

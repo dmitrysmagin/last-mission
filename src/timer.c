@@ -28,38 +28,38 @@ static int frame_count_us = 0, skipped_frames = 0;
 
 static long long get_ticks_us()
 {
-	struct timeval current_time;
-	gettimeofday(&current_time, NULL);
+    struct timeval current_time;
+    gettimeofday(&current_time, NULL);
 
-	return (long long)current_time.tv_sec * 1000000 +
-	       (long long)current_time.tv_usec;
+    return (long long)current_time.tv_sec * 1000000 +
+           (long long)current_time.tv_usec;
 }
 
 static void sleep_us(int value)
 {
-	usleep(value);
+    usleep(value);
 }
 
 void synchronize_us()
 {
-	long long now_us;
-	long long lim, wait;
+    long long now_us;
+    long long lim, wait;
 
-	if (!start_us)
-		start_us = get_ticks_us();
+    if (!start_us)
+        start_us = get_ticks_us();
 
-	now_us = get_ticks_us();
-	frame_count_us++;
-	if(now_us - start_us >= 1000000) {
-		start_us = now_us;
-		//fps = frame_limit - skipped_frames; // frame_limit = 60
-		skipped_frames = 0;
-		frame_count_us = 0;
-	}
+    now_us = get_ticks_us();
+    frame_count_us++;
+    if(now_us - start_us >= 1000000) {
+        start_us = now_us;
+        //fps = frame_limit - skipped_frames; // frame_limit = 60
+        skipped_frames = 0;
+        frame_count_us = 0;
+    }
 
-	lim = frame_count_us * 16667; /* frametime */
+    lim = frame_count_us * 16667; /* frametime */
 
-	wait = lim - (now_us - start_us);
-	if (wait > 0)
-		sleep_us(wait);
+    wait = lim - (now_us - start_us);
+    if (wait > 0)
+        sleep_us(wait);
 }

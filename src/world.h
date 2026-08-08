@@ -19,85 +19,85 @@
 #define _WORLD_H_
 
 typedef struct {
-	int x, y;
-	int index;
+    int x, y;
+    int index;
 } PATTERN;
 
 typedef struct {
-	int x, y;
-	int index;
-	int speed;
-	int minframe, maxframe;
-	int ai;
-	int garage_id;
+    int x, y;
+    int index;
+    int speed;
+    int minframe, maxframe;
+    int ai;
+    int garage_id;
 } OBJECT;
 
 typedef struct {
-	int x1, y1, x2, y2;
+    int x1, y1, x2, y2;
 } BGLINE;
 
 typedef struct {
-	int xs, ys;
-	char *data;
+    int xs, ys;
+    char *data;
 } BGMAP;
 
 typedef struct {
-	int xs, ys; // room dimensions in 8x8 tiles
+    int xs, ys; // room dimensions in 8x8 tiles
 
-	int pattern_num;	// number of PATTERN * entries
-	int object_num;		// number of OBJECT * entries
-	int bg_type;		// lines or bgspritemap
-	int bg_num;		// number of background entries
+    int pattern_num;    // number of PATTERN * entries
+    int object_num;        // number of OBJECT * entries
+    int bg_type;        // lines or bgspritemap
+    int bg_num;        // number of background entries
 
-	// color values for background
-	unsigned int background;
-	unsigned int shadow;
-	unsigned int line_light;
-	unsigned int line_shadow;
+    // color values for background
+    unsigned int background;
+    unsigned int shadow;
+    unsigned int line_light;
+    unsigned int line_shadow;
 
-	int procedure; // 3 - win screen
-	int bonus;
+    int procedure; // 3 - win screen
+    int bonus;
 
-	PATTERN *pattern;
-	OBJECT *object;
+    PATTERN *pattern;
+    OBJECT *object;
 
-	union {
-		BGLINE *bgline;
-		BGMAP *bgmap;	// not used yet
-	};
+    union {
+        BGLINE *bgline;
+        BGMAP *bgmap;    // not used yet
+    };
 } ROOM;
 
 typedef struct {
-	int xs, ys;
-	unsigned short *data;
+    int xs, ys;
+    unsigned short *data;
 } PATTERNSET;
 
 typedef struct {
-	char xs, ys;
-	char data[];
-} SPRITE;			// not used yet
+    char xs, ys;
+    char data[];
+} SPRITE;            // not used yet
 
 typedef struct {
-	int num; // number of sprites
-	SPRITE *sprite;
-} SPRITESET;			// not used yet
+    int num; // number of sprites
+    SPRITE *sprite;
+} SPRITESET;            // not used yet
 
 typedef struct {
-	int room_num;
-	int patternset_num;
-	int spriteset_num;
-	int tileset_num;	// not used yet
-	int fontset_num;	// not used yet
-	int bgspriteset_num;	// not used yet
-	int maph, mapw;
+    int room_num;
+    int patternset_num;
+    int spriteset_num;
+    int tileset_num;    // not used yet
+    int fontset_num;    // not used yet
+    int bgspriteset_num;    // not used yet
+    int maph, mapw;
 
-	unsigned short *map;
-	ROOM *room;
-	PATTERNSET *patternset;
-	SPRITESET *spriteset;	// not used yet
-	char *tileset;		// not used yet
-	SPRITESET *bgspriteset;	// not used yet
-	char *fontset;		// not used yet
+    unsigned short *map;
+    ROOM *room;
+    PATTERNSET *patternset;
+    SPRITESET *spriteset;    // not used yet
+    char *tileset;        // not used yet
+    SPRITESET *bgspriteset;    // not used yet
+    char *fontset;        // not used yet
 } WORLD;
 
 // ============================================================================

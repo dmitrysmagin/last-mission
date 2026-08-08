@@ -2,10 +2,13 @@
     "C_Cpp.default.cStandard": "c99",
     "C_Cpp.default.cppStandard": "c++11",
     "C_Cpp.autocomplete": "disabled",
+    "C_Cpp.default.defines": [
+        "SDL2"
+    ],
     "C_Cpp.default.includePath": [
         "C:/Users/user/msys64/ucrt64/include/SDL2",
         "C:/Users/user/msys64/ucrt64/include",
-        "./"
+        "./src"
     ],
     "files.associations": {
         "cctype": "cpp",

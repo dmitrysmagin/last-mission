@@ -1,6 +1,6 @@
 /*
 
-	Routines to record and replay demo mode
+    Routines to record and replay demo mode
 
 */
 
@@ -32,106 +32,106 @@ unsigned char *pBuffer = 0;
 
 void RecordDemo()
 {
-	#if 0
-	// init
-	if (pBuffer == 0) {
-		pBuffer = buffer;
-		memset(buffer, 0, sizeof(buffer));
-		pBuffer += 2; // two zeroes at the beginning
-		demo_frames = 0;
-		demo_data = 0;
-		demo_prev_data = 0;
-	}
+    #if 0
+    // init
+    if (pBuffer == 0) {
+        pBuffer = buffer;
+        memset(buffer, 0, sizeof(buffer));
+        pBuffer += 2; // two zeroes at the beginning
+        demo_frames = 0;
+        demo_data = 0;
+        demo_prev_data = 0;
+    }
 
-	// stop recording demo and dump it to file
-	if (Keys[SC_ESCAPE] == 1) {
-		*pBuffer = demo_frames;
-		*(pBuffer+1) = DEMO_ESCAPE;
-		pBuffer += 2;
-		demo_frames = 0;
+    // stop recording demo and dump it to file
+    if (Keys[SC_ESCAPE] == 1) {
+        *pBuffer = demo_frames;
+        *(pBuffer+1) = DEMO_ESCAPE;
+        pBuffer += 2;
+        demo_frames = 0;
 
-		FILE *f = fopen("keylog.bin", "wb+");
-		fwrite(buffer, sizeof(buffer[0]), (int)(pBuffer - buffer), f);
-		fclose(f);
-	
-	
-		return;
-	}
+        FILE *f = fopen("keylog.bin", "wb+");
+        fwrite(buffer, sizeof(buffer[0]), (int)(pBuffer - buffer), f);
+        fclose(f);
+    
+    
+        return;
+    }
 
-	// no key pressed
-	// check previous data
-	if (Keys[SC_UP] == 0 && (demo_data & DEMO_UP) != 0)
-		demo_data &= ~DEMO_UP;
-	if (Keys[SC_DOWN] == 0 && (demo_data & DEMO_DOWN) != 0)
-		demo_data &= ~DEMO_DOWN;
-	if (Keys[SC_LEFT] == 0 && (demo_data & DEMO_LEFT) != 0)
-		demo_data &= ~DEMO_LEFT;
-	if (Keys[SC_RIGHT] == 0 && (demo_data & DEMO_RIGHT) != 0)
-		demo_data &= ~DEMO_RIGHT;
-	if (Keys[SC_SPACE] == 0 && (demo_data & DEMO_SPACE) != 0)
-		demo_data &= ~DEMO_SPACE;
+    // no key pressed
+    // check previous data
+    if (Keys[SC_UP] == 0 && (demo_data & DEMO_UP) != 0)
+        demo_data &= ~DEMO_UP;
+    if (Keys[SC_DOWN] == 0 && (demo_data & DEMO_DOWN) != 0)
+        demo_data &= ~DEMO_DOWN;
+    if (Keys[SC_LEFT] == 0 && (demo_data & DEMO_LEFT) != 0)
+        demo_data &= ~DEMO_LEFT;
+    if (Keys[SC_RIGHT] == 0 && (demo_data & DEMO_RIGHT) != 0)
+        demo_data &= ~DEMO_RIGHT;
+    if (Keys[SC_SPACE] == 0 && (demo_data & DEMO_SPACE) != 0)
+        demo_data &= ~DEMO_SPACE;
 
-	// if pressed
-	if (Keys[SC_UP] == 1 && (demo_data & DEMO_UP) == 0)
-		demo_data |= DEMO_UP;
-	if (Keys[SC_DOWN] == 1 && (demo_data & DEMO_DOWN) == 0)
-		demo_data |= DEMO_DOWN;
-	if (Keys[SC_LEFT] == 1 && (demo_data & DEMO_LEFT) == 0)
-		demo_data |= DEMO_LEFT;
-	if (Keys[SC_RIGHT] == 1 && (demo_data & DEMO_RIGHT) == 0)
-		demo_data |= DEMO_RIGHT;
-	if (Keys[SC_SPACE] == 1 && (demo_data & DEMO_SPACE) == 0)
-		demo_data |= DEMO_SPACE;
+    // if pressed
+    if (Keys[SC_UP] == 1 && (demo_data & DEMO_UP) == 0)
+        demo_data |= DEMO_UP;
+    if (Keys[SC_DOWN] == 1 && (demo_data & DEMO_DOWN) == 0)
+        demo_data |= DEMO_DOWN;
+    if (Keys[SC_LEFT] == 1 && (demo_data & DEMO_LEFT) == 0)
+        demo_data |= DEMO_LEFT;
+    if (Keys[SC_RIGHT] == 1 && (demo_data & DEMO_RIGHT) == 0)
+        demo_data |= DEMO_RIGHT;
+    if (Keys[SC_SPACE] == 1 && (demo_data & DEMO_SPACE) == 0)
+        demo_data |= DEMO_SPACE;
 
-	if (demo_prev_data == demo_data) {
-		/*if (demo_frames == 255) {
-			*pBuffer = demo_frames;
-			*(pBuffer+1) = demo_prev_data;
-			pBuffer += 2;
-			demo_frames = 0;		
-		} else*/
-			demo_frames++;
-	} else {
-		*pBuffer = demo_frames;
-		*(pBuffer+1) = demo_data;
-		pBuffer += 2;
-		demo_frames = 0;
-		demo_prev_data = demo_data;
-	}
-	#endif
+    if (demo_prev_data == demo_data) {
+        /*if (demo_frames == 255) {
+            *pBuffer = demo_frames;
+            *(pBuffer+1) = demo_prev_data;
+            pBuffer += 2;
+            demo_frames = 0;        
+        } else*/
+            demo_frames++;
+    } else {
+        *pBuffer = demo_frames;
+        *(pBuffer+1) = demo_data;
+        pBuffer += 2;
+        demo_frames = 0;
+        demo_prev_data = demo_data;
+    }
+    #endif
 }
 
 void ResetDemo()
 {
-	Randomize(0);
-	pBuffer = KeyLog;
-	demo_frames = *pBuffer;
-	demo_data = *(pBuffer+1);
-	demo_prev_data = 0;
+    Randomize(0);
+    pBuffer = KeyLog;
+    demo_frames = *pBuffer;
+    demo_data = *(pBuffer+1);
+    demo_prev_data = 0;
 }
 
 int PlayDemo()
 {
-	GKeys[KEY_LEFT] = (demo_prev_data & DEMO_LEFT) >> 2;
-	GKeys[KEY_RIGHT] = (demo_prev_data & DEMO_RIGHT) >> 3;
-	GKeys[KEY_UP] = (demo_prev_data & DEMO_UP);
-	GKeys[KEY_DOWN] = (demo_prev_data & DEMO_DOWN) >> 1;
-	GKeys[KEY_FIRE] = (demo_prev_data & DEMO_SPACE) >> 4;
-	GKeys[KEY_QUIT] = (demo_prev_data & DEMO_ESCAPE) >> 5;
+    GKeys[KEY_LEFT] = (demo_prev_data & DEMO_LEFT) >> 2;
+    GKeys[KEY_RIGHT] = (demo_prev_data & DEMO_RIGHT) >> 3;
+    GKeys[KEY_UP] = (demo_prev_data & DEMO_UP);
+    GKeys[KEY_DOWN] = (demo_prev_data & DEMO_DOWN) >> 1;
+    GKeys[KEY_FIRE] = (demo_prev_data & DEMO_SPACE) >> 4;
+    GKeys[KEY_QUIT] = (demo_prev_data & DEMO_ESCAPE) >> 5;
 
-	// demo ends with ESC pressed
-	if ((demo_prev_data & DEMO_ESCAPE) >> 5 == 1)
-		return 1;
+    // demo ends with ESC pressed
+    if ((demo_prev_data & DEMO_ESCAPE) >> 5 == 1)
+        return 1;
 
-	if (demo_frames == 0) {
-		demo_prev_data = demo_data;
-		pBuffer += 2;
-		demo_frames = *pBuffer;
-		demo_data = *(pBuffer+1);	
-	} else
-		demo_frames--;
+    if (demo_frames == 0) {
+        demo_prev_data = demo_data;
+        pBuffer += 2;
+        demo_frames = *pBuffer;
+        demo_data = *(pBuffer+1);    
+    } else
+        demo_frames--;
 
-	return 0;
+    return 0;
 }
 
 unsigned char KeyLog[] =

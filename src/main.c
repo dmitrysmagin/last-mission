@@ -22,15 +22,15 @@
 int main(int argc, char *argv[])
 {
 
-	if (!gfx_init())
-		return -1;
+    if (!gfx_init())
+        return -1;
 
-	snd_init();
+    snd_init();
 
-	GameLoop();
+    GameLoop();
 
-	snd_quit();
-	gfx_quit();
+    snd_quit();
+    gfx_quit();
 
-	return 0;
+    return 0;
 }

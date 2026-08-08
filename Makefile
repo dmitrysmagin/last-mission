@@ -5,17 +5,28 @@ APP_NAME = last-mission-sdl
 
 CC = gcc
 
-CFLAGS = -Wall -O2 -std=c99 -fms-extensions -Isrc
-LFLAGS = -s -lSDL -lSDL_mixer -lm
+SDL2 ?= 1
 
-# source files
+CFLAGS = -Wall -O2 -std=c99 -fms-extensions -Isrc
+LFLAGS = -s -lm
 
 SRC = src
+
+ifeq ($(SDL2),1)
+CFLAGS += -DSDL2
+LFLAGS += -lSDL2 -lSDL2_mixer
+COMPAT = $(SRC)/sdl_compat.o
+else
+LFLAGS += -lSDL -lSDL_mixer
+COMPAT =
+endif
+
 OBJ =	$(SRC)/data.o $(SRC)/demo.o $(SRC)/editor.o $(SRC)/engine.o \
 	$(SRC)/input.o $(SRC)/main.o $(SRC)/random.o $(SRC)/room.o \
 	$(SRC)/sound.o $(SRC)/sprites.o $(SRC)/video.o $(SRC)/world.o \
 	$(SRC)/object.o $(SRC)/object_bfg.o $(SRC)/object_enemy.o \
-	$(SRC)/object_garage.o $(SRC)/object_laser.o $(SRC)/timer.o
+	$(SRC)/object_garage.o $(SRC)/object_laser.o $(SRC)/timer.o \
+	$(COMPAT)
 
 all : $(APP_NAME)
 

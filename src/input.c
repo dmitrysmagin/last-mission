@@ -15,7 +15,7 @@
  *
  */
 
-#include <SDL/SDL.h>
+#include "sdl_compat.h"
 
 #include "video.h"
 #include "input.h"
@@ -29,65 +29,65 @@ unsigned char Keys[128] = {0};
 
 void input_reset()
 {
-	memset(&Keys[0], 0, 128);
+    memset(&Keys[0], 0, 128);
 }
 
 int input_anykey()
 {
-	for (int i = 0; i < 127; i++) {
-		if (Keys[i] == 1)
-			return 1;
-	}
+    for (int i = 0; i < 127; i++) {
+        if (Keys[i] == 1)
+            return 1;
+    }
 
-	return 0;
+    return 0;
 }
 
 void input_poll()
 {
-	SDL_Event event;
+    SDL_Event event;
 
-	while (SDL_PollEvent(&event)) {
-		int key_scan = -1;
-		unsigned char key_value = 0;
+    while (SDL_PollEvent(&event)) {
+        int key_scan = -1;
+        unsigned char key_value = 0;
 
-		if (event.type == SDL_QUIT) {
-			Keys[SC_ESCAPE] = 1;
-			return;
-		}
+        if (event.type == SDL_QUIT) {
+            Keys[SC_ESCAPE] = 1;
+            return;
+        }
 
-		// unix and dingoo sdl don't have scancodes, so remap usual keys
-		if (event.type == SDL_KEYDOWN)
-			key_value = 1;
-		if (event.type == SDL_KEYUP)
-			key_value = 0;
+        // unix and dingoo sdl don't have scancodes, so remap usual keys
+        if (event.type == SDL_KEYDOWN)
+            key_value = 1;
+        if (event.type == SDL_KEYUP)
+            key_value = 0;
 
-		// Emulate x86 scancodes
-		if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-			switch (event.key.keysym.sym) {
-			case SDLK_UP:		key_scan = SC_UP;	break;
-			case SDLK_DOWN:		key_scan = SC_DOWN;	break;
-			case SDLK_LEFT:		key_scan = SC_LEFT;	break;
-			case SDLK_RIGHT:	key_scan = SC_RIGHT;	break;
-			case SDLK_ESCAPE:	key_scan = SC_ESCAPE;	break;
-			case SDLK_RETURN:	key_scan = SC_ENTER;	break;
-			case SDLK_LCTRL:	key_scan = SC_CONTROL;	break;
-			case SDLK_LALT:		key_scan = SC_ALT;	break;
-			case SDLK_LSHIFT:	key_scan = SC_LSHIFT;	break;
-			case SDLK_SPACE:	key_scan = SC_SPACE;	break;
-			case SDLK_e:		key_scan = SC_E;	break;
-			case SDLK_c:		key_scan = SC_C;	break;
-			case SDLK_v:		key_scan = SC_V;	break;
-			case SDLK_s:		key_scan = SC_S;	break;
-			case SDLK_f:		key_scan = SC_F;	break;
-			case SDLK_x:		key_scan = SC_X;	break;
-			case SDLK_z:		key_scan = SC_Z;	break;
-			case SDLK_TAB:		key_scan = SC_TAB;	break;
-			case SDLK_BACKSPACE:	key_scan = SC_BACKSPACE; break;
-			default:		break;
-			}
+        // Emulate x86 scancodes
+        if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+            switch (event.key.keysym.sym) {
+            case SDLK_UP:        key_scan = SC_UP;    break;
+            case SDLK_DOWN:        key_scan = SC_DOWN;    break;
+            case SDLK_LEFT:        key_scan = SC_LEFT;    break;
+            case SDLK_RIGHT:    key_scan = SC_RIGHT;    break;
+            case SDLK_ESCAPE:    key_scan = SC_ESCAPE;    break;
+            case SDLK_RETURN:    key_scan = SC_ENTER;    break;
+            case SDLK_LCTRL:    key_scan = SC_CONTROL;    break;
+            case SDLK_LALT:        key_scan = SC_ALT;    break;
+            case SDLK_LSHIFT:    key_scan = SC_LSHIFT;    break;
+            case SDLK_SPACE:    key_scan = SC_SPACE;    break;
+            case SDLK_e:        key_scan = SC_E;    break;
+            case SDLK_c:        key_scan = SC_C;    break;
+            case SDLK_v:        key_scan = SC_V;    break;
+            case SDLK_s:        key_scan = SC_S;    break;
+            case SDLK_f:        key_scan = SC_F;    break;
+            case SDLK_x:        key_scan = SC_X;    break;
+            case SDLK_z:        key_scan = SC_Z;    break;
+            case SDLK_TAB:        key_scan = SC_TAB;    break;
+            case SDLK_BACKSPACE:    key_scan = SC_BACKSPACE; break;
+            default:        break;
+            }
 
-			if (key_scan != -1)
-				Keys[key_scan] = key_value;
-		}
-	}
+            if (key_scan != -1)
+                Keys[key_scan] = key_value;
+        }
+    }
 }
