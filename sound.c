@@ -38,7 +38,7 @@ void LoadSoundFiles()
 
 	isInitialized = 1;
 
-	music_intro = Mix_LoadMUS("sound/music_intro.ogg");
+	music_intro = Mix_LoadMUS("sound/mission.ogg");
 	music_game = Mix_LoadMUS("sound/music.ogg");
 
 	bonus = Mix_LoadWAV("sound/bonus.ogg");
