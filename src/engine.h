@@ -59,6 +59,8 @@ typedef struct TGAMEDATA {
 
 void SetGameMode(int mode);
 void GameLoop();
+void game_init();
+void game_deinit();
 void InitEnemies(int screen);
 void BlitEnemies();
 

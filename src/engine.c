@@ -804,6 +804,23 @@ int GameLevelFromScreen(int screen)
     return 10;
 }
 
+void game_init()
+{
+    // initialize game data
+    memset(game, 0, sizeof(TGAMEDATA));
+    game->world = load_world("data/lastmission.dat");
+}
+
+void game_deinit()
+{
+    /* Free any pre-existing world data */
+    if (game->world) {
+        free_world(game->world);
+        game->world = NULL;
+    }
+}
+
+// Just set initial values for a new game, no need to free anything.
 void InitNewGame()
 {
     game->fuel = 5000;
@@ -1320,7 +1337,8 @@ void GameLevelUp()
 void GameLoop()
 {
     SetGameMode(GM_SPLASH);
-    game->world = load_world("data/lastmission.dat");
+
+    game_init();
 
     LoadLogo();
     LoadSprites();
@@ -1333,7 +1351,7 @@ void GameLoop()
         synchronize_us();
     } while (game->mode != GM_EXIT);
 
-    free_world(game->world);
+    game_deinit();
 }
 
 void LoadGame(TGAMEDATA *data)
