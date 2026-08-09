@@ -214,6 +214,14 @@ static void RoomView()
         ReDraw(cur_room);
         ShowViewModeInfo();
         reinit = 0;
+    } else {
+        for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj))
+            UpdateAnimation(gobj);
+
+        ClearScreen();
+        BlitRoom();
+        BlitEnemies();
+        ShowViewModeInfo();
     }
 
     ON_PRESS(SC_ENTER, 1, old_editmode = editmode; editmode = ROOMEDIT; cur_pattern = 0);

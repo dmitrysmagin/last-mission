@@ -38,7 +38,7 @@ void UnpackRoom(WORLD *world, int room)
     PATTERN *pattern = (world->room + room)->pattern;
     int count = (world->room + room)->pattern_num;
 
-    for (;count-- > 0; pattern++) {
+    for (; count-- > 0; pattern++) {
         PATTERNSET *patternset = world->patternset + pattern->index;
         unsigned short *src = patternset->data;
         unsigned short *dst = &screen[pattern->y * ROOM_WIDTH + pattern->x];
