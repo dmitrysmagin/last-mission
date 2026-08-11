@@ -10,7 +10,7 @@
 #define ROOM_WIDTH (SCREEN_WIDTH/8)
 #define ROOM_HEIGHT (ACTION_SCREEN_HEIGHT/8)
 
-static unsigned short screen[ROOM_WIDTH * ROOM_HEIGHT];
+static unsigned short room_tiles[ROOM_WIDTH * ROOM_HEIGHT];
 
 int GetTileI(int x, int y)
 {
@@ -18,7 +18,7 @@ int GetTileI(int x, int y)
         y < 0 || y >= ROOM_HEIGHT)
         return 0;
 
-    return screen[y * ROOM_WIDTH + x];
+    return room_tiles[y * ROOM_WIDTH + x];
 }
 
 void SetTileI(int x, int y, int i)
@@ -27,21 +27,21 @@ void SetTileI(int x, int y, int i)
         y < 0 || y >= ROOM_HEIGHT)
         return;
 
-    screen[y * ROOM_WIDTH + x] = i;
+    room_tiles[y * ROOM_WIDTH + x] = i;
 }
 
-void UnpackRoom(WORLD *world, int room)
+void UnpackRoom(WORLD *world, int room_idx)
 {
-    memset(screen, 0, sizeof(screen));
+    memset(room_tiles, 0, sizeof(room_tiles));
 
-    unsigned short *end = screen + ROOM_WIDTH * ROOM_HEIGHT;
-    PATTERN *pattern = (world->room + room)->pattern;
-    int count = (world->room + room)->pattern_num;
+    unsigned short *end = room_tiles + ROOM_WIDTH * ROOM_HEIGHT;
+    PATTERN *pattern = (world->room + room_idx)->pattern;
+    int count = (world->room + room_idx)->pattern_num;
 
     for (; count-- > 0; pattern++) {
         PATTERNSET *patternset = world->patternset + pattern->index;
         unsigned short *src = patternset->data;
-        unsigned short *dst = &screen[pattern->y * ROOM_WIDTH + pattern->x];
+        unsigned short *dst = &room_tiles[pattern->y * ROOM_WIDTH + pattern->x];
 
         int dy = patternset->ys;
         int dx = patternset->xs;
@@ -61,7 +61,7 @@ void BlitRoom()
 {
     for (int y = 0; y < ROOM_HEIGHT; y++)
         for (int x = 0; x < ROOM_WIDTH; x++)
-            PutTileI(x*8, y*8, screen[y*ROOM_WIDTH+x]);
+            PutTileI(x*8, y*8, room_tiles[y*ROOM_WIDTH+x]);
 }
 
 void BlitRoomOutlines(WORLD *world, int room)
@@ -70,22 +70,22 @@ void BlitRoomOutlines(WORLD *world, int room)
 
     for (int y = 0; y < ROOM_HEIGHT; y++)
         for (int x = 0; x < ROOM_WIDTH; x++)
-            PutTileS(x*8, y*8, screen[y*ROOM_WIDTH+x], shadow);
+            PutTileS(x*8, y*8, room_tiles[y*ROOM_WIDTH+x], shadow);
 }
 
-void BlitBackground(WORLD *world, int room)
+void BlitBackground(WORLD *world, int room_idx)
 {
-    if (room > world->room_num)
+    if (room_idx > world->room_num)
         return;
 
-    EraseBackground((world->room + room)->background);
+    EraseBackground((world->room + room_idx)->background);
 
     for (int i = 0; i < 2; ++i) {
-        BGLINE *bgline = (world->room + room)->bgline;
-        int count = (world->room + room)->bg_num;
+        BGLINE *bgline = (world->room + room_idx)->bgline;
+        int count = (world->room + room_idx)->bg_num;
         unsigned int color = (i == 1)
-            ? (world->room + room)->line_light
-            : (world->room + room)->line_shadow;
+            ? (world->room + room_idx)->line_light
+            : (world->room + room_idx)->line_shadow;
 
         for (int j = 0; j < count; ++j, bgline++) {
             int x1 = bgline->x1;
@@ -106,7 +106,7 @@ void BlitBackground(WORLD *world, int room)
         }
     }
 
-    if (room > 69 && room < 92) {
+    if (room_idx > 69 && room_idx < 92) {
         for (int y = 0; y <= 8; y++)
             for (int x = 0; x <= 20; x++)
                 PutBgI(x*16 - 4, y*16 - 8, SkyMap[y][x]);
