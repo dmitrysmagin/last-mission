@@ -4,6 +4,7 @@
 #include "world.h"
 #include "object.h"
 #include "video.h"
+#include "room.h"
 
 #define GM_EXIT     (-1)
 #define GM_TITLE    0
@@ -55,6 +56,7 @@ typedef struct TGAMEDATA {
     int rmapx, rmapy;
 
     WORLD *world;
+    unsigned short room_tiles[ROOM_WIDTH * ROOM_HEIGHT];
 } TGAMEDATA;
 
 void SetGameMode(int mode);

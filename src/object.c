@@ -406,11 +406,11 @@ void gObj_Explode(TSHIP *gobj)
     if (gobj->i == 6) {
         if (gobj->cur_frame == 0) {
             gobj->x -= 8;
-            SetTileI(gobj->x >> 3, gobj->y >> 3, 0);
-            SetTileI(gobj->x >> 3, (gobj->y >> 3) + 1, 0);
+            SetTileI(game->room_tiles, gobj->x >> 3, gobj->y >> 3, 0);
+            SetTileI(game->room_tiles, gobj->x >> 3, (gobj->y >> 3) + 1, 0);
         } else {
-            SetTileI((gobj->x >> 3) + 1, gobj->y >> 3, 0);
-            SetTileI((gobj->x >> 3) + 1, (gobj->y >> 3) + 1, 0);
+            SetTileI(game->room_tiles, (gobj->x >> 3) + 1, gobj->y >> 3, 0);
+            SetTileI(game->room_tiles, (gobj->x >> 3) + 1, (gobj->y >> 3) + 1, 0);
         }
     }
 
@@ -559,7 +559,7 @@ int gObj_CheckTouch(int x, int y, TSHIP *gobj)
 
     for (int dy = y; dy < ys; dy++) {
         for (int dx = x; dx < xs; dx++) {
-            unsigned char b = GetTileI(dx >> 3, dy >> 3);
+            unsigned char b = GetTileI(game->room_tiles, dx >> 3, dy >> 3);
 
             if (b == 0)
                 continue;

@@ -391,7 +391,7 @@ void Update_Base(TSHIP *base)
                 playMoveSound = 1;
 
                 if (gObj_CheckTouch(ship->x + 2, ship->y, ship) + gObj_CheckTouch(base->x + 2, base->y, base) == 0) {
-                    if (GetTileI((base->x + 40) >> 3, (base->y + 16) >> 3)) {
+                    if (GetTileI(game->room_tiles, (base->x + 40) >> 3, (base->y + 16) >> 3)) {
                         ship->x += 2;
                         base->x += 2;
                     }
@@ -419,7 +419,7 @@ void Update_Base(TSHIP *base)
                 playMoveSound = 1;
 
                 if (gObj_CheckTouch(ship->x - 2, ship->y, ship) + gObj_CheckTouch(base->x - 2, base->y, base) == 0) {
-                    if (GetTileI((base->x - 2) >> 3, (base->y + 16) >> 3)) {
+                    if (GetTileI(game->room_tiles, (base->x - 2) >> 3, (base->y + 16) >> 3)) {
                         ship->x -= 2;
                         base->x -= 2;
                     }
@@ -450,7 +450,7 @@ void Update_Base(TSHIP *base)
         if (GKeys[KEY_UP] == 1) {
             // if bound with base and standing on a bridge - don't allow to fly up
             for (int f = 0; f <= 3; f++) {
-                if (GetTileI(((base->x + 8) >> 3) + f, (base->y + 16) >> 3) == 245)
+                if (GetTileI(game->room_tiles, ((base->x + 8) >> 3) + f, (base->y + 16) >> 3) == 245)
                     return;
             }
 
@@ -523,7 +523,7 @@ void DestroyHiddenAreaAccess(TSHIP *i, int playEffects)
         for (int x = 0; x < i->dx; ++x) {
             int ax = i->x + x;
 
-            SetTileI(ax >> 3, ay >> 3, 0);
+            SetTileI(game->room_tiles, ax >> 3, ay >> 3, 0);
 
             if (playEffects && !(y % 16) && !(x % 16) && (ay + 16 < ACTION_SCREEN_HEIGHT)) {
                 CreateWallExplosion(ax, ay);
@@ -773,7 +773,7 @@ void InitEnemies(int screen)
 
 void InitNewScreen()
 {
-    UnpackRoom(game->world, game->ship_screen);
+    UnpackRoom(game->room_tiles, game->world, game->ship_screen);
 
     InitEnemies(game->ship_screen);
 
@@ -1045,7 +1045,7 @@ void DoTitle()
         game->ship_screen = 0;
         title_start_flag = 1;
         InitNewScreen();
-        BlitRoom();
+        BlitRoom(game->room_tiles);
         PutSpriteI(50*4, 108, 45, 0);
         PutString(76, 88 , "ESPACIO PARA COMENZAR");
         PutString(60, 24, "ORIGINAL GAME: PEDRO RUIZ");
@@ -1201,13 +1201,13 @@ void RenderGame(int renderStatus)
 
     if (modern_background) {
         BlitBackground(game->world, game->ship_screen); // blit background
-        BlitRoomOutlines(game->world, game->ship_screen);
+        BlitRoomOutlines(game->room_tiles, game->world, game->ship_screen);
         BlitEnemyOutlines(game->world); // draw moving objects' outlines (shadows)
     } else {
         EraseBackground(0);
     }
 
-    BlitRoom();
+    BlitRoom(game->room_tiles);
     BlitBfg();
     BlitEnemies(); // draw all enemies and cannon+base
 

@@ -7,12 +7,8 @@
 #include "room.h"
 #include "data.h"
 
-#define ROOM_WIDTH (SCREEN_WIDTH/8)
-#define ROOM_HEIGHT (ACTION_SCREEN_HEIGHT/8)
-
-static unsigned short room_tiles[ROOM_WIDTH * ROOM_HEIGHT];
-
-int GetTileI(int x, int y)
+// TODO: create ROOMTILEMAP struct that will hold room dimensions and room_tiles pointer
+int GetTileI(unsigned short *room_tiles, int x, int y)
 {
     if (x < 0 || x >= ROOM_WIDTH ||
         y < 0 || y >= ROOM_HEIGHT)
@@ -21,7 +17,7 @@ int GetTileI(int x, int y)
     return room_tiles[y * ROOM_WIDTH + x];
 }
 
-void SetTileI(int x, int y, int i)
+void SetTileI(unsigned short *room_tiles, int x, int y, int i)
 {
     if (x < 0 || x >= ROOM_WIDTH ||
         y < 0 || y >= ROOM_HEIGHT)
@@ -30,9 +26,9 @@ void SetTileI(int x, int y, int i)
     room_tiles[y * ROOM_WIDTH + x] = i;
 }
 
-void UnpackRoom(WORLD *world, int room_idx)
+void UnpackRoom(unsigned short *room_tiles, WORLD *world, int room_idx)
 {
-    memset(room_tiles, 0, sizeof(room_tiles));
+    memset(room_tiles, 0, ROOM_WIDTH * ROOM_HEIGHT * sizeof(unsigned short));
 
     unsigned short *end = room_tiles + ROOM_WIDTH * ROOM_HEIGHT;
     PATTERN *pattern = (world->room + room_idx)->pattern;
@@ -57,14 +53,14 @@ void UnpackRoom(WORLD *world, int room_idx)
     }
 }
 
-void BlitRoom()
+void BlitRoom(unsigned short *room_tiles)
 {
     for (int y = 0; y < ROOM_HEIGHT; y++)
         for (int x = 0; x < ROOM_WIDTH; x++)
             PutTileI(x*8, y*8, room_tiles[y*ROOM_WIDTH+x]);
 }
 
-void BlitRoomOutlines(WORLD *world, int room)
+void BlitRoomOutlines(unsigned short *room_tiles, WORLD *world, int room)
 {
     unsigned int shadow = (world->room + room)->shadow;
 

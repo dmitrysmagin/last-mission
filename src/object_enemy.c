@@ -357,7 +357,7 @@ void Update_Bridge(TSHIP *gobj)
 
     // seal or unseal the floor
     for (int f = 0; f <= 4; f++) {
-        SetTileI((gobj->x >> 3) + f, gobj->y >> 3, a);
+        SetTileI(game->room_tiles, (gobj->x >> 3) + f, gobj->y >> 3, a);
     }
 
 }
@@ -478,7 +478,7 @@ void Update_Elevator(TSHIP *gobj)
                 if (gobj->y == 120) {
                     // unseal the floor
                     for (int j = 0; j <= 5; j++) {
-                        SetTileI((gobj->x >> 3) + j, gobj->y >> 3, 0);
+                        SetTileI(game->room_tiles, (gobj->x >> 3) + j, gobj->y >> 3, 0);
                     }
                 }
 
@@ -511,7 +511,7 @@ void Update_Elevator(TSHIP *gobj)
 
                     // seal the floor!
                     for (int i = 0; i <= 5; i++) {
-                        SetTileI(((base->x - 4) >> 3) + i, (base->y + 16) >> 3, 245);
+                        SetTileI(game->room_tiles, ((base->x - 4) >> 3) + i, (base->y + 16) >> 3, 245);
                     }
 
                     if (game->ship_screen != 69) {

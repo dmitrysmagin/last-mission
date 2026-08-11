@@ -64,8 +64,8 @@ extern SDL_Surface *small_screen;
 void ReDraw(int roomnum)
 {
     ClearScreen();
-    UnpackRoom(game->world, roomnum);
-    BlitRoom();
+    UnpackRoom(game->room_tiles, game->world, roomnum);
+    BlitRoom(game->room_tiles);
     InitGaragesForNewGame();
     GarageRestore();
     gObj_DestroyAll();
@@ -219,7 +219,7 @@ static void RoomView()
             UpdateAnimation(gobj);
 
         ClearScreen();
-        BlitRoom();
+        BlitRoom(game->room_tiles);
         BlitEnemies();
         ShowViewModeInfo();
     }
