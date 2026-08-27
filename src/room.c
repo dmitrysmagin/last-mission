@@ -69,6 +69,18 @@ void BlitRoomOutlines(unsigned short *room_tiles, WORLD *world, int room)
             PutTileS(x*8, y*8, room_tiles[y*ROOM_WIDTH+x], shadow);
 }
 
+static void ClipLine(int *x1, int *y1, int *x2, int *y2)
+{
+    if (*x1 < 0) *x1 = 0;
+    if (*x2 < 0) *x2 = 0;
+    if (*x1 >= SCREEN_WIDTH) *x1 = SCREEN_WIDTH - 1;
+    if (*x2 >= SCREEN_WIDTH) *x2 = SCREEN_WIDTH - 1;
+    if (*y1 < 0) *y1 = 0;
+    if (*y2 < 0) *y2 = 0;
+    if (*y1 >= ACTION_SCREEN_HEIGHT) *y1 = ACTION_SCREEN_HEIGHT - 1;
+    if (*y2 >= ACTION_SCREEN_HEIGHT) *y2 = ACTION_SCREEN_HEIGHT - 1;
+}
+
 void BlitBackground(WORLD *world, int room_idx)
 {
     if (room_idx > world->room_num)
@@ -89,22 +101,27 @@ void BlitBackground(WORLD *world, int room_idx)
             int x2 = bgline->x2;
             int y2 = bgline->y2;
 
-            if (i == 1) {
-                DrawLine(x1, y1, x2, y2, color);
-            } else {
-                if (x1 == x2)
-                    DrawLine(x1 - 1, y1, x2 - 1, y2, color);
-                else if (y1 == y2)
-                    DrawLine(x1, y1 - 1, x2, y2 - 1, color);
-                else
-                    DrawLine(x1 - 1, y1, x2 - 1, y2, color);
+            if (i == 0) {
+                if (x1 == x2) { x1--; x2--; }
+                else if (y1 == y2) { y1--; y2--; }
+                else { x1--; x2--; }
             }
+
+            ClipLine(&x1, &y1, &x2, &y2);
+            DrawLine(x1, y1, x2, y2, color);
         }
     }
 
     if (room_idx > 69 && room_idx < 92) {
         for (int y = 0; y <= 8; y++)
-            for (int x = 0; x <= 20; x++)
-                PutBgI(x*16 - 4, y*16 - 8, SkyMap[y][x]);
+            for (int x = 0; x <= 20; x++) {
+                int sx = x * 16 - 4;
+                int sy = y * 16 - 8;
+
+                if (sx >= SCREEN_WIDTH || sy >= ACTION_SCREEN_HEIGHT)
+                    continue;
+
+                PutBgI(sx, sy, SkyMap[y][x]);
+            }
     }
 }

@@ -439,20 +439,6 @@ void DrawRect(int x, int y, int width, int height, unsigned int color)
     DrawLine(x, y + height, x, y, color);
 }
 
-void SetClipGameArea(int flag)
-{
-    if (flag) {
-        SDL_Rect dst;
-
-        dst.x = dst.y = 0;
-        dst.w = small_screen->w;
-        dst.h = ACTION_SCREEN_HEIGHT;
-        SDL_SetClipRect(small_screen, &dst);
-    } else {
-        SDL_SetClipRect(small_screen, NULL);
-    }
-}
-
 void LoadSprites()
 {
     sprites = SDL_LoadBMP("graphics/sprites.bmp");

@@ -1,207 +1,197 @@
-# Engine Plan: Per-Room Dynamic Allocation
+# Engine Plan: Multi-Room Viewport and Smooth Scrolling
 
 ## Goal
-Group all per-room variables into a structure that can be dynamically allocated, enabling rendering of multiple rooms without spoiling data. Include separate per-room enemy object lists. The ROOM struct from world.h serves as the per-room container; TGAMEDATA holds a pointer to the current room and a flat tile array for fast rendering.
+Enable rendering of multiple rooms simultaneously and allow the viewport to scroll smoothly across room boundaries while preserving the original flip-screen mode. Refactor data placement so each room’s resources are self-contained, then introduce a camera/viewport abstraction that samples the surrounding room grid for tiles, enemies, and backgrounds.
 
 ---
 
-## 1. ROOM Struct (from world.h) — Per-Room Container
+## 1. Per-Room Data Model
 
-The `ROOM` struct already holds all per-room data. We keep it as the per-room container:
+### Existing Structures
+- `ROOM` in `world.h` already groups tile patterns, enemy objects, and background lines per room.
+- `TGAMEDATA` in `engine.h` currently holds a single `room_tiles` array and a `world` pointer.
 
+### Proposed Changes
+1. **Room Store**
+   - Add `RoomStore` to `world.h`:
+     ```c
+     typedef struct {
+       int room_num;
+       ROOM *rooms; // from world->room
+     } RoomStore;
+     ```
+   - Expose helpers `RoomStore_Get(RoomStore*, int idx)` and `RoomStore_InBounds(RoomStore*, int x, int y)`.
+
+2. **TGAMEDATA Refactoring**
+   - Replace single `unsigned short room_tiles[ROOM_WIDTH * ROOM_HEIGHT]` with:
+     ```c
+     typedef struct {
+       int x, y; // room grid coordinates
+       ROOM *room;
+       unsigned short *tiles; // dynamically allocated ROOM_WIDTH*ROOM_HEIGHT
+       int dirty; // 1 if tile data changed since last render
+     } RoomTileCache;
+
+     typedef struct TGAMEDATA {
+       // ... existing scalar fields ...
+       WORLD *world;
+       RoomTileCache room_caches[9]; // 3x3 surrounding current room
+       // camera state
+       int cam_x, cam_y; // world pixel position
+       int mode; // GM_GAME, GM_EDITOR, etc.
+     } TGAMEDATA;
+     ```
+   - `room_caches` store pre-unpacked tile buffers for the current room and its eight neighbors.
+
+3. **Tile Access**
+   - Introduce `GetRoomTiles(TGAMEDATA*, int gridX, int gridY)` that returns the cached `unsigned short*` for that room (or NULL if out of bounds).
+   - Update all `GetTileI`/`SetTileI` call sites to use `GetRoomTiles()` to resolve the correct buffer.
+
+---
+
+## 2. Camera / Viewport Abstraction
+
+### 2.1 Camera Struct
 ```c
 typedef struct {
-    int xs, ys;                // room dimensions in 8x8 tiles
-    int pattern_num;           // number of PATTERN entries
-    int object_num;            // number of OBJECT entries (enemies)
-    int bg_type;               // lines or background sprite map
-    int bg_num;                // number of background entries
-    unsigned int background;
-    unsigned int shadow;
-    unsigned int line_light;
-    unsigned int line_shadow;
-    int procedure;             // 3 = win screen
-    int bonus;                 // bonus type
-    PATTERN *pattern;          // array of PATTERN entries
-    OBJECT *object;            // array of enemy objects
-    BGLINE *bgline;            // array of background lines
-} ROOM;
+  int x, y;        // world pixel position (top-left of screen)
+  int width, height; // viewport size (equal to screen size unless editor mode)
+} Camera;
 ```
+- Camera is stored in `TGAMEDATA`.
+- On each frame, compute which rooms intersect the camera rectangle using simple integer division:
+  ```c
+  int roomX0 = cam.x / ROOM_PIXEL_WIDTH;
+  int roomY0 = cam.y / ROOM_PIXEL_HEIGHT;
+  int roomX1 = (cam.x + cam.width - 1) / ROOM_PIXEL_WIDTH;
+  int roomY1 = (cam.y + cam.height - 1) / ROOM_PIXEL_HEIGHT;
+  ```
 
-### Allocation
-All fields are already pre-allocated via `calloc` in `fread_ROOM()` (`world.c:248-253`):
-```c
-room->pattern = (PATTERN *)calloc(room->pattern_num, sizeof(PATTERN));
-room->object = (OBJECT *)calloc(room->object_num, sizeof(OBJECT));
-room->bgline = (BGLINE *)calloc(room->bg_num, sizeof(BGLINE));
-```
+### 2.2 Rendering Pipeline
+1. **Determine Visible Rooms**
+   - Compute `(roomX0,roomY0)-(roomX1,roomY1)` rectangle.
+   - Ensure indices are clamped to world bounds.
 
-No new structure needed — the ROOM struct already contains all per-room data.
+2. **Unpack Tiles**
+   - For each room in the rectangle, ensure `RoomTileCache` is populated (call `UnpackRoom` if `dirty` or cache empty).
+   - Mark cache as clean.
+
+3. **Background Rendering**
+   - For each visible room, call `BlitBackground` offset by `(roomIdxX * ROOM_PIXEL_WIDTH - cam.x, roomIdxY * ROOM_PIXEL_HEIGHT - cam.y)`.
+   - Adjust `DrawLine` calls accordingly.
+
+4. **Tile Rendering**
+   - For each visible room, compute source rectangle of tiles that intersect camera.
+   - Use `BlitRoomRegion(room_tiles, srcX, srcY, width, height, destX, destY)` to blit only the needed portion.
+
+5. **Enemy Rendering**
+   - Enemies are still stored in a global pool but each enemy belongs to a specific room (store `roomIdx` in `TSHIP`).
+   - Before rendering, iterate the pool, check if enemy’s bounding box intersects camera, compute screen coordinates:
+     ```c
+     int sx = enemy->x - cam.x;
+     int sy = enemy->y - cam.y;
+     ```
+   - Only blit if within viewport.
+
+6. **Outlines / Shadows**
+   - Same as above: iterate enemies, compute screen position relative to camera.
+
+### 2.3 Scroll Modes
+- **Flip-Screen (Legacy)**
+  - Camera snaps to room boundaries (camera position always a multiple of `ROOM_PIXEL_WIDTH`/`HEIGHT`).
+  - Triggered by directional input at screen edge.
+  - Keeps original behavior; code path can be toggled via `TGAMEDATA.mode`.
+
+- **Smooth Scrolling (New)**
+  - Camera moves in pixel increments, clamped to world bounds.
+  - When camera crosses a room boundary, new rooms become visible; existing `room_caches` handle tile data.
+  - Enemies remain in pool; their positions are world-relative.
 
 ---
 
-## 2. TGAMEDATA — Game State with Current Room Pointer
+## 3. Enemy Management for Multi-Room
 
-`TGAMEDATA` already holds `WORLD *world`, `ship_screen`, `base_screen`, and game-level state. We add a pointer to the current `ROOM` and a flat tile array:
+### 3.1 Per-Room Enemy Lists
+- Extend `ROOM` (or a new `RoomEnemies` struct) with:
+  ```c
+  typedef struct {
+    int count;
+    TSHIP **enemies; // dynamic array of pointers to Ships[]
+  } RoomEnemies;
+  ```
+- Populate during `InitEnemies(screen)`: for each enemy created, add pointer to the room’s list and store `roomIdx` in the enemy struct.
 
-```c
-typedef struct TGAMEDATA {
-    int mode;
-    int score;
-    int ship_screen;
-    int base_screen;
-    int base_restart_screen;
-    int lives;
-    int fuel;
-    int health;
-    int easy_mode;
-    int level;
-    int screen_bonus;
-    int player_attached;
-    int elevator_flag;
-    int hidden_level_entered;
-    int ticks_for_damage;
-    int garages[MAX_GARAGES][2];
-    int mapx, mapy;
-    int rmapx, rmapy;
+### 3.2 Viewport Enemy Selection
+- On each frame, build a temporary list of enemies whose bounding boxes intersect the camera:
+  1. For each visible room, iterate its `RoomEnemies.enemies`.
+  2. Compute screen position; if visible, push to `viewport_enemies` array.
+  3. Use this list for updates and rendering.
 
-    WORLD *world;
-    // --- current room (derived from world->room + ship_screen) ---
-    ROOM *room;
-    // --- flat tile array for fast rendering ---
-    unsigned short *room_tiles;
-    // --- viewport (cross-room enemy tracking) ---
-    Viewport viewport;
-    TSHIP **viewport_enemies;
-    int viewport_enemy_count;
-} TGAMEDATA;
-```
-
-### `room` pointer
-`game->room` is derived as `game->world->room + game->ship_screen`, giving O(1) access to the current room's data:
-```c
-game->room = game->world->room + game->ship_screen;
-```
-
-### `room_tiles`
-An `unsigned short *` array of size `ROOM_WIDTH * ROOM_HEIGHT` (e.g., 40x25 = 1000 tiles) holds the unpacked tile data. It's allocated in `InitNewScreen()` via `UnpackRoom()` and can be reused across frames for fast rendering:
-```c
-room_tiles = (unsigned short *)calloc(ROOM_WIDTH * ROOM_HEIGHT, sizeof(unsigned short));
-// UnpackRoom fills room_tiles
-```
-
-This avoids repeated `GetTileI()`/`SetTileI()` calls during rendering, replacing the need for the per-room tile buffer in `world.c`.
+### 3.3 Enemy Updates
+- Continue to call `gObj_Update` on all active enemies (even off-screen) to preserve game logic (e.g., homing missiles).
+- Alternatively, defer updates for off-screen enemies if performance becomes an issue.
 
 ---
 
-## 3. Viewport Concept
+## 4. Data Placement Refactoring
 
-The viewport is the rendering window that may cross room boundaries. It holds enemies currently visible within the viewport. Enemies outside the viewport (not yet reached by the player) remain in the per-room container.
+### 4.1 Remove Static Globals
+- `room_tiles` in `engine.c` is removed; replaced by `TGAMEDATA.room_caches`.
+- `Ships[]` remains global but each enemy carries `roomIdx` for spatial queries.
 
-### Viewport Struct
-```c
-typedef struct {
-    int x, y;           // viewport center (screen coordinates)
-    int width, height;  // viewport dimensions in pixels
-    TSHIP **enemies;    // enemies visible in viewport (dynamic)
-    int enemy_count;
-} Viewport;
-```
+### 4.2 Room Data Loading
+- Keep existing `load_world`/`free_world` functions.
+- Add `RoomStore` to expose `world->room` array and helper functions.
+- Ensure `ROOM` contains `roomIdx` (its index) for fast reverse lookup.
 
-### Two-Segment Enemy List
+### 4.3 Memory Management
+- `RoomTileCache.tiles` allocated lazily when room becomes visible (or pre-allocated for the 3x3 grid).
+- Free tile caches on level change or game deinit.
+- Maintain a small pool of `TSHIP*` per room to avoid per-frame scanning of entire `Ships[]`.
 
-| Segment | Location | Scope |
-|---|---|---|
-| **Room enemies** | `ROOM.object[]` per room | Per-room; enemies that have entered the room |
-| **Viewport enemies** | `Viewport.enemies[]` (dynamic, cross-room) | Per-viewport; enemies currently visible |
-
-When the viewport moves to a new room, enemies that cross the room boundary are transferred from the old room's list to the viewport's list.
-
----
-
-## 4. Key Integration Points
-
-### Rendering (engine.c)
-- `RenderGame()` → `BlitRoom()`, `BlitBackground()`, `BlitEnemies()`
-- `BlitEnemies()` iterates `viewport.enemies[]` (not the global list)
-- `BlitRoom()` uses `game->room` to index the ROOM struct and `game->room_tiles` for fast tile access
-- `BlitRoomOutlines()` uses `game->room` to get shadow color
-- Both functions must receive the current room index or container
-
-### Viewport Enemy Management
-- Viewport enemies are tracked in `viewport.enemies[]`
-- When the viewport moves to a new room, enemies that are now outside the viewport are removed from the viewport list
-- Enemies that cross room boundaries are added to the viewport's list
-- `gObj_Update()` updates all viewport enemies each frame
-
-### Enemy Initialization (engine.c, `InitEnemies()`)
-- Currently takes `screen` (room index), gets `room->object`, creates enemies in global list
-- After refactoring: takes `room_index`, iterates `world->room[room_index].object`, creates enemies in `world->room[room_index].enemies` (per-room)
-
-### Enemy Movement (engine.c, `Update_Ship()`)
-- When a ship moves into a new room, any enemies in the old room's list that are now outside the viewport are transferred to the viewport
-- Enemies in the viewport list are updated per-frame by `gObj_Update()`
-- Enemies in the room list are managed by `InitEnemies()` and `InitNewScreen()`
-
-### Game State (engine.h)
-- `game->ship_screen`, `game->base_screen` → `game->current_room`, `game->current_room`
-- `game->screen_bonus`, `game->hidden_level_entered`, `game->elevator_flag`, `game->player_attached` → remain per-game state
-- `game->world` → `game->world`
-- Viewport state is part of `game`
+### 4.4 Screen Metrics
+- Define constants:
+  ```c
+  #define ROOM_PIXEL_WIDTH  (ROOM_WIDTH * 8)   // 320
+  #define ROOM_PIXEL_HEIGHT (ROOM_HEIGHT * 8)  // 200
+  #define WORLD_ROOM_COLS   (world->mapw)
+  #define WORLD_ROOM_ROWS   (world->maph)
+  ```
 
 ---
 
-## 5. TGAMEDATA Refactoring
+## 5. Migration Checklist
 
-### Static Global
-`TGAMEDATA gamedata` remains static in `engine.c:61`, `game = &gamedata` is the global pointer.
-
-### game_deinit()
-```c
-void game_deinit()
-{
-    /* Free any pre-existing world data */
-    if (game->world) {
-        free_world(game->world);
-        game->world = NULL;
-    }
-}
-```
-
-### Call Sites
-- `InitNewGame()` — calls `game_deinit()` at the start to clean up any pre-existing world
-- `GameLoop()` — calls `game_deinit()` at the end (before exiting the main loop)
-
-### Why not call `game_deinit()` in `LoadGame()` or `ResetGame()`?
-- `LoadGame()` doesn't allocate/free world data — it copies saved state into the existing game
-- `ResetGame()` calls `InitNewGame()` which already calls `game_deinit()` — avoid double-free
+1. **Add structs** (`RoomStore`, `RoomTileCache`, `Camera`, `RoomEnemies`) to `world.h` / `engine.h`.
+2. **Update TGAMEDATA** to hold camera, tile caches, per-room enemy lists.
+3. **Refactor `InitEnemies`** to populate per-room enemy lists and assign `roomIdx`.
+4. **Implement `GetRoomTiles`** and replace all `game->room_tiles` usages.
+5. **Create rendering helpers** (`BlitRoomRegion`, `BlitBackgroundOffset`) that accept camera offsets.
+6. **Update `RenderGame`** to compute visible rooms, blit backgrounds, tiles, shadows, and enemies relative to camera.
+7. **Add camera update logic** (smooth scroll or snap) and integrate with `Update_Ship` edge detection.
+8. **Refactor `ChangeScreen`** to update camera position and room caches when crossing boundaries.
+9. **Ensure legacy flip-screen mode** remains functional via a mode flag.
+10. **Update editor** (`editor.c`) to use new camera/tile APIs (optional but recommended).
+11. **Test** both flip-screen and smooth scrolling with existing levels; verify enemy visibility and collisions.
 
 ---
 
-## 6. Files to Modify
+## 6. Potential Risks
 
-1. **`src/world.h`** — Add `Viewport` struct; add `game->room` and `game->room_tiles` to `TGAMEDATA`
-2. **`src/engine.h`** — Update `TGAMEDATA` fields; remove `GameRoomContainer`; add `Viewport` struct
-3. **`src/engine.c`** — Update `InitEnemies()`, `RenderGame()`, `BlitEnemies()`, `BlitRoom()`, `BlitRoomOutlines()` to work with `game->room` and `game->room_tiles`
-4. **`src/room.h`** — Update function signatures if needed
-5. **`src/room.c`** — Update `BlitRoom()`, `BlitRoomOutlines()`, `BlitBackground()` to receive room index
-6. **`src/video.c`** — May need updates for multi-room rendering
-7. **`src/world.c`** — Update `load_world()`/`save_world()` if room structure changes
-8. **`src/main.c`** — Update entry point for container initialization
-9. **`src/input.c`** — May need updates if room-based input handling changes
+- **Collision Detection**: `gObj_CheckTouch` uses tile queries; must ensure the correct tile cache is used based on the enemy’s world position.
+- **Performance**: Unpacking tiles for up to 9 rooms each frame is acceptable (rooms are small), but tile blitting must be clipped to the viewport.
+- **Save/Load**: Save files store `ship_screen`/`mapx`/`mapy`; these remain valid but now represent the camera’s anchor room rather than a single visible room.
+- **Background Alignment**: `BlitBackground` draws full-screen backgrounds; need to offset per room to avoid misalignment when multiple rooms are visible.
 
 ---
 
-## 7. Migration Notes
+## 7. Next Steps
 
-- The `Ships` global array will no longer be the sole enemy storage — per-room enemy arrays will replace it
-- `screen_procedure`, `frame_skip`, `modern_background`, `title_start_flag`, `youwin_start_flag` (game-level globals) remain unchanged
-- `game->world` is the main world pointer; adding per-room data to `TGAMEDATA` is safe
-- `game->ship_screen` is replaced by `game->current_room` without breaking most code
-- Enemy rendering logic in `BlitEnemies()` uses `viewport.enemies[]` — update to iterate per-room enemies and merge with viewport
-- The viewport enemy list is the single source of truth for enemies rendered in the viewport
-- `gObj_First()`/`gObj_Next()` are now used for per-room enemies only; viewport enemies are tracked separately
-- The `ROOM` struct replaces the per-room structure; no new `RoomData` struct is needed
-- `game->room` and `game->room_tiles` replace the per-room tile buffer and room pointer
-- `game_deinit()` is added to properly clean up `game->world` before new games and at exit
-- `TGAMEDATA gamedata` remains static in `engine.c` — no heap allocation for the game struct itself
+1. Define constants and helper functions in `world.h`/`engine.h`.
+2. Implement `RoomTileCache` allocation/cleanup and `GetRoomTiles`.
+3. Extend `ROOM` or add `RoomEnemies` for per-room enemy tracking.
+4. Modify `InitEnemies` to populate room enemy lists.
+5. Build camera update routines and integrate with `Update_Ship`.
+6. Refactor rendering pipeline to use camera offsets and multi-room blitting.
+7. Test flip-screen mode to ensure no regressions.
+8. Implement smooth scrolling and verify enemy visibility and collisions.

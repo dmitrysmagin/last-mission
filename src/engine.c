@@ -699,9 +699,9 @@ void InitShip()
     gObj_Constructor(ship, AI_SHIP);
 }
 
-void InitEnemies(int screen)
+void InitEnemies(int room_idx)
 {
-    ROOM *room = game->world->room + screen;
+    ROOM *room = game->world->room + room_idx;
     OBJECT *object = room->object;
     int count = room->object_num;
 
@@ -809,6 +809,7 @@ void game_init()
     // initialize game data
     memset(game, 0, sizeof(TGAMEDATA));
     game->world = load_world("data/lastmission.dat");
+    //game->room_tiles = calloc(1, ROOM_WIDTH * ROOM_HEIGHT * sizeof(unsigned short));
 }
 
 void game_deinit()
@@ -818,6 +819,9 @@ void game_deinit()
         free_world(game->world);
         game->world = NULL;
     }
+    /*if (game->room_tiles) {
+        free(game->room_tiles);
+    }*/
 }
 
 // Just set initial values for a new game, no need to free anything.
@@ -1197,8 +1201,6 @@ void BlitEnemyOutlines(WORLD *world)
 
 void RenderGame(int renderStatus)
 {
-    SetClipGameArea(1);
-
     if (modern_background) {
         BlitBackground(game->world, game->ship_screen); // blit background
         BlitRoomOutlines(game->room_tiles, game->world, game->ship_screen);
@@ -1210,8 +1212,6 @@ void RenderGame(int renderStatus)
     BlitRoom(game->room_tiles);
     BlitBfg();
     BlitEnemies(); // draw all enemies and cannon+base
-
-    SetClipGameArea(0);
 
     if (renderStatus)
         BlitStatusData(); // draw score etc
