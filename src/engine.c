@@ -771,9 +771,76 @@ void InitEnemies(int room_idx)
     }
 }
 
+static void ClipLine(int *x1, int *y1, int *x2, int *y2)
+{
+    if (*x1 < 0) *x1 = 0;
+    if (*x2 < 0) *x2 = 0;
+    if (*x1 >= SCREEN_WIDTH) *x1 = SCREEN_WIDTH - 1;
+    if (*x2 >= SCREEN_WIDTH) *x2 = SCREEN_WIDTH - 1;
+    if (*y1 < 0) *y1 = 0;
+    if (*y2 < 0) *y2 = 0;
+    if (*y1 >= ACTION_SCREEN_HEIGHT) *y1 = ACTION_SCREEN_HEIGHT - 1;
+    if (*y2 >= ACTION_SCREEN_HEIGHT) *y2 = ACTION_SCREEN_HEIGHT - 1;
+}
+
+void BuildBackground()
+{
+    extern SDL_Surface *small_screen;
+    WORLD *world = game->world;
+    int room_idx = game->ship_screen;
+    ROOM *room = world->room + room_idx;
+
+    /* Temporarily redirect rendering to the background buffer */
+    SDL_Surface *saved = small_screen;
+    small_screen = (SDL_Surface *)game->background;
+
+    EraseBackground(room->background);
+
+    for (int i = 0; i < 2; ++i) {
+        BGLINE *bgline = room->bgline;
+        int count = room->bg_num;
+        unsigned int color = (i == 1)
+            ? room->line_light
+            : room->line_shadow;
+
+        for (int j = 0; j < count; ++j, bgline++) {
+            int x1 = bgline->x1;
+            int y1 = bgline->y1;
+            int x2 = bgline->x2;
+            int y2 = bgline->y2;
+
+            if (i == 0) {
+                if (x1 == x2) { x1--; x2--; }
+                else if (y1 == y2) { y1--; y2--; }
+                else { x1--; x2--; }
+            }
+
+            ClipLine(&x1, &y1, &x2, &y2);
+            DrawLine(x1, y1, x2, y2, color);
+        }
+    }
+
+    if (room_idx > 69 && room_idx < 92) {
+        for (int y = 0; y <= 8; y++)
+            for (int x = 0; x <= 20; x++) {
+                int sx = x * 16 - 4;
+                int sy = y * 16 - 8;
+
+                if (sx >= SCREEN_WIDTH || sy >= ACTION_SCREEN_HEIGHT)
+                    continue;
+
+                PutBgI(sx, sy, SkyMap[y][x]);
+            }
+    }
+
+    /* Restore the real screen surface */
+    small_screen = saved;
+}
+
 void InitNewScreen()
 {
     UnpackRoom(game->room_tiles, game->world, game->ship_screen);
+    BuildBackground();
 
     InitEnemies(game->ship_screen);
 
@@ -809,7 +876,13 @@ void game_init()
     // initialize game data
     memset(game, 0, sizeof(TGAMEDATA));
     game->world = load_world("data/lastmission.dat");
-    //game->room_tiles = calloc(1, ROOM_WIDTH * ROOM_HEIGHT * sizeof(unsigned short));
+
+    extern SDL_Surface *small_screen;
+    game->background = SDL_CreateRGBSurface(SDL_SWSURFACE,
+        SCREEN_WIDTH, ACTION_SCREEN_HEIGHT,
+        small_screen->format->BitsPerPixel,
+        small_screen->format->Rmask, small_screen->format->Gmask,
+        small_screen->format->Bmask, small_screen->format->Amask);
 }
 
 void game_deinit()
@@ -819,9 +892,11 @@ void game_deinit()
         free_world(game->world);
         game->world = NULL;
     }
-    /*if (game->room_tiles) {
-        free(game->room_tiles);
-    }*/
+
+    if (game->background) {
+        SDL_FreeSurface(game->background);
+        game->background = NULL;
+    }
 }
 
 // Just set initial values for a new game, no need to free anything.
@@ -1202,7 +1277,7 @@ void BlitEnemyOutlines(WORLD *world)
 void RenderGame(int renderStatus)
 {
     if (modern_background) {
-        BlitBackground(game->world, game->ship_screen); // blit background
+        BlitBackground(game); // blit background
         BlitRoomOutlines(game->room_tiles, game->world, game->ship_screen);
         BlitEnemyOutlines(game->world); // draw moving objects' outlines (shadows)
     } else {
@@ -1336,9 +1411,9 @@ void GameLevelUp()
 
 void GameLoop()
 {
-    SetGameMode(GM_SPLASH);
-
     game_init();
+
+    SetGameMode(GM_SPLASH);
 
     LoadLogo();
     LoadSprites();

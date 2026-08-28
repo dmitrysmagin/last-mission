@@ -57,6 +57,7 @@ typedef struct TGAMEDATA {
 
     WORLD *world;
     unsigned short room_tiles[ROOM_WIDTH * ROOM_HEIGHT];
+    void *background; /* pre-rendered background pixels, SCREEN_WIDTH x ACTION_SCREEN_HEIGHT */
 } TGAMEDATA;
 
 void SetGameMode(int mode);
@@ -85,6 +86,7 @@ int FacingRight(TSHIP *i);
 void Update_Ship(TSHIP *ship);
 void Update_Base(TSHIP *base);
 
+void BuildBackground();
 void UpdateScoreWithShip(TSHIP *gobj);
 void DestroyHiddenAreaAccess(TSHIP *i, int playEffects);
 
