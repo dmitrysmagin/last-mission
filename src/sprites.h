@@ -3,6 +3,8 @@
 
 #include "video.h"
 
+typedef struct SDL_Surface SDL_Surface;
+
 #define SPRITE_NUMBER 57
 
 #if GAME_SCREEN_BPP == 16
@@ -13,26 +15,26 @@
 
 void LoadSprites();
 
-void PutSpriteI(int x, int y, int index, int frame);
-void PutSpriteS(int x, int y, int index, int frame, unsigned int color);
+void PutSpriteI(SDL_Surface *surface, int x, int y, int index, int frame);
+void PutSpriteS(SDL_Surface *surface, int x, int y, int index, int frame, unsigned int color);
 int GetSpriteW(int index);
 int GetSpriteH(int index);
 
-void PutTileI(int x, int y, int index);
-void PutTileS(int x, int y, int index, unsigned int color);
+void PutTileI(SDL_Surface *surface, int x, int y, int index);
+void PutTileS(SDL_Surface *surface, int x, int y, int index, unsigned int color);
 
-void PutBgI(int x, int y, int index);
+void PutBgI(SDL_Surface *surface, int x, int y, int index);
 
-void PutString(int x, int y, char *p);
-void PutStream(int x, int y, unsigned char *p);
+void PutString(SDL_Surface *surface, int x, int y, char *p);
+void PutStream(SDL_Surface *surface, int x, int y, unsigned char *p);
 
-void EraseBackground(unsigned int color);
-void FillScreen(int x, int y, int w, int h, unsigned int color);
+void EraseBackground(SDL_Surface *surface, unsigned int color);
+void FillScreen(SDL_Surface *surface, int x, int y, int w, int h, unsigned int color);
 
-void DrawLine(int x1, int y1, int x2, int y2, unsigned int color);
-void DrawRect(int x, int y, int width, int height, unsigned int color);
+void DrawLine(SDL_Surface *surface, int x1, int y1, int x2, int y2, unsigned int color);
+void DrawRect(SDL_Surface *surface, int x, int y, int width, int height, unsigned int color);
 
-void PutPixel(int x, int y, unsigned int color);
+void PutPixel(SDL_Surface *surface, int x, int y, unsigned int color);
 
 
 #endif /* _SPRITES_H_ */

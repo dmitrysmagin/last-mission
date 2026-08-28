@@ -108,7 +108,7 @@ static void AddBfgTarget(TSHIP *gobj, TSHIP *bfg)
     t->yt = gobj->y + 8;
 }
 
-void BlitBfg()
+void BlitBfg(SDL_Surface *surface)
 {
     if (bfg_on) {
         for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
@@ -119,6 +119,7 @@ void BlitBfg()
                     color = RGB(0, 170, 0);
 
                 DrawLine(
+                    surface,
                     BfgTargets[n].xc,
                     BfgTargets[n].yc,
                     BfgTargets[n].xt,

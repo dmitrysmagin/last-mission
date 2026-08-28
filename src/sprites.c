@@ -6,7 +6,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS for(int A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -23,10 +23,10 @@ typedef struct {
     int x, y, w, h;
     int dx, dy;
     int n;
-} SPRITESET;
+} SpriteInfo;
 
 /* {x, y, w, h, dx, dy, n} from sprites.bmp */
-SPRITESET SpriteSet[SPRITE_NUMBER] = {
+SpriteInfo SpriteSet[SPRITE_NUMBER] = {
     { 17*16,  3*16, 32, 12,  0, 16, 7 }, /* ship */
     { 12*16, 13*16, 40, 16, 40,  0, 2 }, /* chassis */
 
@@ -98,7 +98,6 @@ SPRITESET SpriteSet[SPRITE_NUMBER] = {
     {   287,   204, 10, 10, 11,  0, 4 }  /* BFG shot */
 };
 
-extern SDL_Surface *small_screen;
 SDL_Surface *sprites;
 SDL_Surface *tiles;
 
@@ -112,7 +111,7 @@ int GetSpriteH(int index)
     return SpriteSet[index].h;
 }
 
-void PutSpriteI(int x, int y, int index, int frame)
+void PutSpriteI(SDL_Surface *surface, int x, int y, int index, int frame)
 {
     SDL_Rect src, dst;
 
@@ -130,7 +129,7 @@ void PutSpriteI(int x, int y, int index, int frame)
     src.w = SpriteSet[index].w;
     src.h = SpriteSet[index].h;
 
-    SDL_BlitSurface(sprites, &src, small_screen, &dst);
+    SDL_BlitSurface(sprites, &src, surface, &dst);
 }
 
 
@@ -214,9 +213,9 @@ void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
     }
 }
 
-void PutPixel(int x, int y, unsigned int color)
+void PutPixel(SDL_Surface *surface, int x, int y, unsigned int color)
 {
-    putpixel(small_screen, x, y, color);
+    putpixel(surface, x, y, color);
 }
 
 int GetSpritePixel(int x, int y, int index, int frame)
@@ -227,7 +226,7 @@ int GetSpritePixel(int x, int y, int index, int frame)
 }
 
 /* Blit a 'shadow' of the sprite */
-void PutSpriteS(int x, int y, int index, int frame, unsigned int color)
+void PutSpriteS(SDL_Surface *surface, int x, int y, int index, int frame, unsigned int color)
 {
     int w = GetSpriteW(index);
     int h = GetSpriteH(index);
@@ -236,18 +235,18 @@ void PutSpriteS(int x, int y, int index, int frame, unsigned int color)
     for (dy = 0; dy < h; dy++)
         for (dx = 0; dx < w; dx++) {
             if (GetSpritePixel(dx, dy, index, frame)) {
-                PutPixel(x + dx - 1, y + dy, color);
-                PutPixel(x + dx + 1, y + dy, color);
-                PutPixel(x + dx, y + dy - 1, color);
-                PutPixel(x + dx, y + dy + 1, color);
-                PutPixel(x + dx, y + dy + 2, color);
+                PutPixel(surface, x + dx - 1, y + dy, color);
+                PutPixel(surface, x + dx + 1, y + dy, color);
+                PutPixel(surface, x + dx, y + dy - 1, color);
+                PutPixel(surface, x + dx, y + dy + 1, color);
+                PutPixel(surface, x + dx, y + dy + 2, color);
 
             }
         }
 }
 
 /* Tiles are grouped 40x7, 8x8 each tile*/
-void PutTileI(int x, int y, int index)
+void PutTileI(SDL_Surface *surface, int x, int y, int index)
 {
     SDL_Rect src, dst;
 
@@ -262,7 +261,7 @@ void PutTileI(int x, int y, int index)
     src.w = 8;
     src.h = 8;
 
-    SDL_BlitSurface(tiles, &src, small_screen, &dst);
+    SDL_BlitSurface(tiles, &src, surface, &dst);
 }
 
 int GetTilePixel(int x, int y, int index)
@@ -272,7 +271,7 @@ int GetTilePixel(int x, int y, int index)
             y + index / 40 * 8);
 }
 
-void PutTileS(int x, int y, int index, unsigned int color)
+void PutTileS(SDL_Surface *surface, int x, int y, int index, unsigned int color)
 {
     int w = 8;
     int h = 8;
@@ -281,17 +280,17 @@ void PutTileS(int x, int y, int index, unsigned int color)
     for (dy = 0; dy < h; dy++)
         for (dx = 0; dx < w; dx++) {
             if (GetTilePixel(dx, dy, index)) {
-                PutPixel(x + dx - 1, y + dy, color);
-                PutPixel(x + dx + 1, y + dy, color);
-                PutPixel(x + dx, y + dy - 1, color);
-                PutPixel(x + dx, y + dy + 1, color);
-                PutPixel(x + dx, y + dy + 2, color);
+                PutPixel(surface, x + dx - 1, y + dy, color);
+                PutPixel(surface, x + dx + 1, y + dy, color);
+                PutPixel(surface, x + dx, y + dy - 1, color);
+                PutPixel(surface, x + dx, y + dy + 1, color);
+                PutPixel(surface, x + dx, y + dy + 2, color);
 
             }
         }
 }
 
-void PutBgI(int x, int y, int index)
+void PutBgI(SDL_Surface *surface, int x, int y, int index)
 {
     SDL_Rect src, dst;
 
@@ -306,10 +305,10 @@ void PutBgI(int x, int y, int index)
     src.w = 16;
     src.h = 16;
 
-    SDL_BlitSurface(tiles, &src, small_screen, &dst);
+    SDL_BlitSurface(tiles, &src, surface, &dst);
 }
 
-void PutLetterI(int x, int y, int index)
+static void PutLetterI(SDL_Surface *surface, int x, int y, int index)
 {
     SDL_Rect src, dst;
 
@@ -325,7 +324,7 @@ void PutLetterI(int x, int y, int index)
     src.h = 8;
 
     SDL_SetColorKey(tiles, 0, 0);
-    SDL_BlitSurface(tiles, &src, small_screen, &dst);
+    SDL_BlitSurface(tiles, &src, surface, &dst);
     SDL_SetColorKey(tiles, SDL_SRCCOLORKEY, 0);
 }
 
@@ -344,26 +343,26 @@ unsigned char AdjustAscii(unsigned char a)
     return 0;
 }
 
-void PutString(int x, int y, char *p)
+void PutString(SDL_Surface *surface, int x, int y, char *p)
 {
     while (*p != 0) {
-        PutLetterI(x, y, AdjustAscii(*p));
+        PutLetterI(surface, x, y, AdjustAscii(*p));
         p += 1;
         x += 8;
     }
 }
 
 
-void PutStream(int x, int y, unsigned char *p)
+void PutStream(SDL_Surface *surface, int x, int y, unsigned char *p)
 {
     while (*p != 0) {
-        PutLetterI(x, y, *p);
+        PutLetterI(surface, x, y, *p);
         p += 1;
         x += 8;
     }
 }
 
-void FillScreen(int x, int y, int w, int h, unsigned int color)
+void FillScreen(SDL_Surface *surface, int x, int y, int w, int h, unsigned int color)
 {
     SDL_Rect dst;
 
@@ -372,15 +371,15 @@ void FillScreen(int x, int y, int w, int h, unsigned int color)
     dst.w = w;
     dst.h = h;
 
-    SDL_FillRect(small_screen, &dst, color);
+    SDL_FillRect(surface, &dst, color);
 }
 
-void EraseBackground(unsigned int color)
+void EraseBackground(SDL_Surface *surface, unsigned int color)
 {
-    FillScreen(0, 0, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT, color);
+    FillScreen(surface, 0, 0, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT, color);
 }
 
-void DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
+void DrawLine(SDL_Surface *surface, int x1, int y1, int x2, int y2, unsigned int color)
 {
     const int deltaX = abs(x2 - x1);
     const int deltaY = abs(y2 - y1);
@@ -394,7 +393,7 @@ void DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
         }
 
         for (i = y1; i <= y2; ++i) {
-            PutPixel(x1, i, color);
+            PutPixel(surface, x1, i, color);
         }
     } else if (deltaY == 0) {
         if (x1 > x2) {
@@ -404,17 +403,17 @@ void DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
         }
 
         for (i = x1; i <= x2; ++i) {
-            PutPixel(i, y1, color);
+            PutPixel(surface, i, y1, color);
         }
     } else {
         const int signX = x1 < x2 ? 1 : -1;
         const int signY = y1 < y2 ? 1 : -1;
 
         int error = deltaX - deltaY;
-        PutPixel(x2, y2, color);
+        PutPixel(surface, x2, y2, color);
 
         while (x1 != x2 || y1 != y2) {
-            PutPixel(x1, y1, color);
+            PutPixel(surface, x1, y1, color);
             const int error2 = error * 2;
 
             if (error2 > -deltaY) {
@@ -430,13 +429,13 @@ void DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
     }
 }
 
-void DrawRect(int x, int y, int width, int height, unsigned int color)
+void DrawRect(SDL_Surface *surface, int x, int y, int width, int height, unsigned int color)
 {
     width--; height--;
-    DrawLine(x, y, x + width, y, color);
-    DrawLine(x + width, y, x + width, y + height, color);
-    DrawLine(x + width, y + height, x, y + height, color);
-    DrawLine(x, y + height, x, y, color);
+    DrawLine(surface, x, y, x + width, y, color);
+    DrawLine(surface, x + width, y, x + width, y + height, color);
+    DrawLine(surface, x + width, y + height, x, y + height, color);
+    DrawLine(surface, x, y + height, x, y, color);
 }
 
 void LoadSprites()

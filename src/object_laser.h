@@ -3,10 +3,12 @@
 
 #include "object.h"
 
+typedef struct SDL_Surface SDL_Surface;
+
 void DoLaser(TSHIP *ship);
 void ResetLaser();
 int UpdateLaser(int i);
-void BlitLaser(TSHIP *gobj);
+void BlitLaser(SDL_Surface *surface, TSHIP *gobj);
 void BlitLaserStatus();
 
 void Update_Laser(TSHIP *gobj);

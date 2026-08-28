@@ -73,23 +73,25 @@ void DoLaser(TSHIP *ship)
     }
 }
 
-void BlitLaser(TSHIP *gobj)
+void BlitLaser(SDL_Surface *surface, TSHIP *gobj)
 {
     if (gobj->dir != 0) {
-        DrawLine(gobj->x, gobj->y,
+        DrawLine(surface, gobj->x, gobj->y,
              gobj->x + gobj->dx, gobj->y, RGB(170, 170, 170));
     }
 }
 
 void BlitLaserStatus()
 {
+    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
+
     for (int i = 0; i <= 31; i++) {
 
         unsigned int c = ((i < (laser_overload >> 3)) ? RGB(255, 0, 0) : 0);
 
-        PutPixel(i + 192, STATUS_YPOS + 18, c);
-        PutPixel(i + 192, STATUS_YPOS + 19, c);
-        PutPixel(i + 192, STATUS_YPOS + 20, c);
+        PutPixel(surface, i + 192, STATUS_YPOS + 18, c);
+        PutPixel(surface, i + 192, STATUS_YPOS + 19, c);
+        PutPixel(surface, i + 192, STATUS_YPOS + 20, c);
     }
 }
 

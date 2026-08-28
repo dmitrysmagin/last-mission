@@ -3,9 +3,11 @@
 
 #include "object.h"
 
+typedef struct SDL_Surface SDL_Surface;
+
 void DoBFG(TSHIP *ship);
 void CleanupBfg();
-void BlitBfg();
+void BlitBfg(SDL_Surface *surface);
 void Update_BfgShot(TSHIP *gobj);
 
 #endif /* _OBJECT_BFG_H_ */

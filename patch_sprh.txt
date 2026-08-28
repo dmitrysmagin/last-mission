@@ -1,0 +1,31 @@
+diff --git a/src/sprites.h b/src/sprites.h
+index bbc7bfa..b031261 100644
+--- a/src/sprites.h
++++ b/src/sprites.h
+@@ -1,6 +1,7 @@
+ #ifndef _SPRITES_H_
+ #define _SPRITES_H_
+ 
++#include "sdl_compat.h"
+ #include "video.h"
+ 
+ #define SPRITE_NUMBER 57
+@@ -13,26 +14,26 @@
+ 
+ void LoadSprites();
+ 
+-void PutSpriteI(int x, int y, int index, int frame);
+-void PutSpriteS(int x, int y, int index, int frame, unsigned int color);
++void PutSpriteI(SDL_Surface *surface, int x, int y, int index, int frame);
++void PutSpriteS(SDL_Surface *surface, int x, int y, int index, int frame, unsigned int color);
+ int GetSpriteW(int index);
+ int GetSpriteH(int index);
+ 
+-void PutTileI(int x, int y, int index);
+-void PutTileS(int x, int y, int index, unsigned int color);
++void PutTileI(SDL_Surface *surface, int x, int y, int index);
++void PutTileS(SDL_Surface *surface, int x, int y, int index, unsigned int color);
+ 
+-void PutBgI(int x, int y, int index);
++void PutBgI(SDL_Surface *surface, int x, int y, int index);
+ 

@@ -209,7 +209,7 @@ int UpdateFuel()
         if (game->fuel == 0) {
             SetGameMode(GM_GAMEOVER);
             input_reset();
-            PutString(8*16, 8*10, "NO FUERZA");
+            PutString(game->small_screen, 8*16, 8*10, "NO FUERZA");
 
             return 1;
         }
@@ -785,16 +785,12 @@ static void ClipLine(int *x1, int *y1, int *x2, int *y2)
 
 void BuildBackground()
 {
-    extern SDL_Surface *small_screen;
     WORLD *world = game->world;
     int room_idx = game->ship_screen;
     ROOM *room = world->room + room_idx;
+    SDL_Surface *bg = (SDL_Surface *)game->background;
 
-    /* Temporarily redirect rendering to the background buffer */
-    SDL_Surface *saved = small_screen;
-    small_screen = (SDL_Surface *)game->background;
-
-    EraseBackground(room->background);
+    EraseBackground(bg, room->background);
 
     for (int i = 0; i < 2; ++i) {
         BGLINE *bgline = room->bgline;
@@ -816,7 +812,7 @@ void BuildBackground()
             }
 
             ClipLine(&x1, &y1, &x2, &y2);
-            DrawLine(x1, y1, x2, y2, color);
+            DrawLine(bg, x1, y1, x2, y2, color);
         }
     }
 
@@ -829,12 +825,9 @@ void BuildBackground()
                 if (sx >= SCREEN_WIDTH || sy >= ACTION_SCREEN_HEIGHT)
                     continue;
 
-                PutBgI(sx, sy, SkyMap[y][x]);
+                PutBgI(bg, sx, sy, SkyMap[y][x]);
             }
     }
-
-    /* Restore the real screen surface */
-    small_screen = saved;
 }
 
 void InitNewScreen()
@@ -875,14 +868,16 @@ void game_init()
 {
     // initialize game data
     memset(game, 0, sizeof(TGAMEDATA));
-    game->world = load_world("data/lastmission.dat");
 
-    extern SDL_Surface *small_screen;
+    game->small_screen = SDL_CreateRGBSurface(SDL_SWSURFACE,
+        SCREEN_WIDTH, SCREEN_HEIGHT,
+        GAME_SCREEN_BPP, 0, 0, 0, 0);
+
     game->background = SDL_CreateRGBSurface(SDL_SWSURFACE,
         SCREEN_WIDTH, ACTION_SCREEN_HEIGHT,
-        small_screen->format->BitsPerPixel,
-        small_screen->format->Rmask, small_screen->format->Gmask,
-        small_screen->format->Bmask, small_screen->format->Amask);
+        GAME_SCREEN_BPP, 0, 0, 0, 0);
+
+    game->world = load_world("data/lastmission.dat");
 }
 
 void game_deinit()
@@ -896,6 +891,11 @@ void game_deinit()
     if (game->background) {
         SDL_FreeSurface(game->background);
         game->background = NULL;
+    }
+
+    if (game->small_screen) {
+        SDL_FreeSurface(game->small_screen);
+        game->small_screen = NULL;
     }
 }
 
@@ -938,7 +938,7 @@ int UpdateLives()
     if (game->lives == 0) {
         SetGameMode(GM_GAMEOVER);
         input_reset();
-        PutString(8*16, 8*10, "HAS PERDIDO");
+        PutString((SDL_Surface *)game->small_screen, 8*16, 8*10, "HAS PERDIDO");
 
         return 1;
     }
@@ -966,7 +966,7 @@ void RestartLevel()
 void BlitStatus()
 {
     for (int i = 0; i < 7; i++) {
-        PutStream(0, STATUS_YPOS + i * 8, &STATUSBAR1[i * 43 + 2]);
+        PutStream(game->small_screen, 0, STATUS_YPOS + i * 8, &STATUSBAR1[i * 43 + 2]);
     }
 }
 
@@ -976,21 +976,21 @@ void BlitStatusData()
 
     // level
     sprintf(string_buffer, "%02d", game->level);
-    PutString(8*16, STATUS_YPOS + 16, string_buffer);
+    PutString(game->small_screen, 8*16, STATUS_YPOS + 16, string_buffer);
 
     // fuel
     sprintf(string_buffer, "%04d", game->fuel);
-    PutString(8*14, STATUS_YPOS + 24, string_buffer);
+    PutString(game->small_screen, 8*14, STATUS_YPOS + 24, string_buffer);
 
     // score
     sprintf(string_buffer, "%08d", game->score);
-    PutString(8*10, STATUS_YPOS + 32, string_buffer);
+    PutString(game->small_screen, 8*10, STATUS_YPOS + 32, string_buffer);
 
     // health bar.
     string_buffer[2] = 0;
     for (int y = 0; y < 3; ++y) {
         string_buffer[1] = string_buffer[0] = (game->health > y) ? 84 : 88;
-        PutStream(8*19, STATUS_YPOS + 8 * (4 - y), (unsigned char *)string_buffer);
+        PutStream(game->small_screen, 8*19, STATUS_YPOS + 8 * (4 - y), (unsigned char *)string_buffer);
     }
 
     // laser
@@ -998,10 +998,10 @@ void BlitStatusData()
 
     // lives
     sprintf(string_buffer, "%02d", game->lives);
-    PutString(8*28, STATUS_YPOS + 24, string_buffer);
+    PutString(game->small_screen, 8*28, STATUS_YPOS + 24, string_buffer);
 
     // score record
-    PutString(8*22, STATUS_YPOS + 32, "88888888");
+    PutString(game->small_screen, 8*22, STATUS_YPOS + 32, "88888888");
 
 }
 
@@ -1014,7 +1014,6 @@ void LoadLogo()
 
 void PutLine(int x, int y, int line)
 {
-    extern SDL_Surface *small_screen;
     SDL_Rect src, dst;
 
     src.x = 0;
@@ -1025,7 +1024,7 @@ void PutLine(int x, int y, int line)
     dst.x = x;
     dst.y = y;
 
-    SDL_BlitSurface(logo, &src, small_screen, &dst);
+    SDL_BlitSurface(logo, &src, (SDL_Surface *)game->small_screen, &dst);
 }
 
 void RotateLogo()
@@ -1035,7 +1034,6 @@ void RotateLogo()
     static int speed = 2;
     static int mirror = 0;
     static int sign = 1;
-    extern SDL_Surface *small_screen;
     SDL_Rect dst;
 
     if (speed > 0) {
@@ -1053,7 +1051,7 @@ void RotateLogo()
     dst.w = logo->w;
     dst.h = logo->h + 1; /* FIXME: we have extra line at the bottom */
 
-    SDL_FillRect(small_screen, &dst, 0);
+    SDL_FillRect((SDL_Surface *)game->small_screen, &dst, 0);
 
     for (int i = num_of_lines; i < 24; i++) {
         PutLine(96, (mirror == 0 ? 142 + i : 142 + 46 - i), (int)iterator);
@@ -1076,17 +1074,16 @@ void RotateLogo()
 
 void LoadSplash()
 {
-    extern SDL_Surface *small_screen;
     char name[256];
     SDL_Rect dst;
 
     sprintf(name, "graphics/title%i.bmp", (SDL_GetTicks() & 3) + 1);
     SDL_Surface *title = SDL_LoadBMP(name);
 
-    dst.x = (small_screen->w - title->w) / 2;
-    dst.y = (small_screen->h - title->h) / 2;
+    dst.x = (((SDL_Surface *)game->small_screen)->w - title->w) / 2;
+    dst.y = (((SDL_Surface *)game->small_screen)->h - title->h) / 2;
 
-    SDL_BlitSurface(title, NULL, small_screen, &dst);
+    SDL_BlitSurface(title, NULL, (SDL_Surface *)game->small_screen, &dst);
     SDL_FreeSurface(title);
 }
 
@@ -1124,13 +1121,13 @@ void DoTitle()
         game->ship_screen = 0;
         title_start_flag = 1;
         InitNewScreen();
-        BlitRoom(game->room_tiles);
-        PutSpriteI(50*4, 108, 45, 0);
-        PutString(76, 88 , "ESPACIO PARA COMENZAR");
-        PutString(60, 24, "ORIGINAL GAME: PEDRO RUIZ");
-        PutString(76, 36, "REMAKE: DMITRY SMAGIN");
-        PutString(140, 44, "ALEXEY PAVLOV");
-        PutString(60, 56, "MUSIC AND SFX: MARK BRAGA");
+        BlitRoom((SDL_Surface *)game->small_screen, game->room_tiles);
+        PutSpriteI((SDL_Surface *)game->small_screen, 50*4, 108, 45, 0);
+        PutString((SDL_Surface *)game->small_screen, 76, 88 , "ESPACIO PARA COMENZAR");
+        PutString((SDL_Surface *)game->small_screen, 60, 24, "ORIGINAL GAME: PEDRO RUIZ");
+        PutString((SDL_Surface *)game->small_screen, 76, 36, "REMAKE: DMITRY SMAGIN");
+        PutString((SDL_Surface *)game->small_screen, 140, 44, "ALEXEY PAVLOV");
+        PutString((SDL_Surface *)game->small_screen, 60, 56, "MUSIC AND SFX: MARK BRAGA");
         ResetDemoTicksCounter();
     }
 
@@ -1183,7 +1180,7 @@ void DoWinScreen()
     "LIBERADA DE LOS INVASORES Y PUEDE SER HABITADA DE NUEVO               REPITO  MENSAJE";
 
     if (youwin_start_flag == 0) {
-        FillScreen(0, 144, SCREEN_WIDTH, 56, 0);
+        FillScreen((SDL_Surface *)game->small_screen, 0, 144, SCREEN_WIDTH, 56, 0);
         youwin_start_flag = 1;
         x_string = 0;
         win_ticks = 0;
@@ -1191,7 +1188,7 @@ void DoWinScreen()
         win_ticks++;
     }
 
-    PutString(0 - x_string % 8, 20*8, &win_string[0] + x_string/8);
+    PutString((SDL_Surface *)game->small_screen, 0 - x_string % 8, 20*8, &win_string[0] + x_string/8);
 
     if (x_string/8 >= sizeof(win_string))
         x_string = 0;
@@ -1241,51 +1238,57 @@ void DoKeys()
 
 void BlitEnemies()
 {
+    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
+
     for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
         if (gobj->ai_type == AI_GARAGE) {
 #ifdef _DEBUG
             DrawRect(
+                surface,
                 gobj->x, gobj->y,
                 GARAGE_WIDTH, GARAGE_HEIGHT,
                 gobj->garage_inactive ? 10 : 28);
 #endif
         } else if (gobj->ai_type == AI_HIDDEN_AREA_ACCESS) {
 #ifdef _DEBUG
-            DrawRect(gobj->x, gobj->y, gobj->dx, gobj->dy, 10);
+            DrawRect(surface, gobj->x, gobj->y, gobj->dx, gobj->dy, 10);
 #endif
         }
 
         if (gobj->ai_type == AI_LASER)
-            BlitLaser(gobj);
+            BlitLaser(surface, gobj);
         else
         if (gobj->flags & GOBJ_VISIBLE)
-            PutSpriteI(gobj->x, gobj->y, gobj->i, gobj->cur_frame);
+            PutSpriteI(surface, gobj->x, gobj->y, gobj->i, gobj->cur_frame);
     }
 }
 
 void BlitEnemyOutlines(WORLD *world)
 {
     unsigned int shadow = (world->room + game->ship_screen)->shadow;
+    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
 
     for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
         /* Blit shadow only if object needs it */
         if (gobj->flags & GOBJ_SHADOW)
-            PutSpriteS(gobj->x, gobj->y, gobj->i, gobj->cur_frame, shadow);
+            PutSpriteS(surface, gobj->x, gobj->y, gobj->i, gobj->cur_frame, shadow);
     }
 }
 
 void RenderGame(int renderStatus)
 {
+    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
+
     if (modern_background) {
-        BlitBackground(game); // blit background
-        BlitRoomOutlines(game->room_tiles, game->world, game->ship_screen);
+        BlitBackground(game, surface); // blit background
+        BlitRoomOutlines(surface, game->room_tiles, game->world, game->ship_screen);
         BlitEnemyOutlines(game->world); // draw moving objects' outlines (shadows)
     } else {
-        EraseBackground(0);
+        EraseBackground(surface, 0);
     }
 
-    BlitRoom(game->room_tiles);
-    BlitBfg();
+    BlitRoom(surface, game->room_tiles);
+    BlitBfg(surface);
     BlitEnemies(); // draw all enemies and cannon+base
 
     if (renderStatus)
@@ -1315,7 +1318,7 @@ void DoGame()
         DoKeys();
 
         if (GKeys[KEY_PAUSE] == 1) {
-            PutString(8*17, 8*17, "PAUSA");
+            PutString((SDL_Surface *)game->small_screen, 8*17, 8*17, "PAUSA");
             SetGameMode(GM_PAUSE);
             Keys[SC_ENTER] = 0;
             break;
@@ -1325,7 +1328,7 @@ void DoGame()
         {
             static char screen_nr_text[16];
             sprintf(screen_nr_text, "SCREEN %i", game->ship_screen);
-            PutString(8*17, 8*17, screen_nr_text);
+            PutString((SDL_Surface *)game->small_screen, 8*17, 8*17, screen_nr_text);
         }
 #endif
         RecordDemo();
@@ -1358,7 +1361,7 @@ void DoGame()
             DoKeys();
 
             if (GKeys[KEY_PAUSE] == 1) {
-                PutString(8*17, 8*17, "     ");
+                PutString((SDL_Surface *)game->small_screen, 8*17, 8*17, "     ");
                 SetGameMode(GM_GAME);
                 Keys[SC_ENTER] = 0;
             }
@@ -1459,7 +1462,7 @@ void LoadGame(TGAMEDATA *data)
     InitNewScreen();
 
     for (int f = 0; f <= 6; f++) {
-        PutStream(0, STATUSBAR1[f * 43 + 1] * 8, &STATUSBAR1[f * 43 + 2]);
+        PutStream((SDL_Surface *)game->small_screen, 0, STATUSBAR1[f * 43 + 1] * 8, &STATUSBAR1[f * 43 + 2]);
     }
 }
 

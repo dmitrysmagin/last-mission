@@ -29,7 +29,6 @@ int scale2x = 1; // 0 - no scale 320x200; 1 - upscale to 640x400
 int fullscr = 0; // or SDL_FULLSCREEN
 #endif
 
-SDL_Surface *small_screen = NULL;
 SDL_Surface *screen = NULL;
 
 int gfx_init()
@@ -46,11 +45,6 @@ int gfx_init()
     screen = SDL_SetVideoMode(SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2,
                   GAME_SCREEN_BPP, SDL_SWSURFACE | fullscr);
 #endif
-
-    small_screen = SDL_CreateRGBSurface(SDL_SWSURFACE,
-                        SCREEN_WIDTH,
-                        SCREEN_HEIGHT,
-                        GAME_SCREEN_BPP, 0, 0, 0, 0);
 
     SDL_ShowCursor(SDL_DISABLE);
 
@@ -95,7 +89,7 @@ void gfx_flip()
 #endif
 
 #ifdef SDL2
-    SDL_BlitScaled(small_screen, NULL, screen, NULL);
+    SDL_BlitScaled(game->small_screen, NULL, screen, NULL);
 #elif !defined(__DINGUX__)
     if (scale2x) {
 #if GAME_SCREEN_BPP == 16
@@ -106,7 +100,7 @@ void gfx_flip()
     #error GAME_SCREEN_BPP could be 16 or 32
 #endif
 
-        PIXEL *s = (PIXEL *)small_screen->pixels;
+        PIXEL *s = (PIXEL *)game->small_screen->pixels;
         PIXEL *d = (PIXEL *)screen->pixels;
 
         for (int y = SCREEN_HEIGHT; y--; d += SCREEN_WIDTH*2)
@@ -117,10 +111,10 @@ void gfx_flip()
                 d[SCREEN_WIDTH*2+1] = *s;
             }
     } else {
-        SDL_BlitSurface(small_screen, NULL, screen, NULL);
+        SDL_BlitSurface(game->small_screen, NULL, screen, NULL);
     }
 #else
-    SDL_BlitSurface(small_screen, NULL, screen, NULL);
+    SDL_BlitSurface(game->small_screen, NULL, screen, NULL);
 #endif
 
     SDL_Flip(screen);
@@ -128,5 +122,5 @@ void gfx_flip()
 
 void ClearScreen()
 {
-    SDL_FillRect(small_screen, NULL, 0);
+    SDL_FillRect(game->small_screen, NULL, 0);
 }

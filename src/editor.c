@@ -59,13 +59,13 @@ static const int zoom_levels[5][2] = {
 };
 
 /* FIXME: eliminate later */
-extern SDL_Surface *small_screen;
 
 void ReDraw(int roomnum)
 {
+    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
     ClearScreen();
     UnpackRoom(game->room_tiles, game->world, roomnum);
-    BlitRoom(game->room_tiles);
+    BlitRoom(surface, game->room_tiles);
     InitGaragesForNewGame();
     GarageRestore();
     gObj_DestroyAll();
@@ -76,7 +76,8 @@ void ReDraw(int roomnum)
 static void ShowMap()
 {
     SDL_Rect dst;
-    SDL_Surface *old_screen = small_screen;
+    SDL_Surface *output = (SDL_Surface *)game->small_screen;
+    SDL_Surface *temp;
     int gridw = zoom_levels[map_zoom + 2][0];
     int gridh = zoom_levels[map_zoom + 2][1];
     int room_w = SCREEN_WIDTH / gridw;
@@ -85,27 +86,29 @@ static void ShowMap()
     int cur_y = gridh / 2;
     int x, y;
 
-    small_screen =
-        SDL_CreateRGBSurface(SDL_SWSURFACE, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT,
-                     GAME_SCREEN_BPP, 0, 0, 0, 0);
+    temp = SDL_CreateRGBSurface(SDL_SWSURFACE,
+        SCREEN_WIDTH, ACTION_SCREEN_HEIGHT,
+        GAME_SCREEN_BPP, 0, 0, 0, 0);
 
     for (y = 0; y < gridh; y++)
         for (x = 0; x < gridw; x++) {
             int roomnum = getscreen(cur_mapx + x - cur_x, cur_mapy + y - cur_y);
 
             if (roomnum) {
+                SDL_Rect src = {0, 0, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT};
+
                 ReDraw(roomnum);
 
                 dst.x = room_w * x;
                 dst.y = room_h * y;
                 dst.w = room_w;
                 dst.h = room_h;
-                SDL_SoftStretch(small_screen, NULL, old_screen, &dst);
+                SDL_SoftStretch(output, &src, temp, &dst);
             }
         }
 
-    SDL_FreeSurface(small_screen);
-    small_screen = old_screen;
+    SDL_BlitSurface(temp, NULL, output, NULL);
+    SDL_FreeSurface(temp);
 
     for (y = 0; y < gridh; y++)
         for (x = 0; x < gridw; x++) {
@@ -113,26 +116,27 @@ static void ShowMap()
             if (roomnum) {
                 static char numstr[16];
                 sprintf(numstr, "%d", roomnum);
-                PutString(room_w * x, room_h * y, numstr);
+                PutString(output, room_w * x, room_h * y, numstr);
             }
         }
 
-    DrawRect(room_w * cur_x, room_h * cur_y, room_w, room_h, RGB(255, 0, 0));
+    DrawRect(output, room_w * cur_x, room_h * cur_y, room_w, room_h, RGB(255, 0, 0));
 }
 
 static void ShowMapInfo()
 {
     static char string[32];
+    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
     int roomnum = getscreen(cur_mapx, cur_mapy);
 
     sprintf(string, "ROOM    %03i:%03i", roomnum, game->world->room_num - 1);
-    PutString(0*8, 29*8, string);
+    PutString(surface, 0*8, 29*8, string);
     sprintf(string, "X %03i", cur_mapx);
-    PutString(18*8, 29*8, string);
+    PutString(surface, 18*8, 29*8, string);
     sprintf(string, "Y %03i", cur_mapy);
-    PutString(26*8, 29*8, string);
+    PutString(surface, 26*8, 29*8, string);
     sprintf(string, "ZOOM %c%i", map_zoom >= 0 ? '+' : ' ', map_zoom);
-    PutString(0*8, 30*8, string);
+    PutString(surface, 0*8, 30*8, string);
 }
 
 static void MapEdit()
@@ -162,47 +166,50 @@ static void MapEdit()
 static void ShowViewModeInfo()
 {
     static char string[32];
+    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
     PATTERNSET *patternset = game->world->patternset + cur_patternset;
     unsigned short *data = (unsigned short *)patternset->data;
 
     for (int y = 0; y < patternset->ys; y++) {
         for (int x = 0; x < patternset->xs; x++) {
-            PutTileI(x*8 + 132, y*8 + 22*8, *data++);
+            PutTileI(surface, x*8 + 132, y*8 + 22*8, *data++);
         }
     }
 
-    PutSpriteI(30*8, 22*8, cur_sprite, 0);
+    PutSpriteI(surface, 30*8, 22*8, cur_sprite, 0);
 
     sprintf(string, "ROOM    %03i:%03i", cur_room, game->world->room_num - 1);
-    PutString(0*8, 21*8, string);
+    PutString(surface, 0*8, 21*8, string);
     sprintf(string, "PTRNSET %03i:%03i", cur_patternset, game->world->patternset_num - 1);
-    PutString(0*8, 22*8, string);
+    PutString(surface, 0*8, 22*8, string);
     sprintf(string, "SPRTSET %03i:%03i", cur_sprite, SPRITE_NUMBER - 1);
-    PutString(0*8, 23*8, string);
+    PutString(surface, 0*8, 23*8, string);
 
-    PutString(16*8, 20*8, "VIEW MODE");
+    PutString(surface, 16*8, 20*8, "VIEW MODE");
 }
 
 static void ShowEditModeInfo()
 {
     static char string[32];
+    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
     ROOM *room = game->world->room + cur_room;
     PATTERN *pattern = room->pattern + cur_pattern;
     PATTERNSET *patternset = game->world->patternset + pattern->index;
 
-    PutString(16*8, 20*8, "ROOM EDIT");
+    PutString(surface, 16*8, 20*8, "ROOM EDIT");
 
     sprintf(string, "PATTERN %03i:%03i", cur_pattern, room->pattern_num - 1);
-    PutString(0*8, 21*8, string);
+    PutString(surface, 0*8, 21*8, string);
 
     sprintf(string, "X %03i", pattern->x * 8);
-    PutString(0*8, 22*8, string);
+    PutString(surface, 0*8, 22*8, string);
     sprintf(string, "Y %03i", pattern->y * 8);
-    PutString(0*8, 23*8, string);
+    PutString(surface, 0*8, 23*8, string);
     sprintf(string, "I %03i:%03i", pattern->index, game->world->patternset_num - 1);
-    PutString(0*8, 24*8, string);
+    PutString(surface, 0*8, 24*8, string);
 
-    DrawRect(pattern->x*8,
+    DrawRect(surface,
+         pattern->x*8,
          pattern->y*8,
          patternset->xs * 8,
          patternset->ys * 8, RGB(255, 0, 255));
@@ -210,6 +217,8 @@ static void ShowEditModeInfo()
 
 static void RoomView()
 {
+    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
+
     if (reinit) {
         ReDraw(cur_room);
         ShowViewModeInfo();
@@ -219,7 +228,7 @@ static void RoomView()
             UpdateAnimation(gobj);
 
         ClearScreen();
-        BlitRoom(game->room_tiles);
+        BlitRoom(surface, game->room_tiles);
         BlitEnemies();
         ShowViewModeInfo();
     }
@@ -249,7 +258,7 @@ static void RoomEdit()
 
     if (save_ticks > 0) {
         save_ticks--;
-        PutString(0, 0, save_success ? "SAVED!" : "SAVE FAILED!");
+        PutString((SDL_Surface *)game->small_screen, 0, 0, save_success ? "SAVED!" : "SAVE FAILED!");
     }
 
     ON_PRESS(SC_ESCAPE, 1, editmode = old_editmode);

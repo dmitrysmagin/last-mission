@@ -56,8 +56,11 @@ typedef struct TGAMEDATA {
     int rmapx, rmapy;
 
     WORLD *world;
+
+    /* This to be combined into ROOMCONTAINER */
     unsigned short room_tiles[ROOM_WIDTH * ROOM_HEIGHT];
     void *background; /* pre-rendered background pixels, SCREEN_WIDTH x ACTION_SCREEN_HEIGHT */
+    void *small_screen; /* main rendering surface, SCREEN_WIDTH x SCREEN_HEIGHT */
 } TGAMEDATA;
 
 void SetGameMode(int mode);

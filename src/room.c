@@ -54,26 +54,24 @@ void UnpackRoom(unsigned short *room_tiles, WORLD *world, int room_idx)
     }
 }
 
-void BlitRoom(unsigned short *room_tiles)
+void BlitRoom(SDL_Surface *surface, unsigned short *room_tiles)
 {
     for (int y = 0; y < ROOM_HEIGHT; y++)
         for (int x = 0; x < ROOM_WIDTH; x++)
-            PutTileI(x*8, y*8, room_tiles[y*ROOM_WIDTH+x]);
+            PutTileI(surface, x*8, y*8, room_tiles[y*ROOM_WIDTH+x]);
 }
 
-void BlitRoomOutlines(unsigned short *room_tiles, WORLD *world, int room)
+void BlitRoomOutlines(SDL_Surface *surface, unsigned short *room_tiles, WORLD *world, int room)
 {
     unsigned int shadow = (world->room + room)->shadow;
 
     for (int y = 0; y < ROOM_HEIGHT; y++)
         for (int x = 0; x < ROOM_WIDTH; x++)
-            PutTileS(x*8, y*8, room_tiles[y*ROOM_WIDTH+x], shadow);
+            PutTileS(surface, x*8, y*8, room_tiles[y*ROOM_WIDTH+x], shadow);
 }
 
-void BlitBackground(TGAMEDATA *game)
+void BlitBackground(TGAMEDATA *game, SDL_Surface *surface)
 {
-    extern SDL_Surface *small_screen;
-
     SDL_Rect dst = {0, 0, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT};
-    SDL_BlitSurface((SDL_Surface *)game->background, NULL, small_screen, &dst);
+    SDL_BlitSurface((SDL_Surface *)game->background, NULL, surface, &dst);
 }
