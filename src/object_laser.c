@@ -83,7 +83,7 @@ void BlitLaser(SDL_Surface *surface, TSHIP *gobj)
 
 void BlitLaserStatus()
 {
-    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
+    SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
 
     for (int i = 0; i <= 31; i++) {
 

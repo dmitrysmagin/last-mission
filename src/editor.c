@@ -62,21 +62,21 @@ static const int zoom_levels[5][2] = {
 
 void ReDraw(int roomnum)
 {
-    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
+    SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
     ClearScreen();
-    UnpackRoom(game->room_tiles, game->world, roomnum);
-    BlitRoom(surface, game->room_tiles);
+    RoomContainer_Unpack(game->roomcontainer, game->world, roomnum);
+    BlitRoom(surface, game->roomcontainer->tiles);
     InitGaragesForNewGame();
     GarageRestore();
     gObj_DestroyAll();
     InitEnemies(roomnum);
-    BlitEnemies();
+    BlitEnemies(surface);
 }
 
 static void ShowMap()
 {
     SDL_Rect dst;
-    SDL_Surface *output = (SDL_Surface *)game->small_screen;
+    SDL_Surface *output = (SDL_Surface *)game->roomcontainer->surface;
     SDL_Surface *temp;
     int gridw = zoom_levels[map_zoom + 2][0];
     int gridh = zoom_levels[map_zoom + 2][1];
@@ -126,7 +126,7 @@ static void ShowMap()
 static void ShowMapInfo()
 {
     static char string[32];
-    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
+    SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
     int roomnum = getscreen(cur_mapx, cur_mapy);
 
     sprintf(string, "ROOM    %03i:%03i", roomnum, game->world->room_num - 1);
@@ -166,7 +166,7 @@ static void MapEdit()
 static void ShowViewModeInfo()
 {
     static char string[32];
-    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
+    SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
     PATTERNSET *patternset = game->world->patternset + cur_patternset;
     unsigned short *data = (unsigned short *)patternset->data;
 
@@ -191,7 +191,7 @@ static void ShowViewModeInfo()
 static void ShowEditModeInfo()
 {
     static char string[32];
-    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
+    SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
     ROOM *room = game->world->room + cur_room;
     PATTERN *pattern = room->pattern + cur_pattern;
     PATTERNSET *patternset = game->world->patternset + pattern->index;
@@ -217,7 +217,7 @@ static void ShowEditModeInfo()
 
 static void RoomView()
 {
-    SDL_Surface *surface = (SDL_Surface *)game->small_screen;
+    SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
 
     if (reinit) {
         ReDraw(cur_room);
@@ -228,8 +228,8 @@ static void RoomView()
             UpdateAnimation(gobj);
 
         ClearScreen();
-        BlitRoom(surface, game->room_tiles);
-        BlitEnemies();
+        BlitRoom(surface, game->roomcontainer->tiles);
+        BlitEnemies(surface);
         ShowViewModeInfo();
     }
 
@@ -258,7 +258,7 @@ static void RoomEdit()
 
     if (save_ticks > 0) {
         save_ticks--;
-        PutString((SDL_Surface *)game->small_screen, 0, 0, save_success ? "SAVED!" : "SAVE FAILED!");
+        PutString((SDL_Surface *)game->roomcontainer->surface, 0, 0, save_success ? "SAVED!" : "SAVE FAILED!");
     }
 
     ON_PRESS(SC_ESCAPE, 1, editmode = old_editmode);

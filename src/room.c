@@ -8,7 +8,35 @@
 #include "room.h"
 #include "data.h"
 
-// TODO: create ROOMTILEMAP struct that will hold room dimensions and room_tiles pointer
+ROOMCONTAINER *RoomContainer_Create(void)
+{
+    ROOMCONTAINER *rc = (ROOMCONTAINER *)malloc(sizeof(ROOMCONTAINER));
+    if (!rc) return NULL;
+    rc->tiles = (unsigned short *)calloc(ROOM_WIDTH * ROOM_HEIGHT, sizeof(unsigned short));
+    rc->background = SDL_CreateRGBSurface(SDL_SWSURFACE,
+        SCREEN_WIDTH, ACTION_SCREEN_HEIGHT,
+        GAME_SCREEN_BPP, 0, 0, 0, 0);
+    rc->surface = SDL_CreateRGBSurface(SDL_SWSURFACE,
+        SCREEN_WIDTH, SCREEN_HEIGHT,
+        GAME_SCREEN_BPP, 0, 0, 0, 0);
+    return rc;
+}
+
+void RoomContainer_Destroy(ROOMCONTAINER *rc)
+{
+    if (!rc) return;
+    if (rc->tiles) free(rc->tiles);
+    if (rc->background) SDL_FreeSurface((SDL_Surface *)rc->background);
+    if (rc->surface) SDL_FreeSurface((SDL_Surface *)rc->surface);
+    free(rc);
+}
+
+void RoomContainer_Unpack(ROOMCONTAINER *rc, WORLD *world, int room)
+{
+    if (!rc || !rc->tiles) return;
+    UnpackRoom(rc->tiles, world, room);
+}
+
 int GetTileI(unsigned short *room_tiles, int x, int y)
 {
     if (x < 0 || x >= ROOM_WIDTH ||
@@ -73,5 +101,5 @@ void BlitRoomOutlines(SDL_Surface *surface, unsigned short *room_tiles, WORLD *w
 void BlitBackground(TGAMEDATA *game, SDL_Surface *surface)
 {
     SDL_Rect dst = {0, 0, SCREEN_WIDTH, ACTION_SCREEN_HEIGHT};
-    SDL_BlitSurface((SDL_Surface *)game->background, NULL, surface, &dst);
+    SDL_BlitSurface((SDL_Surface *)game->roomcontainer->background, NULL, surface, &dst);
 }

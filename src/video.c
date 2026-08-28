@@ -89,7 +89,7 @@ void gfx_flip()
 #endif
 
 #ifdef SDL2
-    SDL_BlitScaled(game->small_screen, NULL, screen, NULL);
+    SDL_BlitScaled(game->roomcontainer->surface, NULL, screen, NULL);
 #elif !defined(__DINGUX__)
     if (scale2x) {
 #if GAME_SCREEN_BPP == 16
@@ -100,7 +100,7 @@ void gfx_flip()
     #error GAME_SCREEN_BPP could be 16 or 32
 #endif
 
-        PIXEL *s = (PIXEL *)game->small_screen->pixels;
+        PIXEL *s = (PIXEL *)game->roomcontainer->surface->pixels;
         PIXEL *d = (PIXEL *)screen->pixels;
 
         for (int y = SCREEN_HEIGHT; y--; d += SCREEN_WIDTH*2)
@@ -111,10 +111,10 @@ void gfx_flip()
                 d[SCREEN_WIDTH*2+1] = *s;
             }
     } else {
-        SDL_BlitSurface(game->small_screen, NULL, screen, NULL);
+        SDL_BlitSurface(game->roomcontainer->surface, NULL, screen, NULL);
     }
 #else
-    SDL_BlitSurface(game->small_screen, NULL, screen, NULL);
+    SDL_BlitSurface(game->roomcontainer->surface, NULL, screen, NULL);
 #endif
 
     SDL_Flip(screen);
@@ -122,5 +122,5 @@ void gfx_flip()
 
 void ClearScreen()
 {
-    SDL_FillRect(game->small_screen, NULL, 0);
+    SDL_FillRect(game->roomcontainer->surface, NULL, 0);
 }

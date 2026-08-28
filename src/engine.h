@@ -57,10 +57,8 @@ typedef struct TGAMEDATA {
 
     WORLD *world;
 
-    /* This to be combined into ROOMCONTAINER */
-    unsigned short room_tiles[ROOM_WIDTH * ROOM_HEIGHT];
-    void *background; /* pre-rendered background pixels, SCREEN_WIDTH x ACTION_SCREEN_HEIGHT */
-    void *small_screen; /* main rendering surface, SCREEN_WIDTH x SCREEN_HEIGHT */
+    /* For scrolling there will be multiple of rooms */
+    ROOMCONTAINER *roomcontainer;
 } TGAMEDATA;
 
 void SetGameMode(int mode);
@@ -68,7 +66,8 @@ void GameLoop();
 void game_init();
 void game_deinit();
 void InitEnemies(int screen);
-void BlitEnemies();
+typedef struct SDL_Surface SDL_Surface;
+void BlitEnemies(SDL_Surface *surface);
 
 #define STATUS_YPOS (ACTION_SCREEN_HEIGHT + 8)
 
