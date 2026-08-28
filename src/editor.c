@@ -64,8 +64,8 @@ void ReDraw(int roomnum)
 {
     SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
     ClearScreen();
-    RoomContainer_Unpack(game->roomcontainer, game->world, roomnum);
-    BlitRoom(surface, game->roomcontainer->tiles);
+    RoomContainer_Unpack(game->roomcontainer, roomnum);
+    BlitRoom(surface, game->roomcontainer);
     InitGaragesForNewGame();
     GarageRestore();
     gObj_DestroyAll();
@@ -228,7 +228,7 @@ static void RoomView()
             UpdateAnimation(gobj);
 
         ClearScreen();
-        BlitRoom(surface, game->roomcontainer->tiles);
+        BlitRoom(surface, game->roomcontainer);
         BlitEnemies(surface);
         ShowViewModeInfo();
     }

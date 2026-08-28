@@ -771,69 +771,9 @@ void InitEnemies(int room_idx)
     }
 }
 
-static void ClipLine(int *x1, int *y1, int *x2, int *y2)
-{
-    if (*x1 < 0) *x1 = 0;
-    if (*x2 < 0) *x2 = 0;
-    if (*x1 >= SCREEN_WIDTH) *x1 = SCREEN_WIDTH - 1;
-    if (*x2 >= SCREEN_WIDTH) *x2 = SCREEN_WIDTH - 1;
-    if (*y1 < 0) *y1 = 0;
-    if (*y2 < 0) *y2 = 0;
-    if (*y1 >= ACTION_SCREEN_HEIGHT) *y1 = ACTION_SCREEN_HEIGHT - 1;
-    if (*y2 >= ACTION_SCREEN_HEIGHT) *y2 = ACTION_SCREEN_HEIGHT - 1;
-}
-
-void BuildBackground()
-{
-    WORLD *world = game->world;
-    int room_idx = game->ship_screen;
-    ROOM *room = world->room + room_idx;
-    SDL_Surface *bg = (SDL_Surface *)game->roomcontainer->background;
-
-    EraseBackground(bg, room->background);
-
-    for (int i = 0; i < 2; ++i) {
-        BGLINE *bgline = room->bgline;
-        int count = room->bg_num;
-        unsigned int color = (i == 1)
-            ? room->line_light
-            : room->line_shadow;
-
-        for (int j = 0; j < count; ++j, bgline++) {
-            int x1 = bgline->x1;
-            int y1 = bgline->y1;
-            int x2 = bgline->x2;
-            int y2 = bgline->y2;
-
-            if (i == 0) {
-                if (x1 == x2) { x1--; x2--; }
-                else if (y1 == y2) { y1--; y2--; }
-                else { x1--; x2--; }
-            }
-
-            ClipLine(&x1, &y1, &x2, &y2);
-            DrawLine(bg, x1, y1, x2, y2, color);
-        }
-    }
-
-    if (room_idx > 69 && room_idx < 92) {
-        for (int y = 0; y <= 8; y++)
-            for (int x = 0; x <= 20; x++) {
-                int sx = x * 16 - 4;
-                int sy = y * 16 - 8;
-
-                if (sx >= SCREEN_WIDTH || sy >= ACTION_SCREEN_HEIGHT)
-                    continue;
-
-                PutBgI(bg, sx, sy, SkyMap[y][x]);
-            }
-    }
-}
-
 void InitNewScreen()
 {
-    RoomContainer_Unpack(game->roomcontainer, game->world, game->ship_screen);
-    BuildBackground();
+    RoomContainer_Unpack(game->roomcontainer, game->ship_screen);
 
     InitEnemies(game->ship_screen);
 
@@ -1110,7 +1050,7 @@ void DoTitle()
         game->ship_screen = 0;
         title_start_flag = 1;
         InitNewScreen();
-        BlitRoom((SDL_Surface *)game->roomcontainer->surface, game->roomcontainer->tiles);
+        BlitRoom((SDL_Surface *)game->roomcontainer->surface, game->roomcontainer);
         PutSpriteI((SDL_Surface *)game->roomcontainer->surface, 50*4, 108, 45, 0);
         PutString((SDL_Surface *)game->roomcontainer->surface, 76, 88 , "ESPACIO PARA COMENZAR");
         PutString((SDL_Surface *)game->roomcontainer->surface, 60, 24, "ORIGINAL GAME: PEDRO RUIZ");
@@ -1250,8 +1190,9 @@ void BlitEnemies(SDL_Surface *surface)
     }
 }
 
-void BlitEnemyOutlines(WORLD *world)
+void BlitEnemyOutlines(void)
 {
+    WORLD *world = game->world;
     unsigned int shadow = (world->room + game->ship_screen)->shadow;
     SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
 
@@ -1267,14 +1208,14 @@ void RenderGame(int renderStatus)
     SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
 
     if (modern_background) {
-        BlitBackground(game, surface); // blit background
-        BlitRoomOutlines(surface, game->roomcontainer->tiles, game->world, game->ship_screen);
-        BlitEnemyOutlines(game->world); // draw moving objects' outlines (shadows)
+        BlitBackground(surface, game->roomcontainer); // blit background
+        BlitRoomOutlines(surface, game->roomcontainer);
+        BlitEnemyOutlines(); // draw moving objects' outlines (shadows)
     } else {
         EraseBackground(surface, 0);
     }
 
-    BlitRoom(surface, game->roomcontainer->tiles);
+    BlitRoom(surface, game->roomcontainer);
     BlitBfg(surface);
     BlitEnemies(surface); // draw all enemies and cannon+base
 

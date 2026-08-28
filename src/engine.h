@@ -88,7 +88,6 @@ int FacingRight(TSHIP *i);
 void Update_Ship(TSHIP *ship);
 void Update_Base(TSHIP *base);
 
-void BuildBackground();
 void UpdateScoreWithShip(TSHIP *gobj);
 void DestroyHiddenAreaAccess(TSHIP *i, int playEffects);
 
