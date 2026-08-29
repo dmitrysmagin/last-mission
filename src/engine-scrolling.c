@@ -398,8 +398,14 @@ void DoScrolling(void)
     scrollEnsureEnemiesForVisible(x0, y0, x1, y1);
 
     // update enemies that are in viewport (activate) — world-absolute
+    // also update transient weapons (home 0) every frame
     for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
-        if (gobj->home_room == 0) continue; // not a scrolling enemy
+        if (gobj->ai_type == AI_SHIP || gobj->ai_type == AI_BASE) continue; // ship/base already updated
+        if (gobj->home_room == 0) {
+            // weapon / bullet / smoke / explosion — always active
+            gObj_Update(gobj);
+            continue;
+        }
         int w = gObj_GetWidth(gobj);
         int h = gObj_GetHeight(gobj);
         int intersects = rectIntersect(gobj->x, gobj->y, w, h,
@@ -407,32 +413,22 @@ void DoScrolling(void)
                                        scroll_viewport.w, scroll_viewport.h);
         if (intersects) gobj->scroll_active = 1;
         if (gobj->scroll_active) {
-            // sync world_x/y
             gobj->world_x = gobj->x;
             gobj->world_y = gobj->y;
-            // restrict to native room rectangle
-            // gObj_CheckTouch will handle tile collision via world lookup;
-            // here we also clamp native bounds to prevent escaping room
             int home_min_x = gobj->home_gx * ROOM_WIDTH * 8;
             int home_max_x = home_min_x + ROOM_WIDTH * 8;
             int home_min_y = gobj->home_gy * ROOM_HEIGHT * 8;
             int home_max_y = home_min_y + ROOM_HEIGHT * 8;
-
             int old_x = gobj->x, old_y = gobj->y;
             gObj_Update(gobj);
-            // clamp to native room rect if update moved outside
             if (gobj->x < home_min_x) gobj->x = home_min_x;
             if (gobj->y < home_min_y) gobj->y = home_min_y;
             if (gobj->x + w > home_max_x) gobj->x = home_max_x - w;
             if (gobj->y + h > home_max_y) gobj->y = home_max_y - h;
-            // if still colliding due to clamp, revert? keep simple
-
-            // keep world sync
             gobj->world_x = gobj->x;
             gobj->world_y = gobj->y;
             (void)old_x; (void)old_y;
         } else {
-            // not yet active: just animate? keep idle
             UpdateAnimation(gobj);
         }
     }
@@ -466,10 +462,9 @@ void DoScrolling(void)
             blitRoomOffset(surface, rc, dst_x, dst_y);
         }
     }
-    // render enemies with viewport offset
+    // render enemies + weapons with viewport offset
     for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
-        if (gobj->home_room == 0) continue;
-        // skip ship/base (home 0 now) — handled separately
+        if (gobj->ai_type == AI_SHIP || gobj->ai_type == AI_BASE) continue; // ship handled separately
         int w = gObj_GetWidth(gobj);
         int h = gObj_GetHeight(gobj);
         if (!rectIntersect(gobj->x, gobj->y, w, h,
@@ -478,8 +473,11 @@ void DoScrolling(void)
             continue;
         int sx = gobj->x - scroll_viewport.x;
         int sy = gobj->y - scroll_viewport.y;
-        if (gobj->flags & GOBJ_VISIBLE)
+        if (gobj->ai_type == AI_LASER) {
+            DrawLine(surface, sx, sy, sx + gobj->dx, sy, RGB(170,170,170));
+        } else if (gobj->flags & GOBJ_VISIBLE) {
             PutSpriteI(surface, sx, sy, gobj->i, gobj->cur_frame);
+        }
     }
     // render ship and base (world-absolute, viewport offset, no home restriction)
     {

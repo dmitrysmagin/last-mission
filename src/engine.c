@@ -233,6 +233,13 @@ void Update_Ship(TSHIP *ship)
     static int dy;
 
     if (game->mode == GM_SCROLLING) {
+        if (--game->ticks_for_damage < 0) game->ticks_for_damage = 0;
+        switch (ship->i) {
+        case SHIP_TYPE_ROCKET_LAUNCHER: DoRocketLauncher(ship); break;
+        case SHIP_TYPE_MACHINE_GUN: DoMachineGun(ship); break;
+        case SHIP_TYPE_BFG: DoBFG(ship); break;
+        case SHIP_TYPE_LASER: DoLaser(ship); break;
+        }
         // scrolling preview: world-absolute movement, no ChangeScreen, no fuel
         if (GKeys[KEY_RIGHT] == 1) {
             if (FacingRight(ship)) {
