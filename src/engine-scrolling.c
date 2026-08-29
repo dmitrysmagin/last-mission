@@ -506,10 +506,19 @@ void DoScrolling(void)
     }
     SDL_SetClipRect(surface, NULL);
 
+    // HUD — same as flip-screen (status bar at STATUS_YPOS, no clipping)
+    {
+        extern void BlitStatus(void);
+        extern void BlitStatusData(void);
+        BlitStatus();
+        BlitStatusData();
+    }
+
     {
         char buf[64];
         sprintf(buf, "SCROLL %d,%d", scroll_viewport.x, scroll_viewport.y);
         PutString(surface, 4, 4, buf);
-        PutString(surface, 4, ACTION_SCREEN_HEIGHT - 12, "ARROWS scroll  ESC title");
+        // keep debug hint above HUD
+        PutString(surface, 4, STATUS_YPOS - 12, "ARROWS move  SPACE fire  ESC title");
     }
 }
