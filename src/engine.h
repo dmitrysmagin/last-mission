@@ -16,6 +16,7 @@
 #define GM_PAUSE    6
 #define GM_SPLASH    7
 #define GM_EDITOR    8
+#define GM_SCROLLING 9
 
 #define SND_LASER_SHOOT        1
 #define SND_SHORT_LASER_SHOOT    2

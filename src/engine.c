@@ -75,6 +75,9 @@ void SetGameMode(int mode)
     game->mode = mode;
 
     switch (mode) {
+    case GM_SCROLLING:
+        PlayMusicInt(MUSIC_GAME);
+        break;
     case GM_TITLE:
         PlayMusicInt(MUSIC_INTRO);
 
@@ -1094,6 +1097,14 @@ void DoTitle()
         SetGameMode(GM_EDITOR);
         input_reset();
     }
+
+    // launch scrolling preview (Q) — retains flip-screen, new file engine-scrolling.c
+    if (Keys[SC_Q]) {
+        extern void Scrolling_Init(void);
+        input_reset();
+        Scrolling_Init();
+        SetGameMode(GM_SCROLLING);
+    }
 }
 
 void DoWinScreen()
@@ -1313,6 +1324,13 @@ void DoGame()
 
     case GM_EDITOR:
         DoEdit();
+        break;
+
+    case GM_SCROLLING:
+        {
+            extern void DoScrolling(void);
+            DoScrolling();
+        }
         break;
     }
 

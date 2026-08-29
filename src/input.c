@@ -74,6 +74,7 @@ void input_poll()
             case SDLK_LALT:        key_scan = SC_ALT;    break;
             case SDLK_LSHIFT:    key_scan = SC_LSHIFT;    break;
             case SDLK_SPACE:    key_scan = SC_SPACE;    break;
+            case SDLK_q:        key_scan = SC_Q;    break;
             case SDLK_e:        key_scan = SC_E;    break;
             case SDLK_w:        key_scan = SC_W;    break;
             case SDLK_c:        key_scan = SC_C;    break;
