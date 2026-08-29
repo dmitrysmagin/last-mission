@@ -17,6 +17,7 @@
 #include "object_laser.h"
 #include "engine.h"
 #include "room.h"
+#include "engine-scrolling.h"
 
 static int EnemyFlags[] = {
     [AI_STATIC]            = GOBJ_SOLID|GOBJ_HURTS|GOBJ_DESTROY|GOBJ_SHADOW|GOBJ_VISIBLE,
@@ -44,7 +45,7 @@ static int EnemyFlags[] = {
     [AI_LASER]            =            GOBJ_HURTS                                      |GOBJ_WEAPON,
 };
 
-#define SHIPS_NUMBER 32
+#define SHIPS_NUMBER 256
 static TSHIP Ships[SHIPS_NUMBER];
 
 /* Search for AI_SHIP in object pool */
@@ -89,17 +90,16 @@ static int free_gobj()
         if (Ships[i].state == SH_DEAD)
             return i;
     }
-
-    return SHIPS_NUMBER - 1;
+    return -1; // pool full — do not hijack
 }
 
 TSHIP *gObj_CreateObject()
 {
-    TSHIP *obj = &Ships[free_gobj()];
+    int idx = free_gobj();
+    if (idx < 0) return NULL; // guard: pool exhausted
+    TSHIP *obj = &Ships[idx];
     memset(obj, 0, sizeof(TSHIP));
-
     obj->state = SH_ACTIVE;
-
     return obj;
 }
 
@@ -319,6 +319,7 @@ void gObj_Explode(TSHIP *gobj)
         {
             /* Create new explosion object and hide base */
             TSHIP *exp = gObj_CreateObject();
+            if (!exp) break;
             exp->i = 1;
             exp->x = gobj->x;
             exp->y = gobj->y;
@@ -389,6 +390,7 @@ void gObj_Explode(TSHIP *gobj)
             /* Create new explosion object and move missile outside
                 the screen */
             TSHIP *exp = gObj_CreateObject();
+            if (!exp) break;
             exp->i = 2;
             exp->x = gobj->x;
             exp->y = gobj->y;
@@ -406,11 +408,21 @@ void gObj_Explode(TSHIP *gobj)
     if (gobj->i == 6) {
         if (gobj->cur_frame == 0) {
             gobj->x -= 8;
-            SetTileI(game->roomcontainer->tiles, gobj->x >> 3, gobj->y >> 3, 0);
-            SetTileI(game->roomcontainer->tiles, gobj->x >> 3, (gobj->y >> 3) + 1, 0);
+            if (game->mode == GM_SCROLLING) {
+                Scrolling_SetTileAtWorld(gobj->x, gobj->y, 0);
+                Scrolling_SetTileAtWorld(gobj->x, gobj->y + 8, 0);
+            } else {
+                SetTileI(game->roomcontainer->tiles, gobj->x >> 3, gobj->y >> 3, 0);
+                SetTileI(game->roomcontainer->tiles, gobj->x >> 3, (gobj->y >> 3) + 1, 0);
+            }
         } else {
-            SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + 1, gobj->y >> 3, 0);
-            SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + 1, (gobj->y >> 3) + 1, 0);
+            if (game->mode == GM_SCROLLING) {
+                Scrolling_SetTileAtWorld(gobj->x + 8, gobj->y, 0);
+                Scrolling_SetTileAtWorld(gobj->x + 8, gobj->y + 8, 0);
+            } else {
+                SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + 1, gobj->y >> 3, 0);
+                SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + 1, (gobj->y >> 3) + 1, 0);
+            }
         }
     }
 
@@ -533,26 +545,49 @@ int gObj_CheckTouch(int x, int y, TSHIP *gobj)
 {
     int xs, ys;
 
-    if (x < 0 || y < 0)
-        return 1;
-
     ys = y + gObj_GetHeight(gobj);
     xs = x + gObj_GetWidth(gobj);
+
+    // scrolling: world-absolute, restrict to native room rect and tile via world lookup
+    if (game->mode == GM_SCROLLING) {
+        if (gobj->home_room != 0) {
+            int home_min_x = gobj->home_gx * ROOM_WIDTH * 8;
+            int home_max_x = home_min_x + ROOM_WIDTH * 8;
+            int home_min_y = gobj->home_gy * ROOM_HEIGHT * 8;
+            int home_max_y = home_min_y + ROOM_HEIGHT * 8;
+            if (x < home_min_x || y < home_min_y || xs > home_max_x || ys > home_max_y)
+                return 1;
+        }
+        TSHIP *en = gObj_First();
+        for (; en; en = gObj_Next(en)) {
+            if (en == gobj) continue;
+            if (gObj_CheckOverlap(x, y, gobj, en)) {
+                if (!gObj_CheckDestruction(gobj, en)) continue;
+                return 1;
+            }
+        }
+        for (int dy = y; dy < ys; dy++) {
+            for (int dx = x; dx < xs; dx++) {
+                unsigned char b = Scrolling_GetTileAtWorld(dx, dy);
+                if (b == 0) continue;
+                if (gobj->ai_type == AI_SHIP && b >= 246) gObj_Explode(gobj);
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    if (x < 0 || y < 0)
+        return 1;
 
     if (xs > SCREEN_WIDTH || ys > ACTION_SCREEN_HEIGHT)
         return 1;
 
     TSHIP *en = gObj_First();
-
     for (; en; en = gObj_Next(en)) {
-        /* don't compare with itself */
-        if (en == gobj)
-            continue;
-
+        if (en == gobj) continue;
         if (gObj_CheckOverlap(x, y, gobj, en)) {
-            if (!gObj_CheckDestruction(gobj, en))
-                continue;
-
+            if (!gObj_CheckDestruction(gobj, en)) continue;
             return 1;
         }
     }
@@ -560,16 +595,8 @@ int gObj_CheckTouch(int x, int y, TSHIP *gobj)
     for (int dy = y; dy < ys; dy++) {
         for (int dx = x; dx < xs; dx++) {
             unsigned char b = GetTileI(game->roomcontainer->tiles, dx >> 3, dy >> 3);
-
-            if (b == 0)
-                continue;
-
-            // All tiles are solid.
-            if (gobj->ai_type == AI_SHIP && b >= 246) {
-                // ship dies from touching certain tiles
-                gObj_Explode(gobj);
-            }
-
+            if (b == 0) continue;
+            if (gobj->ai_type == AI_SHIP && b >= 246) gObj_Explode(gobj);
             return 1;
         }
     }

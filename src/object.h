@@ -86,6 +86,13 @@ struct tship_t {
     TSHIP *garage;
     TSHIP *smoke;  /* Used by AI_SHIP */
     TSHIP *laser;    /* Used by AI_SHIP */
+
+    // scrolling: world-absolute coords and native room bounds
+    int world_x;
+    int world_y;
+    int home_room;
+    int home_gx, home_gy;
+    int scroll_active;
 };
 
 
