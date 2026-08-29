@@ -769,12 +769,9 @@ void InitEnemies(int room_idx)
     int count = room->object_num;
 
     /* Clear all except ship/base and smoke */
-    TSHIP *gobj = gObj_First();
-    for (; gobj; gobj = gObj_Next(gobj)) {
+    GOBJ_ITERATE_SAFE(gobj, {
         switch (gobj->ai_type) {
         case AI_SMOKE:
-            /* reset smoke animation, otherwise it appears at wrong
-               place when changing screen */
             gobj->anim_speed_cnt = 0;
             gobj->cur_frame = gobj->max_frame;
             break;
@@ -786,7 +783,7 @@ void InitEnemies(int room_idx)
             gObj_DestroyObject(gobj);
             break;
         }
-    }
+    });
 
     screen_procedure = room->procedure;
     game->screen_bonus = room->bonus;
@@ -1213,9 +1210,7 @@ void DoWinScreen()
 
         Update_Ship(ship);
 
-        TSHIP *gobj = gObj_First();
-        for (; gobj; gobj = gObj_Next(gobj))
-            UpdateAnimation(gobj);
+        GOBJ_ITERATE(gobj, { UpdateAnimation(gobj); });
 
         if (!frame_skip)
             RenderGame(0);
@@ -1238,7 +1233,7 @@ void DoKeys()
 
 void BlitEnemies(SDL_Surface *surface)
 {
-    for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
+    GOBJ_ITERATE(gobj, {
         if (gobj->ai_type == AI_GARAGE) {
 #ifdef _DEBUG
             DrawRect(
@@ -1258,7 +1253,7 @@ void BlitEnemies(SDL_Surface *surface)
         else
         if (gobj->flags & GOBJ_VISIBLE)
             PutSpriteI(surface, gobj->x, gobj->y, gobj->i, gobj->cur_frame);
-    }
+    });
 }
 
 void BlitEnemyOutlines(void)
@@ -1267,11 +1262,11 @@ void BlitEnemyOutlines(void)
     unsigned int shadow = (world->room + game->ship_screen)->shadow;
     SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
 
-    for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
-        /* Blit shadow only if object needs it */
+    GOBJ_ITERATE(gobj, {
         if (gobj->flags & GOBJ_SHADOW)
             PutSpriteS(surface, gobj->x, gobj->y, gobj->i, gobj->cur_frame, shadow);
-    }
+    });
+
 }
 
 void RenderGame(int renderStatus)
@@ -1349,8 +1344,7 @@ void DoGame()
         }
 
         // do enemies
-        for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj))
-            gObj_Update(gobj);
+        GOBJ_ITERATE(gobj, { gObj_Update(gobj); });
 
         if (!frame_skip)
             RenderGame(1);

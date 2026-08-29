@@ -361,16 +361,14 @@ void gObj_Explode(TSHIP *gobj)
         // this ship is the last one on the screen.
         if (game->screen_bonus) {
             int alive_ship = 0;
-            TSHIP *last_alive = gObj_First();
-
-            for (; last_alive; last_alive = gObj_Next(last_alive)) {
+            GOBJ_ITERATE(last_alive, {
                 if (last_alive != gobj &&
                     (last_alive->ai_type == AI_RANDOM_MOVE ||
                      last_alive->ai_type == AI_KAMIKADZE)) {
                     alive_ship = 1;
                     break;
                 }
-            }
+            });
 
             if (!alive_ship) {
                 gobj->bonus_type = game->screen_bonus;
@@ -558,14 +556,13 @@ int gObj_CheckTouch(int x, int y, TSHIP *gobj)
             if (x < home_min_x || y < home_min_y || xs > home_max_x || ys > home_max_y)
                 return 1;
         }
-        TSHIP *en = gObj_First();
-        for (; en; en = gObj_Next(en)) {
+        GOBJ_ITERATE(en, {
             if (en == gobj) continue;
             if (gObj_CheckOverlap(x, y, gobj, en)) {
                 if (!gObj_CheckDestruction(gobj, en)) continue;
                 return 1;
             }
-        }
+        });
         for (int dy = y; dy < ys; dy++) {
             for (int dx = x; dx < xs; dx++) {
                 unsigned char b = Scrolling_GetTileAtWorld(dx, dy);
@@ -583,14 +580,13 @@ int gObj_CheckTouch(int x, int y, TSHIP *gobj)
     if (xs > SCREEN_WIDTH || ys > ACTION_SCREEN_HEIGHT)
         return 1;
 
-    TSHIP *en = gObj_First();
-    for (; en; en = gObj_Next(en)) {
+    GOBJ_ITERATE(en, {
         if (en == gobj) continue;
         if (gObj_CheckOverlap(x, y, gobj, en)) {
             if (!gObj_CheckDestruction(gobj, en)) continue;
             return 1;
         }
-    }
+    });
 
     for (int dy = y; dy < ys; dy++) {
         for (int dx = x; dx < xs; dx++) {

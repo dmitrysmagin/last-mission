@@ -79,14 +79,9 @@ static void scrollDespawnRoom(int room_id)
 {
     if (room_id < 0 || room_id >= MAX_ROOM_ID) return;
     if (!spawnedRoom[room_id]) return;
-    // destroy all enemies whose home_room == room_id
-    for (TSHIP *gobj = gObj_First(); gobj; ) {
-        TSHIP *next = gObj_Next(gobj);
-        if (gobj->home_room == room_id) {
-            gObj_DestroyObject(gobj);
-        }
-        gobj = next;
-    }
+    GOBJ_ITERATE_SAFE(gobj, {
+        if (gobj->home_room == room_id) gObj_DestroyObject(gobj);
+    });
     spawnedRoom[room_id] = 0;
 }
 
@@ -398,11 +393,9 @@ void DoScrolling(void)
     scrollEnsureEnemiesForVisible(x0, y0, x1, y1);
 
     // update enemies that are in viewport (activate) — world-absolute
-    // also update transient weapons (home 0) every frame
-    for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
+    GOBJ_ITERATE(gobj, {
         if (gobj->ai_type == AI_SHIP || gobj->ai_type == AI_BASE) continue; // ship/base already updated
         if (gobj->home_room == 0) {
-            // weapon / bullet / smoke / explosion — always active
             gObj_Update(gobj);
             continue;
         }
@@ -431,7 +424,7 @@ void DoScrolling(void)
         } else {
             UpdateAnimation(gobj);
         }
-    }
+    });
 
     // render — map only, no HUD/ship
     SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
@@ -463,13 +456,11 @@ void DoScrolling(void)
         }
     }
     // render enemies + weapons with viewport offset
-    for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
-        if (gobj->ai_type == AI_SHIP || gobj->ai_type == AI_BASE) continue; // ship handled separately
+    GOBJ_ITERATE(gobj, {
+        if (gobj->ai_type == AI_SHIP || gobj->ai_type == AI_BASE) continue;
         int w = gObj_GetWidth(gobj);
         int h = gObj_GetHeight(gobj);
-        if (!rectIntersect(gobj->x, gobj->y, w, h,
-                           scroll_viewport.x, scroll_viewport.y,
-                           scroll_viewport.w, scroll_viewport.h))
+        if (!rectIntersect(gobj->x, gobj->y, w, h, scroll_viewport.x, scroll_viewport.y, scroll_viewport.w, scroll_viewport.h))
             continue;
         int sx = gobj->x - scroll_viewport.x;
         int sy = gobj->y - scroll_viewport.y;
@@ -478,7 +469,7 @@ void DoScrolling(void)
         } else if (gobj->flags & GOBJ_VISIBLE) {
             PutSpriteI(surface, sx, sy, gobj->i, gobj->cur_frame);
         }
-    }
+    });
     // render ship and base (world-absolute, viewport offset, no home restriction)
     {
         TSHIP *ship2 = gObj_Ship();

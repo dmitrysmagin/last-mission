@@ -99,6 +99,10 @@ struct tship_t {
 TSHIP *gObj_First();
 TSHIP *gObj_Next(TSHIP *obj);
 
+#define GOBJ_ITERATE(var, ...) do { for (TSHIP *var = gObj_First(); var; var = gObj_Next(var)) { __VA_ARGS__ } } while(0)
+#define GOBJ_ITERATE_SAFE(var, ...) do { for (TSHIP *var = gObj_First(), *_next; var; var = _next) { _next = gObj_Next(var); __VA_ARGS__ } } while(0)
+#define GOBJ_ITERATE_ROOM(var, room_id, ...) do { for (TSHIP *var = gObj_First(); var; var = gObj_Next(var)) if ((var)->home_room == (room_id)) { __VA_ARGS__ } } while(0)
+
 TSHIP *gObj_Ship();
 
 TSHIP *gObj_CreateObject();

@@ -441,11 +441,10 @@ void Update_HomingShot(TSHIP *gobj)
     gobj->dy = 0;
 
     if (++gobj->ticks_passed > 10) {
-        TSHIP *trg = gObj_First();
         TSHIP *best = NULL;
         int dx_best = 0;
 
-        for (; trg; trg = gObj_Next(trg)) {
+        GOBJ_ITERATE(trg, {
             if (trg->ai_type != AI_RANDOM_MOVE &&
                 trg->ai_type != AI_KAMIKADZE)
                 continue;
@@ -472,7 +471,7 @@ void Update_HomingShot(TSHIP *gobj)
                     dx_best = dx;
                 }
             }
-        }
+        });
 
         if (best) {
             int dy = best->y - gobj->y;
@@ -572,11 +571,10 @@ void Update_Elevator(TSHIP *gobj)
                     // destroy elevator or it will roll forever
                     // but if not screen 69
                     if (game->base_screen != 69) {
-                        TSHIP *lift = gObj_First();
-                        for (; lift; lift = gObj_Next(lift)) {
+                        GOBJ_ITERATE_SAFE(lift, {
                             if(lift->ai_type == AI_ELEVATOR)
                                 gObj_DestroyObject(lift);
-                        }
+                        });
                     }
 
                     game->elevator_flag = 0;

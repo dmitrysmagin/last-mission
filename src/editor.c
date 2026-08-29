@@ -224,8 +224,7 @@ static void RoomView()
         ShowViewModeInfo();
         reinit = 0;
     } else {
-        for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj))
-            UpdateAnimation(gobj);
+        GOBJ_ITERATE(gobj, { UpdateAnimation(gobj); });
 
         ClearScreen();
         BlitRoom(surface, game->roomcontainer);

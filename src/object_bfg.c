@@ -147,15 +147,14 @@ void Update_BfgShot(TSHIP *gobj)
     for (int n = 0; n < MAX_BFG_TARGETS; ++n)
         BfgTargets[n].hit_now = 0;
 
-    TSHIP *trg = gObj_First();
-    for (; trg; trg = gObj_Next(trg)) {
+    GOBJ_ITERATE(trg, {
         if (trg->ai_type == AI_KAMIKADZE ||
             trg->ai_type == AI_RANDOM_MOVE) {
             if (ShipsDistance(gobj, trg) < BFG_KILL_DISTANCE) {
                 AddBfgTarget(trg, gobj);
             }
         }
-    }
+    });
 
     for (int n = 0; n < MAX_BFG_TARGETS; ++n) {
         if (BfgTargets[n].hit_count) {
