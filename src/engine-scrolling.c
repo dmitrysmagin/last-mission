@@ -201,6 +201,71 @@ static void scrollEnsureEnemiesForVisible(int x0, int y0, int x1, int y1)
     }
 }
 
+static void scrollSpawnShip(int gx, int gy)
+{
+    // replicate InitShip but world-absolute
+    TSHIP *base = gObj_CreateObject();
+    if (!base) return;
+    TSHIP *ship = gObj_CreateObject();
+    if (!ship) { gObj_DestroyObject(base); return; }
+
+    int base_world_x = gx * ROOM_WIDTH * 8 + 148;
+    int base_world_y = gy * ROOM_HEIGHT * 8 + 104;
+
+    base->x = base_world_x;
+    base->y = base_world_y;
+    base->world_x = base->x;
+    base->world_y = base->y;
+    base->home_room = getscreen(gx, gy);
+    base->home_gx = gx;
+    base->home_gy = gy;
+    base->i = 1;
+    base->min_frame = 0;
+    base->cur_frame = 0;
+    base->max_frame = 1;
+    base->anim_speed = 0;
+    base->anim_speed_cnt = 0;
+    base->parent = ship;
+    gObj_Constructor(base, AI_BASE);
+
+    int ship_idx = 0; // default laser ship; could use GetPlayerShipIndex()
+    // try to use player's chosen ship if available
+    extern int GetPlayerShipIndex(void);
+    ship_idx = GetPlayerShipIndex();
+
+    ship->i = ship_idx;
+    // offset to center on base: (40 - shipW)/2
+    int shipW = GetSpriteW(ship_idx);
+    int offset = (40 - shipW) / 2;
+    ship->x = base_world_x + offset;
+    ship->y = base_world_y - 36; // 68 = 104-36 as in InitShip
+    ship->world_x = ship->x;
+    ship->world_y = ship->y;
+    // ship free to roam whole world (not restricted to native room)
+    ship->home_room = 0;
+    ship->home_gx = 0;
+    ship->home_gy = 0;
+    ship->base = base;
+    ship->smoke = NULL;
+    ship->laser = NULL;
+    ship->scroll_active = 1;
+
+    if (ship_idx == SHIP_TYPE_BFG) { ship->min_frame = 0; ship->max_frame = 4; }
+    else if (ship_idx == SHIP_TYPE_OBSERVER) { ship->min_frame = 1; ship->max_frame = 3; }
+    else { ship->min_frame = 0; ship->max_frame = 6; }
+
+    ship->cur_frame = 0;
+    ship->anim_speed = 1;
+    ship->anim_speed_cnt = 1;
+    gObj_Constructor(ship, AI_SHIP);
+
+    base->scroll_active = 1;
+    // base also free (follows ship when attached, otherwise static)
+    base->home_room = 0;
+    base->home_gx = 0;
+    base->home_gy = 0;
+}
+
 static int rectIntersect(int ax, int ay, int aw, int ah, int bx, int by, int bw, int bh)
 {
     return !(ax + aw <= bx || bx + bw <= ax || ay + ah <= by || by + bh <= ay);
@@ -255,6 +320,7 @@ void Scrolling_Init(void)
     int y1 = (scroll_viewport.y + scroll_viewport.h - 1) / (ROOM_HEIGHT * 8);
     ensureCacheForVisible(x0, y0, x1, y1);
     scrollEnsureEnemiesForVisible(x0, y0, x1, y1);
+    scrollSpawnShip(start_gx, start_gy);
 }
 
 void Scrolling_Shutdown(void)
@@ -276,16 +342,6 @@ void DoScrolling(void)
     int worldW = game->world->mapw * ROOM_WIDTH * 8;
     int worldH = game->world->maph * ROOM_HEIGHT * 8;
 
-    if (Keys[SC_LEFT])  scroll_viewport.x -= 4;
-    if (Keys[SC_RIGHT]) scroll_viewport.x += 4;
-    if (Keys[SC_UP])    scroll_viewport.y -= 4;
-    if (Keys[SC_DOWN])  scroll_viewport.y += 4;
-
-    if (scroll_viewport.x < 0) scroll_viewport.x = 0;
-    if (scroll_viewport.y < 0) scroll_viewport.y = 0;
-    if (scroll_viewport.x > worldW - scroll_viewport.w) scroll_viewport.x = worldW - scroll_viewport.w;
-    if (scroll_viewport.y > worldH - scroll_viewport.h) scroll_viewport.y = worldH - scroll_viewport.h;
-
     if (Keys[SC_ESCAPE]) {
         input_reset();
         Scrolling_Shutdown();
@@ -293,11 +349,46 @@ void DoScrolling(void)
         return;
     }
 
+    // map input to game keys for ship
+    GKeys[KEY_LEFT]  = Keys[SC_LEFT];
+    GKeys[KEY_RIGHT] = Keys[SC_RIGHT];
+    GKeys[KEY_UP]    = Keys[SC_UP];
+    GKeys[KEY_DOWN]  = Keys[SC_DOWN];
+    GKeys[KEY_FIRE]  = Keys[SC_SPACE];
+    GKeys[KEY_PAUSE] = 0;
+    GKeys[KEY_QUIT]  = 0;
+
+    // update ship/base — world-absolute (Update_Ship has GM_SCROLLING branch)
+    TSHIP *ship = gObj_Ship();
+    if (ship) {
+        TSHIP *base = ship->base;
+        gObj_Update(ship);
+        if (base && base->state != SH_DEAD) gObj_Update(base);
+        // center viewport on ship
+        int sx = ship->x + gObj_GetWidth(ship)/2;
+        int sy = ship->y + gObj_GetHeight(ship)/2;
+        scroll_viewport.x = sx - scroll_viewport.w/2;
+        scroll_viewport.y = sy - scroll_viewport.h/2;
+        if (scroll_viewport.x < 0) scroll_viewport.x = 0;
+        if (scroll_viewport.y < 0) scroll_viewport.y = 0;
+        if (scroll_viewport.x > worldW - scroll_viewport.w) scroll_viewport.x = worldW - scroll_viewport.w;
+        if (scroll_viewport.y > worldH - scroll_viewport.h) scroll_viewport.y = worldH - scroll_viewport.h;
+    } else {
+        // fallback: direct viewport nudge if no ship
+        if (Keys[SC_LEFT])  scroll_viewport.x -= 4;
+        if (Keys[SC_RIGHT]) scroll_viewport.x += 4;
+        if (Keys[SC_UP])    scroll_viewport.y -= 4;
+        if (Keys[SC_DOWN])  scroll_viewport.y += 4;
+        if (scroll_viewport.x < 0) scroll_viewport.x = 0;
+        if (scroll_viewport.y < 0) scroll_viewport.y = 0;
+        if (scroll_viewport.x > worldW - scroll_viewport.w) scroll_viewport.x = worldW - scroll_viewport.w;
+        if (scroll_viewport.y > worldH - scroll_viewport.h) scroll_viewport.y = worldH - scroll_viewport.h;
+    }
+
     int x0 = scroll_viewport.x / (ROOM_WIDTH * 8);
     int y0 = scroll_viewport.y / (ROOM_HEIGHT * 8);
     int x1 = (scroll_viewport.x + scroll_viewport.w - 1) / (ROOM_WIDTH * 8);
     int y1 = (scroll_viewport.y + scroll_viewport.h - 1) / (ROOM_WIDTH * 8);
-    // correction for y1 using ROOM_HEIGHT
     y1 = (scroll_viewport.y + scroll_viewport.h - 1) / (ROOM_HEIGHT * 8);
     if (x0 < 0) x0 = 0;
     if (y0 < 0) y0 = 0;
@@ -378,6 +469,7 @@ void DoScrolling(void)
     // render enemies with viewport offset
     for (TSHIP *gobj = gObj_First(); gobj; gobj = gObj_Next(gobj)) {
         if (gobj->home_room == 0) continue;
+        // skip ship/base (home 0 now) — handled separately
         int w = gObj_GetWidth(gobj);
         int h = gObj_GetHeight(gobj);
         if (!rectIntersect(gobj->x, gobj->y, w, h,
@@ -388,6 +480,31 @@ void DoScrolling(void)
         int sy = gobj->y - scroll_viewport.y;
         if (gobj->flags & GOBJ_VISIBLE)
             PutSpriteI(surface, sx, sy, gobj->i, gobj->cur_frame);
+    }
+    // render ship and base (world-absolute, viewport offset, no home restriction)
+    {
+        TSHIP *ship2 = gObj_Ship();
+        if (ship2) {
+            int w = gObj_GetWidth(ship2);
+            int h = gObj_GetHeight(ship2);
+            if (rectIntersect(ship2->x, ship2->y, w, h, scroll_viewport.x, scroll_viewport.y, scroll_viewport.w, scroll_viewport.h)) {
+                int sx = ship2->x - scroll_viewport.x;
+                int sy = ship2->y - scroll_viewport.y;
+                if (ship2->flags & GOBJ_VISIBLE)
+                    PutSpriteI(surface, sx, sy, ship2->i, ship2->cur_frame);
+            }
+            TSHIP *base = ship2->base;
+            if (base && base->state == SH_ACTIVE) {
+                int bw = gObj_GetWidth(base);
+                int bh = gObj_GetHeight(base);
+                if (rectIntersect(base->x, base->y, bw, bh, scroll_viewport.x, scroll_viewport.y, scroll_viewport.w, scroll_viewport.h)) {
+                    int sx = base->x - scroll_viewport.x;
+                    int sy = base->y - scroll_viewport.y;
+                    if (base->flags & GOBJ_VISIBLE)
+                        PutSpriteI(surface, sx, sy, base->i, base->cur_frame);
+                }
+            }
+        }
     }
     SDL_SetClipRect(surface, NULL);
 

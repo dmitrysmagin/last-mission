@@ -56,8 +56,13 @@ void Update_Kamikaze(TSHIP *gobj)
 {
     TSHIP *ship = gObj_Ship();
 
-    if (ship == NULL)
+    if (ship == NULL) {
+        if (game->mode == GM_SCROLLING) {
+            Update_Random(gobj);
+            return;
+        }
         return;
+    }
 
     if (ship->i == SHIP_TYPE_OBSERVER) {
         Update_Random(gobj);
@@ -126,6 +131,7 @@ void Update_CeilingCannon(TSHIP *gobj)
 
         // spawn a new enemy
         TSHIP *j = gObj_CreateObject();
+        if (!j) return;
         j->i = 34;
         j->x = gobj->x;
         j->y = gobj->y + 16;
@@ -134,6 +140,14 @@ void Update_CeilingCannon(TSHIP *gobj)
         j->max_frame = 3;
         gObj_Constructor(j, AI_KAMIKADZE);
         j->parent = gobj;
+        if (game->mode == GM_SCROLLING) {
+            j->world_x = j->x;
+            j->world_y = j->y;
+            j->home_room = gobj->home_room;
+            j->home_gx = gobj->home_gx;
+            j->home_gy = gobj->home_gy;
+            j->scroll_active = 1;
+        }
         PlaySoundEffect(SND_CANNON_SHOOT);
     }
 }
@@ -142,8 +156,14 @@ void Update_HomingMissile(TSHIP *gobj)
 {
     TSHIP *ship = gObj_Ship();
 
-    if (ship == NULL)
+    if (ship == NULL) {
+        if (game->mode == GM_SCROLLING) {
+            // no ship in scrolling preview — drift randomly
+            Update_Random(gobj);
+            return;
+        }
         return;
+    }
 
     UpdateAnimation(gobj);
 
@@ -174,8 +194,35 @@ void Update_Cannon(TSHIP *gobj)
 {
     TSHIP *ship = gObj_Ship();
 
-    if (ship == NULL)
+    if (ship == NULL) {
+        if (game->mode == GM_SCROLLING) {
+            // idle animation in scrolling preview
+            UpdateAnimation(gobj);
+            // still allow occasional firing
+            if ((RandomInt() & 255) > 252) {
+                TSHIP *bullet = gObj_CreateObject();
+                if (bullet) {
+                    bullet->i = 43;
+                    bullet->x = gobj->x + 6;
+                    bullet->y = gobj->y - 4;
+                    bullet->dx = 0;
+                    bullet->dy = -1;
+                    bullet->anim_speed = 4;
+                    bullet->anim_speed_cnt = bullet->anim_speed;
+                    // keep world coords for scrolling
+                    bullet->world_x = bullet->x;
+                    bullet->world_y = bullet->y;
+                    bullet->home_room = gobj->home_room;
+                    bullet->home_gx = gobj->home_gx;
+                    bullet->home_gy = gobj->home_gy;
+                    gObj_Constructor(bullet, AI_BULLET);
+                    bullet->parent = gobj;
+                }
+            }
+            return;
+        }
         return;
+    }
 
     if (gobj->x - 40 > ship->x) {
         gobj->cur_frame = 0;

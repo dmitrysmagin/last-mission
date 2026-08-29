@@ -232,6 +232,41 @@ void Update_Ship(TSHIP *ship)
     static unsigned char fallflag = 1;
     static int dy;
 
+    if (game->mode == GM_SCROLLING) {
+        // scrolling preview: world-absolute movement, no ChangeScreen, no fuel
+        if (GKeys[KEY_RIGHT] == 1) {
+            if (FacingRight(ship)) {
+                if (gObj_CheckTouch(ship->x + 2, ship->y, ship) == 0) ship->x += 2;
+            } else {
+                if (ship->anim_speed_cnt == 0) { ship->cur_frame -= 1; ship->anim_speed_cnt = ship->anim_speed; }
+                else ship->anim_speed_cnt -= 1;
+            }
+        }
+        if (GKeys[KEY_LEFT] == 1) {
+            if (FacingLeft(ship)) {
+                if (gObj_CheckTouch(ship->x - 2, ship->y, ship) == 0) ship->x -= 2;
+            } else {
+                if (ship->anim_speed_cnt == 0) { ship->cur_frame += 1; ship->anim_speed_cnt = ship->anim_speed; }
+                else ship->anim_speed_cnt -= 1;
+            }
+        }
+        if (GKeys[KEY_UP] == 1) {
+            dy = (ship->y & 1) ? 1 : 2;
+            if (gObj_CheckTouch(ship->x, ship->y - dy, ship) == 0) ship->y -= dy;
+        } else if (GKeys[KEY_DOWN] == 1) {
+            dy = (ship->y & 1) ? 1 : 2;
+            if (gObj_CheckTouch(ship->x, ship->y + dy, ship) == 0) ship->y += dy;
+        } else {
+            if (fallflag == 0) {
+                if (gObj_CheckTouch(ship->x, ship->y + 1, ship) == 0) ship->y += 1;
+                fallflag = 1;
+            } else fallflag -= 1;
+        }
+        ship->world_x = ship->x;
+        ship->world_y = ship->y;
+        return;
+    }
+
     if (--game->ticks_for_damage < 0)
         game->ticks_for_damage = 0;
 
@@ -383,6 +418,24 @@ void Update_Base(TSHIP *base)
 
     if (ship == NULL)
         return;
+
+    if (game->mode == GM_SCROLLING) {
+        // scrolling preview: base is static unless attached, otherwise follow ship world
+        if (game->player_attached == 1 && ship->ai_type != AI_EXPLOSION) {
+            if (GKeys[KEY_RIGHT] == 1 && FacingRight(ship)) {
+                if (gObj_CheckTouch(ship->x + 2, ship->y, ship) == 0 && gObj_CheckTouch(base->x + 2, base->y, base) == 0) {
+                    ship->x += 2; base->x += 2;
+                }
+            } else if (GKeys[KEY_LEFT] == 1 && FacingLeft(ship)) {
+                if (gObj_CheckTouch(ship->x - 2, ship->y, ship) == 0 && gObj_CheckTouch(base->x - 2, base->y, base) == 0) {
+                    ship->x -= 2; base->x -= 2;
+                }
+            }
+            base->world_x = base->x; base->world_y = base->y;
+            ship->world_x = ship->x; ship->world_y = ship->y;
+        }
+        return;
+    }
 
     // do smth if attach mode ON
     int playMoveSound = 0;
