@@ -344,9 +344,10 @@ void gObj_Explode(TSHIP *gobj)
                     gobj->y = ny;
                     gobj->world_x = nx;
                     gobj->world_y = ny;
-                    gobj->home_room = first;
-                    gobj->home_gx = rx;
-                    gobj->home_gy = ry;
+                    // base must stay free to roam (like scrollSpawnShip), not clamped to home room
+                    gobj->home_room = 0;
+                    gobj->home_gx = 0;
+                    gobj->home_gy = 0;
                     gobj->state = SH_ACTIVE;
                     gobj->cur_frame = 0;
                     game->base_restart_screen = first;

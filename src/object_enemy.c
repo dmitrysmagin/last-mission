@@ -554,7 +554,6 @@ void Update_Elevator(TSHIP *gobj)
 
         if (gobj->ai_update_cnt > 0) { gobj->ai_update_cnt--; return; }
         if (game->elevator_flag == 0 && gobj->phase == 0) {
-            // elevator must be at its spawned floor level to start (prevent 7->21 double jump)
             int homeFloorY = gy * ROOM_HEIGHT * 8 + 120;
             if (gobj->y != homeFloorY) return;
             // ensure north room is cached before crossing boundary
@@ -602,7 +601,8 @@ void Update_Elevator(TSHIP *gobj)
                     extern void Scrolling_SetTileAtWorld(int wx, int wy, int tile);
                     Scrolling_SetTileAtWorld(base->x - 4 + i * 8, base->y + 16, 245);
                 }
-                gobj->phase = 0;
+                gobj->phase = 2; // moved to next room, become unactive
+                gobj->scroll_active = 0;
                 game->elevator_flag = 0;
                 StopSoundEffect(SND_ELEVATOR);
                 game->health = 3;
@@ -619,11 +619,15 @@ void Update_Elevator(TSHIP *gobj)
                     game->base_restart_screen = targetScreen;
                     extern void Scrolling_UpdateRespawnFromScreen(int screen);
                     Scrolling_UpdateRespawnFromScreen(targetScreen);
-                    // update gobj home to new room for future activations
+                    // update home to next room and keep inactive
                     gobj->home_gx = northGx;
                     gobj->home_gy = northGy;
                     gobj->home_room = targetScreen;
-                    gobj->ai_update_cnt = 60; // cooldown to prevent immediate 8->21 chain
+                } else {
+                    // special 69: keep inactive but still update home
+                    gobj->home_gx = northGx;
+                    gobj->home_gy = northGy;
+                    gobj->home_room = targetScreen;
                 }
             } else {
                 PlaySoundEffect(SND_ELEVATOR);

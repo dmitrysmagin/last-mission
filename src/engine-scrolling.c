@@ -558,8 +558,14 @@ void DoScrolling(void)
             if (base && base->state != SH_DEAD && base->state != SH_HIDDEN) gObj_Update(base);
             int sx = ship->x + gObj_GetWidth(ship)/2;
             int sy = ship->y + gObj_GetHeight(ship)/2;
-            scroll_viewport.x = sx - scroll_viewport.w/2;
-            scroll_viewport.y = sy - scroll_viewport.h/2;
+            int target_x = sx - scroll_viewport.w/2;
+            int target_y = sy - scroll_viewport.h/2;
+            if (target_x < 0) target_x = 0;
+            if (target_y < 0) target_y = 0;
+            if (target_x > worldW - scroll_viewport.w) target_x = worldW - scroll_viewport.w;
+            if (target_y > worldH - scroll_viewport.h) target_y = worldH - scroll_viewport.h;
+            scroll_viewport.x = target_x;
+            scroll_viewport.y = target_y;
             if (scroll_viewport.x < 0) scroll_viewport.x = 0;
             if (scroll_viewport.y < 0) scroll_viewport.y = 0;
             if (scroll_viewport.x > worldW - scroll_viewport.w) scroll_viewport.x = worldW - scroll_viewport.w;
@@ -719,7 +725,7 @@ void DoScrolling(void)
         sprintf(buf, "SCROLL %d,%d", scroll_viewport.x, scroll_viewport.y);
         PutString(surface, 4, 4, buf);
         // keep debug hint above HUD
-        PutString(surface, 4, STATUS_YPOS - 12, "ARROWS move  SPACE fire  ESC title");
+        //PutString(surface, 4, STATUS_YPOS - 12, "ARROWS move  SPACE fire  ESC title");
     }
     if (game->mode == GM_GAMEOVER) {
         // overlay game over text (same strings as flip-screen UpdateLives/UpdateFuel)
