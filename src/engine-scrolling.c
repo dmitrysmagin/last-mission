@@ -42,6 +42,14 @@ static int scroll_cache_inited = 0;
 static int spawnedRoom[MAX_ROOM_ID];
 static int scroll_restart_gx, scroll_restart_gy;
 static int scroll_start_gx, scroll_start_gy;
+void Scrolling_UpdateRespawnFromScreen(int screen)
+{
+    for (int y = 0; y < game->world->maph; y++) {
+        for (int x = 0; x < game->world->mapw; x++) {
+            if (getscreen(x, y) == screen) { scroll_restart_gx = x; scroll_restart_gy = y; return; }
+        }
+    }
+}
 
 static ROOMCONTAINER *getCacheForRoom(int room_id)
 {
@@ -445,6 +453,14 @@ void Scrolling_RestartLevel(void)
     game->elevator_flag = 0;
     game->ticks_for_damage = 0;
     ResetLaser();
+
+    // deduce current level's first screen for respawn
+    {
+        int first = 1;
+        for (int s = 1; s < 256; s++) if (GameLevelFromScreen(s) == game->level) { first = s; break; }
+        Scrolling_UpdateRespawnFromScreen(first);
+        game->base_restart_screen = first;
+    }
 
     // clear all objects and respawn around restart viewport
     gObj_DestroyAll();

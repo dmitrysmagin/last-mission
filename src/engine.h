@@ -91,6 +91,7 @@ void Update_Base(TSHIP *base);
 
 void UpdateScoreWithShip(TSHIP *gobj);
 void DestroyHiddenAreaAccess(TSHIP *i, int playEffects);
+int GameLevelFromScreen(int screen);
 
 extern TGAMEDATA *game;
 

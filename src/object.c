@@ -317,17 +317,52 @@ void gObj_Explode(TSHIP *gobj)
         // if blowing base - zero game->player_attached
         game->player_attached = 0;
         {
-            /* Create new explosion object and hide base */
+            /* Create new explosion object and hide/respawn base */
             TSHIP *exp = gObj_CreateObject();
             if (!exp) break;
             exp->i = 1;
             exp->x = gobj->x;
             exp->y = gobj->y;
-
-            game->base_screen = game->base_restart_screen;
-            gobj->state = SH_HIDDEN;
-            gobj->x = 160;
-            gobj->y = 104;
+            if (game->mode == GM_SCROLLING) {
+                exp->world_x = gobj->world_x;
+                exp->world_y = gobj->world_y;
+                // deduce current level's first screen
+                int first = 1;
+                for (int s = 1; s < 256; s++) {
+                    if (GameLevelFromScreen(s) == game->level) { first = s; break; }
+                }
+                int rx = -1, ry = -1;
+                for (int y = 0; y < game->world->maph && rx < 0; y++) {
+                    for (int x = 0; x < game->world->mapw; x++) {
+                        if (getscreen(x, y) == first) { rx = x; ry = y; break; }
+                    }
+                }
+                if (rx >= 0) {
+                    int nx = rx * ROOM_WIDTH * 8 + 148;
+                    int ny = ry * ROOM_HEIGHT * 8 + 104;
+                    gobj->x = nx;
+                    gobj->y = ny;
+                    gobj->world_x = nx;
+                    gobj->world_y = ny;
+                    gobj->home_room = first;
+                    gobj->home_gx = rx;
+                    gobj->home_gy = ry;
+                    gobj->state = SH_ACTIVE;
+                    gobj->cur_frame = 0;
+                    game->base_restart_screen = first;
+                    extern void Scrolling_UpdateRespawnFromScreen(int screen);
+                    Scrolling_UpdateRespawnFromScreen(first);
+                } else {
+                    gobj->state = SH_HIDDEN;
+                    gobj->x = 160;
+                    gobj->y = 104;
+                }
+            } else {
+                game->base_screen = game->base_restart_screen;
+                gobj->state = SH_HIDDEN;
+                gobj->x = 160;
+                gobj->y = 104;
+            }
 
             gobj = exp; /* HACKY: swap */
         }
