@@ -517,6 +517,120 @@ void Update_Elevator(TSHIP *gobj)
         return;
 
     TSHIP *base = ship->base;
+    if (base == NULL) return;
+
+    if (game->mode == GM_SCROLLING) {
+        if (game->player_attached != 1) {
+            // if elevator was moving but player detached, stop
+            if (game->elevator_flag == 1 && gobj->phase == 1) {
+                // was this elevator the active one? check if gobj is the moving elevator
+                // store active elevator pointer via static? Use dx as flag
+                // simple: if this elevator's phase==1 it was moving, reset flag
+                game->elevator_flag = 0;
+                gobj->phase = 0;
+                StopSoundEffect(SND_ELEVATOR);
+            }
+            return;
+        }
+        // check base fully on elevator (x) and y aligned
+        int baseW = gObj_GetWidth(base);
+        int baseH = gObj_GetHeight(base);
+        int elevW = 48; // 6*8
+        if (base->x < gobj->x || base->x + baseW > gobj->x + elevW) return;
+        if (base->y + baseH != gobj->y && base->y + baseH +1 != gobj->y) return;
+
+        // deduce target on next screen (north)
+        int gx = gobj->home_gx;
+        int gy = gobj->home_gy;
+        int northGx = gx;
+        int northGy = gy - 1;
+        if (northGy < 0 || northGx < 0 || northGx >= game->world->mapw || northGy >= game->world->maph) return;
+        int targetScreen = getscreen(northGx, northGy);
+        if (targetScreen == 0) return;
+        int targetBaseY = northGy * ROOM_HEIGHT * 8 + 104;
+        int targetElevY = northGy * ROOM_HEIGHT * 8 + 120;
+        int shipH = gObj_GetHeight(ship);
+        int targetShipY = targetBaseY - shipH;
+
+        if (gobj->ai_update_cnt > 0) { gobj->ai_update_cnt--; return; }
+        if (game->elevator_flag == 0 && gobj->phase == 0) {
+            // elevator must be at its spawned floor level to start (prevent 7->21 double jump)
+            int homeFloorY = gy * ROOM_HEIGHT * 8 + 120;
+            if (gobj->y != homeFloorY) return;
+            // ensure north room is cached before crossing boundary
+            {
+                extern void Scrolling_EnsureRoomCached(int gx, int gy);
+                Scrolling_EnsureRoomCached(northGx, northGy);
+            }
+            // activate: unseal current floor
+            for (int j = 0; j <= 5; j++) {
+                extern void Scrolling_SetTileAtWorld(int wx, int wy, int tile);
+                Scrolling_SetTileAtWorld(gobj->x + j * 8, gobj->y, 0);
+            }
+            game->elevator_flag = 1;
+            gobj->phase = 1; // moving
+            // store targets in dx/dy for later precise stop
+            gobj->dx = targetElevY;
+            gobj->dy = targetBaseY;
+            PlaySoundEffect(SND_ELEVATOR);
+        }
+
+        if (gobj->phase == 1) {
+            // move up 1 px per frame
+            ship->y -= 1;
+            base->y -= 1;
+            gobj->y -= 1;
+            ship->world_y = ship->y;
+            base->world_y = base->y;
+            // gobj world already y
+            if (gobj->y <= gobj->dx) {
+                // snap precisely to target
+                base->y = gobj->dy;
+                gobj->y = gobj->dx;
+                ship->y = targetShipY;
+                base->world_y = base->y;
+                ship->world_y = ship->y;
+                base->world_x = base->x;
+                ship->world_x = ship->x;
+                // seal destination floor
+                for (int i = 0; i <= 5; i++) {
+                    extern void Scrolling_SetTileAtWorld(int wx, int wy, int tile);
+                    Scrolling_SetTileAtWorld(gobj->x + i * 8, gobj->y, 245);
+                }
+                // seal also at base footprint for consistency
+                for (int i = 0; i <= 5; i++) {
+                    extern void Scrolling_SetTileAtWorld(int wx, int wy, int tile);
+                    Scrolling_SetTileAtWorld(base->x - 4 + i * 8, base->y + 16, 245);
+                }
+                gobj->phase = 0;
+                game->elevator_flag = 0;
+                StopSoundEffect(SND_ELEVATOR);
+                game->health = 3;
+                // level progression if not special screen 69
+                int curScreen = getscreen(gx, gy);
+                if (curScreen != 69 && targetScreen != 69) {
+                    // deduce level from target screen
+                    int newLevel = GameLevelFromScreen(targetScreen);
+                    if (newLevel != game->level) {
+                        game->level = newLevel;
+                        extern void GarageSave(void);
+                        GarageSave();
+                    }
+                    game->base_restart_screen = targetScreen;
+                    extern void Scrolling_UpdateRespawnFromScreen(int screen);
+                    Scrolling_UpdateRespawnFromScreen(targetScreen);
+                    // update gobj home to new room for future activations
+                    gobj->home_gx = northGx;
+                    gobj->home_gy = northGy;
+                    gobj->home_room = targetScreen;
+                    gobj->ai_update_cnt = 60; // cooldown to prevent immediate 8->21 chain
+                }
+            } else {
+                PlaySoundEffect(SND_ELEVATOR);
+            }
+        }
+        return;
+    }
 
     if (game->player_attached == 1) {
         // start to lift only when ship and base are standing on the elevator
@@ -533,29 +647,12 @@ void Update_Elevator(TSHIP *gobj)
                 if (gobj->y == 120) {
                     // unseal the floor
                     for (int j = 0; j <= 5; j++) {
-                        if (game->mode == GM_SCROLLING) {
-                            extern void Scrolling_SetTileAtWorld(int wx, int wy, int tile);
-                            Scrolling_SetTileAtWorld(gobj->x + j * 8, gobj->y, 0);
-                        } else {
-                            SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + j, gobj->y >> 3, 0);
-                        }
+                        SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + j, gobj->y >> 3, 0);
                     }
                 }
 
                 // upper limit of the screen is reached
                 if (ship->y == 0) {
-                    if (game->mode == GM_SCROLLING) {
-                        // scrolling: elevator seals, despawns at room boundary
-                        for (int i = 0; i <= 5; i++) {
-                            extern void Scrolling_SetTileAtWorld(int wx, int wy, int tile);
-                            Scrolling_SetTileAtWorld(gobj->x + i * 8, gobj->y, 245);
-                        }
-                        gObj_DestroyObject(gobj);
-                        game->elevator_flag = 0;
-                        StopSoundEffect(SND_ELEVATOR);
-                        return;
-                    }
-
                     el_phase = 1;
 
                     int sy = gObj_GetHeight(ship);

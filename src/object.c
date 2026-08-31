@@ -587,7 +587,7 @@ int gObj_CheckTouch(int x, int y, TSHIP *gobj)
 
     // scrolling: world-absolute, restrict to native room rect and tile via world lookup
     if (game->mode == GM_SCROLLING) {
-        if (gobj->home_room != 0) {
+        if (gobj->home_room != 0 && gobj->ai_type != AI_ELEVATOR) {
             int home_min_x = gobj->home_gx * ROOM_WIDTH * 8;
             int home_max_x = home_min_x + ROOM_WIDTH * 8;
             int home_min_y = gobj->home_gy * ROOM_HEIGHT * 8;

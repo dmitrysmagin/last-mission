@@ -136,7 +136,11 @@ static void scrollDespawnRoom(int room_id)
     if (room_id < 0 || room_id >= MAX_ROOM_ID) return;
     if (!spawnedRoom[room_id]) return;
     GOBJ_ITERATE_SAFE(gobj, {
-        if (gobj->home_room == room_id) gObj_DestroyObject(gobj);
+        if (gobj->home_room == room_id) {
+            // elevator in transit must not be despawned mid-crossing
+            if (gobj->ai_type == AI_ELEVATOR && gobj->phase == 1) continue;
+            gObj_DestroyObject(gobj);
+        }
     });
     spawnedRoom[room_id] = 0;
 }
@@ -291,7 +295,15 @@ static void scrollEnsureEnemiesForVisible(int x0, int y0, int x1, int y1)
         }
     }
 }
-
+void Scrolling_EnsureRoomCached(int gx, int gy)
+{
+    if (gx < 0 || gy < 0 || gx >= game->world->mapw || gy >= game->world->maph) return;
+    int room_id = getscreen(gx, gy);
+    if (room_id == 0) return;
+    if (getCacheForRoom(room_id)) return;
+    ensureCacheForVisible(gx, gy, gx, gy);
+    scrollEnsureEnemiesForVisible(gx, gy, gx, gy);
+}
 static void scrollSpawnShip(int gx, int gy)
 {
     // replicate InitShip but world-absolute
@@ -597,19 +609,26 @@ void DoScrolling(void)
         if (gobj->scroll_active) {
             gobj->world_x = gobj->x;
             gobj->world_y = gobj->y;
-            int home_min_x = gobj->home_gx * ROOM_WIDTH * 8;
-            int home_max_x = home_min_x + ROOM_WIDTH * 8;
-            int home_min_y = gobj->home_gy * ROOM_HEIGHT * 8;
-            int home_max_y = home_min_y + ROOM_HEIGHT * 8;
-            int old_x = gobj->x, old_y = gobj->y;
-            gObj_Update(gobj);
-            if (gobj->x < home_min_x) gobj->x = home_min_x;
-            if (gobj->y < home_min_y) gobj->y = home_min_y;
-            if (gobj->x + w > home_max_x) gobj->x = home_max_x - w;
-            if (gobj->y + h > home_max_y) gobj->y = home_max_y - h;
-            gobj->world_x = gobj->x;
-            gobj->world_y = gobj->y;
-            (void)old_x; (void)old_y;
+            // elevator must be allowed to cross room boundaries
+            if (gobj->ai_type == AI_ELEVATOR) {
+                gObj_Update(gobj);
+                gobj->world_x = gobj->x;
+                gobj->world_y = gobj->y;
+            } else {
+                int home_min_x = gobj->home_gx * ROOM_WIDTH * 8;
+                int home_max_x = home_min_x + ROOM_WIDTH * 8;
+                int home_min_y = gobj->home_gy * ROOM_HEIGHT * 8;
+                int home_max_y = home_min_y + ROOM_HEIGHT * 8;
+                int old_x = gobj->x, old_y = gobj->y;
+                gObj_Update(gobj);
+                if (gobj->x < home_min_x) gobj->x = home_min_x;
+                if (gobj->y < home_min_y) gobj->y = home_min_y;
+                if (gobj->x + w > home_max_x) gobj->x = home_max_x - w;
+                if (gobj->y + h > home_max_y) gobj->y = home_max_y - h;
+                gobj->world_x = gobj->x;
+                gobj->world_y = gobj->y;
+                (void)old_x; (void)old_y;
+            }
         } else {
             UpdateAnimation(gobj);
         }

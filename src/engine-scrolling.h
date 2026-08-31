@@ -14,5 +14,6 @@ void Scrolling_Shutdown(void);
 void DoScrolling(void);
 void Scrolling_RestartLevel(void);
 void Scrolling_UpdateRespawnFromScreen(int screen);
+void Scrolling_EnsureRoomCached(int gx, int gy);
 
 #endif
