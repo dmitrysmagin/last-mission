@@ -4,3 +4,4 @@ src/*.o
 *~.*
 last-mission-sdl
 .tmp
+.tmp

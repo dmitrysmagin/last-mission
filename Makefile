@@ -22,6 +22,7 @@ COMPAT =
 endif
 
 OBJ =	$(SRC)/data.o $(SRC)/demo.o $(SRC)/editor.o $(SRC)/engine.o $(SRC)/engine-scrolling.o \
+	$(SRC)/engine-flipscreen.o $(SRC)/engine-scroller.o \
 	$(SRC)/input.o $(SRC)/main.o $(SRC)/random.o $(SRC)/room.o \
 	$(SRC)/sound.o $(SRC)/sprites.o $(SRC)/video.o $(SRC)/world.o \
 	$(SRC)/object.o $(SRC)/object_bfg.o $(SRC)/object_enemy.o \
