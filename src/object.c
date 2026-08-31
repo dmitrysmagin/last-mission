@@ -408,7 +408,9 @@ void gObj_Explode(TSHIP *gobj)
             gobj->x -= 8;
             if (game->mode == GM_SCROLLING) {
                 Scrolling_SetTileAtWorld(gobj->x, gobj->y, 0);
+                Scrolling_MarkTileDestroyed(gobj->x, gobj->y);
                 Scrolling_SetTileAtWorld(gobj->x, gobj->y + 8, 0);
+                Scrolling_MarkTileDestroyed(gobj->x, gobj->y + 8);
             } else {
                 SetTileI(game->roomcontainer->tiles, gobj->x >> 3, gobj->y >> 3, 0);
                 SetTileI(game->roomcontainer->tiles, gobj->x >> 3, (gobj->y >> 3) + 1, 0);
@@ -416,7 +418,9 @@ void gObj_Explode(TSHIP *gobj)
         } else {
             if (game->mode == GM_SCROLLING) {
                 Scrolling_SetTileAtWorld(gobj->x + 8, gobj->y, 0);
+                Scrolling_MarkTileDestroyed(gobj->x + 8, gobj->y);
                 Scrolling_SetTileAtWorld(gobj->x + 8, gobj->y + 8, 0);
+                Scrolling_MarkTileDestroyed(gobj->x + 8, gobj->y + 8);
             } else {
                 SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + 1, gobj->y >> 3, 0);
                 SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + 1, (gobj->y >> 3) + 1, 0);

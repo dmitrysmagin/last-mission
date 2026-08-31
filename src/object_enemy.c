@@ -404,9 +404,13 @@ void Update_Bridge(TSHIP *gobj)
 
     // seal or unseal the floor
     for (int f = 0; f <= 4; f++) {
-        SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + f, gobj->y >> 3, a);
+        if (game->mode == GM_SCROLLING) {
+            extern void Scrolling_SetTileAtWorld(int wx, int wy, int tile);
+            Scrolling_SetTileAtWorld(gobj->x + f * 8, gobj->y, a);
+        } else {
+            SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + f, gobj->y >> 3, a);
+        }
     }
-
 }
 
 void Update_Bullet(TSHIP *gobj)
@@ -524,12 +528,29 @@ void Update_Elevator(TSHIP *gobj)
                 if (gobj->y == 120) {
                     // unseal the floor
                     for (int j = 0; j <= 5; j++) {
-                        SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + j, gobj->y >> 3, 0);
+                        if (game->mode == GM_SCROLLING) {
+                            extern void Scrolling_SetTileAtWorld(int wx, int wy, int tile);
+                            Scrolling_SetTileAtWorld(gobj->x + j * 8, gobj->y, 0);
+                        } else {
+                            SetTileI(game->roomcontainer->tiles, (gobj->x >> 3) + j, gobj->y >> 3, 0);
+                        }
                     }
                 }
 
                 // upper limit of the screen is reached
                 if (ship->y == 0) {
+                    if (game->mode == GM_SCROLLING) {
+                        // scrolling: elevator seals, despawns at room boundary
+                        for (int i = 0; i <= 5; i++) {
+                            extern void Scrolling_SetTileAtWorld(int wx, int wy, int tile);
+                            Scrolling_SetTileAtWorld(gobj->x + i * 8, gobj->y, 245);
+                        }
+                        gObj_DestroyObject(gobj);
+                        game->elevator_flag = 0;
+                        StopSoundEffect(SND_ELEVATOR);
+                        return;
+                    }
+
                     el_phase = 1;
 
                     int sy = gObj_GetHeight(ship);

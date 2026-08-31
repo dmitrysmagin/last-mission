@@ -14,7 +14,7 @@ void SetGarageShipIndex(int garageId, int shipIndex);
 int GarageShipIndex(int garageId);
 int GetPlayerShipIndex();
 
-void CreateGarage(TSHIP *en, int garage_id);
+void CreateGarage(TSHIP *en, int garage_id, int home_room);
 
 void Update_Garage(TSHIP *gobj);
 void Update_SpareShip(TSHIP *gobj);

@@ -22,11 +22,19 @@
 #define SCROLL_SPEED 4
 #define CACHE_SIZE 4
 #define MAX_ROOM_ID 256
+#define MAX_DESTROYED_TILES 512
 
 typedef struct {
     int x, y; // world pixel top-left
     int w, h; // viewport size
 } VIEWPORT;
+
+typedef struct {
+    int tx, ty; // tile coords (world pixel / 8)
+} DESTROYED_TILE;
+
+static DESTROYED_TILE destroyed_tiles[MAX_DESTROYED_TILES];
+static int destroyed_tile_count = 0;
 
 static VIEWPORT scroll_viewport;
 static ROOMCONTAINER *scroll_cache[CACHE_SIZE];
@@ -75,6 +83,44 @@ void Scrolling_SetTileAtWorld(int wx, int wy, int tile)
     SetTileI(rc->tiles, lx >> 3, ly >> 3, tile);
 }
 
+void Scrolling_GetViewport(int *x, int *y)
+{
+    if (x) *x = scroll_viewport.x;
+    if (y) *y = scroll_viewport.y;
+}
+
+void Scrolling_MarkTileDestroyed(int wx, int wy)
+{
+    int tx = wx / 8;
+    int ty = wy / 8;
+    // avoid duplicates
+    for (int i = 0; i < destroyed_tile_count; i++) {
+        if (destroyed_tiles[i].tx == tx && destroyed_tiles[i].ty == ty)
+            return;
+    }
+    if (destroyed_tile_count < MAX_DESTROYED_TILES) {
+        destroyed_tiles[destroyed_tile_count].tx = tx;
+        destroyed_tiles[destroyed_tile_count].ty = ty;
+        destroyed_tile_count++;
+    }
+}
+
+static int isTileDestroyed(int tx, int ty)
+{
+    for (int i = 0; i < destroyed_tile_count; i++) {
+        if (destroyed_tiles[i].tx == tx && destroyed_tiles[i].ty == ty)
+            return 1;
+    }
+    return 0;
+}
+
+int Scrolling_IsTileDestroyed(int wx, int wy)
+{
+    int tx = wx / 8;
+    int ty = wy / 8;
+    return isTileDestroyed(tx, ty);
+}
+
 static void scrollDespawnRoom(int room_id)
 {
     if (room_id < 0 || room_id >= MAX_ROOM_ID) return;
@@ -119,6 +165,25 @@ static void ensureCacheForVisible(int x0, int y0, int x1, int y1)
         // evict old room's enemies before reuse
         if (slot->room_id != -1) scrollDespawnRoom(slot->room_id);
         RoomContainer_Unpack(slot, room_id);
+        // re-apply destroyed tiles (secret passages)
+        if (slot->tiles) {
+            int room_gx = -1, room_gy = -1;
+            for (int gy = 0; gy < game->world->maph && room_gx < 0; gy++)
+                for (int gx = 0; gx < game->world->mapw; gx++)
+                    if (getscreen(gx, gy) == room_id) { room_gx = gx; room_gy = gy; break; }
+            if (room_gx >= 0) {
+                int base_px = room_gx * ROOM_WIDTH * 8;
+                int base_py = room_gy * ROOM_HEIGHT * 8;
+                for (int ty = 0; ty < ROOM_HEIGHT; ty++) {
+                    for (int tx = 0; tx < ROOM_WIDTH; tx++) {
+                        int world_tx = (base_px + tx * 8) / 8;
+                        int world_ty = (base_py + ty * 8) / 8;
+                        if (isTileDestroyed(world_tx, world_ty))
+                            slot->tiles[ty * ROOM_WIDTH + tx] = 0;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -148,6 +213,27 @@ static void scrollSpawnRoom(int room_id, int gx, int gy)
         if (object->index == BONUS_FACEBOOK || object->index == BONUS_TWITTER) {
             if (game->mode == GM_DEMO) continue;
         }
+        // hidden passage already opened — don't respawn solid blocker
+        if (object->ai == AI_HIDDEN_AREA_ACCESS) {
+            int wx = gx * ROOM_WIDTH * 8 + object->x;
+            int wy = gy * ROOM_HEIGHT * 8 + object->y;
+            int destroyed = 0;
+            for (int dy = 0; dy < object->minframe && !destroyed; dy++)
+                for (int dx = 0; dx < object->speed && !destroyed; dx++)
+                    if (Scrolling_IsTileDestroyed(wx + dx, wy + dy))
+                        destroyed = 1;
+            if (destroyed) continue;
+        }
+        // breakable wall already destroyed — don't respawn (tiles already cleared)
+        if (object->index == 6) {
+            int wx = gx * ROOM_WIDTH * 8 + object->x;
+            int wy = gy * ROOM_HEIGHT * 8 + object->y;
+            if (Scrolling_IsTileDestroyed(wx, wy) ||
+                Scrolling_IsTileDestroyed(wx, wy + 8) ||
+                Scrolling_IsTileDestroyed(wx + 8, wy) ||
+                Scrolling_IsTileDestroyed(wx + 8, wy + 8))
+                continue;
+        }
         // skip garage hidden? keep similar to InitEnemies
         TSHIP *en = gObj_CreateObject();
         if (!en) break; // pool exhausted — guard hijack
@@ -175,7 +261,7 @@ static void scrollSpawnRoom(int room_id, int gx, int gy)
             en->flags &= ~(GOBJ_SOLID|GOBJ_DESTROY);
         }
         if (en->ai_type == AI_GARAGE) {
-            CreateGarage(en, object->garage_id);
+            CreateGarage(en, object->garage_id, room_id);
         } else if (en->ai_type == AI_HIDDEN_AREA_ACCESS) {
             en->dx = object->speed;
             en->dy = object->minframe;
@@ -280,6 +366,10 @@ void Scrolling_Init(void)
     // clear enemy pool (keep ship/base not needed for scrolling preview)
     gObj_DestroyAll();
 
+    // initialize garage data so garages have ships
+    extern void InitGaragesForNewGame(void);
+    InitGaragesForNewGame();
+
     int worldW = game->world->mapw * ROOM_WIDTH * 8;
     int worldH = game->world->maph * ROOM_HEIGHT * 8;
 
@@ -328,6 +418,7 @@ void Scrolling_Shutdown(void)
     }
     scroll_cache_inited = 0;
     memset(spawnedRoom, 0, sizeof(spawnedRoom));
+    destroyed_tile_count = 0;
     // clear scrolling enemies, restore flip-screen state will re-init via InitNewScreen when needed
     gObj_DestroyAll();
 }

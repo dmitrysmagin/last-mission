@@ -74,7 +74,9 @@ struct tship_t {
     int dir, phase; // used by AI_LASER
     int ticks_passed; // used by AI_HOMING_SHOT
     int garage_inactive; // used by AI_GARAGE
+    int parked_ship; // used by AI_GARAGE: per-room parked ship index (-2 = use garage_data)
     int restart_level; // used by AI_EXPLOSION
+    int garage_id; // used by AI_GARAGE: original garage_id for garage_data lookup
 
     /* used by AI_BONUS & AI_EXPLOSION */
     int regenerate_bonus;

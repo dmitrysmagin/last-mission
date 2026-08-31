@@ -23,6 +23,7 @@
 #include "object_enemy.h"
 #include "object_garage.h"
 #include "object_bfg.h"
+#include "engine-scrolling.h"
 #include "object_laser.h"
 #include "engine.h"
 #include "room.h"
@@ -586,10 +587,15 @@ void DestroyHiddenAreaAccess(TSHIP *i, int playEffects)
         for (int x = 0; x < i->dx; ++x) {
             int ax = i->x + x;
 
-            SetTileI(game->roomcontainer->tiles, ax >> 3, ay >> 3, 0);
+            if (game->mode == GM_SCROLLING) {
+                Scrolling_SetTileAtWorld(ax, ay, 0);
+                Scrolling_MarkTileDestroyed(ax, ay);
+            } else
+                SetTileI(game->roomcontainer->tiles, ax >> 3, ay >> 3, 0);
 
-            if (playEffects && !(y % 16) && !(x % 16) && (ay + 16 < ACTION_SCREEN_HEIGHT)) {
-                CreateWallExplosion(ax, ay);
+            if (playEffects && !(y % 16) && !(x % 16)) {
+                if (game->mode == GM_SCROLLING || ay + 16 < ACTION_SCREEN_HEIGHT)
+                    CreateWallExplosion(ax, ay);
             }
         }
     }
@@ -819,7 +825,7 @@ void InitEnemies(int room_idx)
         }
 
         if (en->ai_type == AI_GARAGE) {
-            CreateGarage(en, object->garage_id);
+            CreateGarage(en, object->garage_id, room_idx);
         } else if (en->ai_type == AI_HIDDEN_AREA_ACCESS) {
             en->dx = object->speed;
             en->dy = object->minframe;

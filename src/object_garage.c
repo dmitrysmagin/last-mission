@@ -116,11 +116,13 @@ int GarageShipIndex(int garageId)
     return -1;
 }
 
-void CreateGarage(TSHIP *en, int garage_id)
+void CreateGarage(TSHIP *en, int garage_id, int home_room)
 {
     en->i = garage_id;
+    en->garage_id = garage_id;
+    en->parked_ship = GarageShipIndex(garage_id); // seed from garage_data
 
-    int iShip = GarageShipIndex(en->i);
+    int iShip = en->parked_ship;
     if (iShip != -1) {
         // Find which type of the ship is supposed to be here,
         // create the ship in the best position inside it.
@@ -128,6 +130,11 @@ void CreateGarage(TSHIP *en, int garage_id)
         ship->i = iShip;
         gObj_Constructor(ship, AI_SPARE_SHIP);
         ship->garage = en;
+        ship->home_room = home_room;
+        ship->home_gx = en->home_gx;
+        ship->home_gy = en->home_gy;
+        ship->world_x = en->world_x;
+        ship->world_y = en->world_y;
 
         switch (iShip) {
         case SHIP_TYPE_LASER:
@@ -187,7 +194,9 @@ void Update_Garage(TSHIP *gobj)
     if (ship->ai_type == AI_EXPLOSION)
         return;
 
-    if (GarageShipIndex(gobj->i) != -1) {
+    // check if this garage already has a ship parked
+    int parked = (game->mode == GM_SCROLLING) ? gobj->parked_ship : GarageShipIndex(gobj->garage_id);
+    if (parked != -1 && parked != -2) {
         return;
     }
 
@@ -196,18 +205,36 @@ void Update_Garage(TSHIP *gobj)
     w = gObj_GetWidth(ship);
     h = gObj_GetHeight(ship);
 
+    int ship_x = ship->x;
+    int ship_y = ship->y;
+    int gar_x = gobj->x;
+    int gar_y = gobj->y;
+    if (game->mode == GM_SCROLLING) {
+        extern void Scrolling_GetViewport(int *x, int *y);
+        int vx, vy;
+        Scrolling_GetViewport(&vx, &vy);
+        ship_x = ship->x - vx;
+        ship_y = ship->y - vy;
+        gar_x = gobj->x - vx;
+        gar_y = gobj->y - vy;
+    }
+
     if (!gobj->garage_inactive &&
-        (ship->x >= gobj->x) &&
-        (ship->x + w < gobj->x + GARAGE_WIDTH) &&
-        (ship->y >= gobj->y) &&
-        (ship->y + h < gobj->y + GARAGE_HEIGHT)) {
+        (ship_x >= gar_x) &&
+        (ship_x + w < gar_x + GARAGE_WIDTH) &&
+        (ship_y >= gar_y) &&
+        (ship_y + h < gar_y + GARAGE_HEIGHT)) {
         // Player ship is inside the garage, lets
         // change the ship if possible.
         TSHIP *spare = gObj_First();
 
         for (; spare; spare = gObj_Next(spare)) {
-            if (spare->ai_type == AI_SPARE_SHIP)
-                break;
+            if (spare->ai_type != AI_SPARE_SHIP)
+                continue;
+            // in scrolling mode, only swap with spare in the same room
+            if (game->mode == GM_SCROLLING && spare->home_room != gobj->home_room)
+                continue;
+            break;
         }
 
         if (spare) {
@@ -216,17 +243,35 @@ void Update_Garage(TSHIP *gobj)
 
             garage->garage_inactive = 1;
 
-            SetGarageShipIndex(gobj->i, ship->i);
-            SetGarageShipIndex(garage->i, -1);
+            if (game->mode == GM_SCROLLING) {
+                // per-object parked ship — don't touch global garage_data
+                gobj->parked_ship = ship->i;
+                garage->parked_ship = -1;
+            } else {
+                SetGarageShipIndex(gobj->garage_id, ship->i);
+                SetGarageShipIndex(garage->garage_id, -1);
+            }
 
+            // spare becomes the new player ship
             gObj_Constructor(spare, AI_SHIP);
             spare->garage = NULL;
             spare->base = ship->base;
             spare->smoke = NULL;
+            if (spare->base) spare->base->parent = spare;
+            // free to roam — not clamped to any room
+            spare->home_room = 0;
+            spare->home_gx = 0;
+            spare->home_gy = 0;
+            spare->scroll_active = 1;
 
+            // old ship becomes the new spare
             gObj_Constructor(ship, AI_SPARE_SHIP);
             ship->garage = gobj;
             ship->base = NULL;
+            ship->scroll_active = 0;
+            ship->home_room = gobj->home_room;
+            ship->home_gx = gobj->home_gx;
+            ship->home_gy = gobj->home_gy;
 
             // restore HP
             game->health = 3;
@@ -235,7 +280,12 @@ void Update_Garage(TSHIP *gobj)
             PlaySoundEffect(SND_CONTACT);
         }
     } else if (gobj->garage_inactive) {
-        if (!gObj_CheckOverlap(ship->x, ship->y, ship, gobj)) {
+        // manual overlap check using viewport-adjusted coords
+        int sx2 = ship_x + w;
+        int sy2 = ship_y + h;
+        int gx2 = gar_x + GARAGE_WIDTH;
+        int gy2 = gar_y + GARAGE_HEIGHT;
+        if (ship_x >= gx2 || sx2 <= gar_x || ship_y >= gy2 || sy2 <= gar_y) {
             gobj->garage_inactive = 0;
         }
     }
