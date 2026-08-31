@@ -12,5 +12,6 @@ int Scrolling_IsTileDestroyed(int wx, int wy);
 void Scrolling_Init(void);
 void Scrolling_Shutdown(void);
 void DoScrolling(void);
+void Scrolling_RestartLevel(void);
 
 #endif

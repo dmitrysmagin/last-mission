@@ -383,7 +383,12 @@ void Update_Explosion(TSHIP *gobj)
 
         /* Check if player exploded and restart level */
         if (gobj->restart_level) {
-            RestartLevel();
+            if (game->mode == GM_SCROLLING) {
+                extern void Scrolling_RestartLevel(void);
+                Scrolling_RestartLevel();
+            } else {
+                RestartLevel();
+            }
         } else {
             gObj_DestroyObject(gobj);
         }

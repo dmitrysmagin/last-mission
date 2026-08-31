@@ -40,6 +40,8 @@ static VIEWPORT scroll_viewport;
 static ROOMCONTAINER *scroll_cache[CACHE_SIZE];
 static int scroll_cache_inited = 0;
 static int spawnedRoom[MAX_ROOM_ID];
+static int scroll_restart_gx, scroll_restart_gy;
+static int scroll_start_gx, scroll_start_gy;
 
 static ROOMCONTAINER *getCacheForRoom(int room_id)
 {
@@ -363,12 +365,30 @@ void Scrolling_Init(void)
     scroll_cache_inited = 1;
     memset(spawnedRoom, 0, sizeof(spawnedRoom));
 
-    // clear enemy pool (keep ship/base not needed for scrolling preview)
+    // clear enemy pool
     gObj_DestroyAll();
+    extern void ResetLaser(void);
+    ResetLaser();
 
     // initialize garage data so garages have ships
     extern void InitGaragesForNewGame(void);
     InitGaragesForNewGame();
+
+    // full game state (like InitNewGame) for scrolling
+    extern int GameLevelFromScreen(int screen);
+    game->fuel = 5000;
+    game->lives = 10;
+    game->health = 3;
+    game->score = 0;
+    game->ticks_for_damage = 0;
+    game->player_attached = 0;
+    game->elevator_flag = 0;
+    game->hidden_level_entered = 0;
+    game->level = GameLevelFromScreen(1);
+    game->ship_screen = 1;
+    game->base_screen = 1;
+    game->base_restart_screen = 1;
+    game->easy_mode = 1;
 
     int worldW = game->world->mapw * ROOM_WIDTH * 8;
     int worldH = game->world->maph * ROOM_HEIGHT * 8;
@@ -399,6 +419,11 @@ void Scrolling_Init(void)
     if (scroll_viewport.x < 0) scroll_viewport.x = 0;
     if (scroll_viewport.y < 0) scroll_viewport.y = 0;
 
+    scroll_restart_gx = start_gx;
+    scroll_restart_gy = start_gy;
+    scroll_start_gx = start_gx;
+    scroll_start_gy = start_gy;
+
     int x0 = scroll_viewport.x / (ROOM_WIDTH * 8);
     int y0 = scroll_viewport.y / (ROOM_HEIGHT * 8);
     int x1 = (scroll_viewport.x + scroll_viewport.w - 1) / (ROOM_WIDTH * 8);
@@ -406,6 +431,41 @@ void Scrolling_Init(void)
     ensureCacheForVisible(x0, y0, x1, y1);
     scrollEnsureEnemiesForVisible(x0, y0, x1, y1);
     scrollSpawnShip(start_gx, start_gy);
+}
+
+void Scrolling_RestartLevel(void)
+{
+    extern int UpdateLives(void);
+    extern void ResetLaser(void);
+    if (UpdateLives() == 1) {
+        // Game over — DoScrolling will handle input
+        return;
+    }
+    game->player_attached = 0;
+    game->elevator_flag = 0;
+    game->ticks_for_damage = 0;
+    ResetLaser();
+
+    // clear all objects and respawn around restart viewport
+    gObj_DestroyAll();
+    memset(spawnedRoom, 0, sizeof(spawnedRoom));
+
+    int worldW = game->world->mapw * ROOM_WIDTH * 8;
+    int worldH = game->world->maph * ROOM_HEIGHT * 8;
+    scroll_viewport.x = scroll_restart_gx * ROOM_WIDTH * 8;
+    scroll_viewport.y = scroll_restart_gy * ROOM_HEIGHT * 8;
+    if (scroll_viewport.x < 0) scroll_viewport.x = 0;
+    if (scroll_viewport.y < 0) scroll_viewport.y = 0;
+    if (scroll_viewport.x > worldW - scroll_viewport.w) scroll_viewport.x = worldW - scroll_viewport.w;
+    if (scroll_viewport.y > worldH - scroll_viewport.h) scroll_viewport.y = worldH - scroll_viewport.h;
+
+    int x0 = scroll_viewport.x / (ROOM_WIDTH * 8);
+    int y0 = scroll_viewport.y / (ROOM_HEIGHT * 8);
+    int x1 = (scroll_viewport.x + scroll_viewport.w - 1) / (ROOM_WIDTH * 8);
+    int y1 = (scroll_viewport.y + scroll_viewport.h - 1) / (ROOM_HEIGHT * 8);
+    ensureCacheForVisible(x0, y0, x1, y1);
+    scrollEnsureEnemiesForVisible(x0, y0, x1, y1);
+    scrollSpawnShip(scroll_restart_gx, scroll_restart_gy);
 }
 
 void Scrolling_Shutdown(void)
@@ -428,58 +488,80 @@ void DoScrolling(void)
     int worldW = game->world->mapw * ROOM_WIDTH * 8;
     int worldH = game->world->maph * ROOM_HEIGHT * 8;
 
-    if (Keys[SC_ESCAPE]) {
-        input_reset();
-        Scrolling_Shutdown();
-        SetGameMode(GM_TITLE);
-        return;
+    // game over — wait for any key, then return to title (mirror GM_GAMEOVER)
+    if (game->mode == GM_GAMEOVER) {
+        if (input_anykey()) {
+            input_reset();
+            Scrolling_Shutdown();
+            SetGameMode(GM_TITLE);
+        }
+        // still render frame below with overlay
+    } else {
+        if (Keys[SC_ESCAPE]) {
+            input_reset();
+            Scrolling_Shutdown();
+            SetGameMode(GM_TITLE);
+            return;
+        }
     }
 
-    // map input to game keys for ship
-    GKeys[KEY_LEFT]  = Keys[SC_LEFT];
-    GKeys[KEY_RIGHT] = Keys[SC_RIGHT];
-    GKeys[KEY_UP]    = Keys[SC_UP];
-    GKeys[KEY_DOWN]  = Keys[SC_DOWN];
-    GKeys[KEY_FIRE]  = Keys[SC_SPACE];
-    GKeys[KEY_PAUSE] = 0;
-    GKeys[KEY_QUIT]  = 0;
+    // map input to game keys for ship (skip if game over)
+    if (game->mode != GM_GAMEOVER) {
+        GKeys[KEY_LEFT]  = Keys[SC_LEFT];
+        GKeys[KEY_RIGHT] = Keys[SC_RIGHT];
+        GKeys[KEY_UP]    = Keys[SC_UP];
+        GKeys[KEY_DOWN]  = Keys[SC_DOWN];
+        GKeys[KEY_FIRE]  = Keys[SC_SPACE];
+        GKeys[KEY_PAUSE] = 0;
+        GKeys[KEY_QUIT]  = 0;
+    } else {
+        memset(GKeys, 0, sizeof(GKeys));
+    }
 
-    // update ship/base — world-absolute (Update_Ship has GM_SCROLLING branch)
+    // update ship/base — world-absolute (Update_Ship has GM_SCROLLING branch), skip if game over
+    if (game->mode != GM_GAMEOVER) {
     TSHIP *ship = gObj_Ship();
     if (ship) {
         TSHIP *base = ship->base;
         gObj_Update(ship);
-        if (base && base->state != SH_DEAD) gObj_Update(base);
-        // center viewport on ship
-        int sx = ship->x + gObj_GetWidth(ship)/2;
-        int sy = ship->y + gObj_GetHeight(ship)/2;
-        scroll_viewport.x = sx - scroll_viewport.w/2;
-        scroll_viewport.y = sy - scroll_viewport.h/2;
-        if (scroll_viewport.x < 0) scroll_viewport.x = 0;
-        if (scroll_viewport.y < 0) scroll_viewport.y = 0;
-        if (scroll_viewport.x > worldW - scroll_viewport.w) scroll_viewport.x = worldW - scroll_viewport.w;
-        if (scroll_viewport.y > worldH - scroll_viewport.h) scroll_viewport.y = worldH - scroll_viewport.h;
+        if (ship->ai_type == AI_EXPLOSION) {
+            // keep viewport for explosion frame; restart handled via Update_Explosion
+        } else {
+            if (base && base->state != SH_DEAD && base->state != SH_HIDDEN) gObj_Update(base);
+            int sx = ship->x + gObj_GetWidth(ship)/2;
+            int sy = ship->y + gObj_GetHeight(ship)/2;
+            scroll_viewport.x = sx - scroll_viewport.w/2;
+            scroll_viewport.y = sy - scroll_viewport.h/2;
+            if (scroll_viewport.x < 0) scroll_viewport.x = 0;
+            if (scroll_viewport.y < 0) scroll_viewport.y = 0;
+            if (scroll_viewport.x > worldW - scroll_viewport.w) scroll_viewport.x = worldW - scroll_viewport.w;
+            if (scroll_viewport.y > worldH - scroll_viewport.h) scroll_viewport.y = worldH - scroll_viewport.h;
+        }
     } else {
-        // fallback: direct viewport nudge if no ship
-        if (Keys[SC_LEFT])  scroll_viewport.x -= 4;
-        if (Keys[SC_RIGHT]) scroll_viewport.x += 4;
-        if (Keys[SC_UP])    scroll_viewport.y -= 4;
-        if (Keys[SC_DOWN])  scroll_viewport.y += 4;
-        if (scroll_viewport.x < 0) scroll_viewport.x = 0;
-        if (scroll_viewport.y < 0) scroll_viewport.y = 0;
-        if (scroll_viewport.x > worldW - scroll_viewport.w) scroll_viewport.x = worldW - scroll_viewport.w;
-        if (scroll_viewport.y > worldH - scroll_viewport.h) scroll_viewport.y = worldH - scroll_viewport.h;
+        // no ship: check if explosion with restart_level is animating — keep viewport
+        int has_explosion = 0;
+        GOBJ_ITERATE(e, { if (e->ai_type == AI_EXPLOSION && e->restart_level) { has_explosion = 1; break; } });
+        if (!has_explosion) {
+            if (Keys[SC_LEFT])  scroll_viewport.x -= 4;
+            if (Keys[SC_RIGHT]) scroll_viewport.x += 4;
+            if (Keys[SC_UP])    scroll_viewport.y -= 4;
+            if (Keys[SC_DOWN])  scroll_viewport.y += 4;
+            if (scroll_viewport.x < 0) scroll_viewport.x = 0;
+            if (scroll_viewport.y < 0) scroll_viewport.y = 0;
+            if (scroll_viewport.x > worldW - scroll_viewport.w) scroll_viewport.x = worldW - scroll_viewport.w;
+            if (scroll_viewport.y > worldH - scroll_viewport.h) scroll_viewport.y = worldH - scroll_viewport.h;
+        }
     }
-
+    } // game != GAMEOVER
     int x0 = scroll_viewport.x / (ROOM_WIDTH * 8);
     int y0 = scroll_viewport.y / (ROOM_HEIGHT * 8);
     int x1 = (scroll_viewport.x + scroll_viewport.w - 1) / (ROOM_WIDTH * 8);
-    int y1 = (scroll_viewport.y + scroll_viewport.h - 1) / (ROOM_WIDTH * 8);
-    y1 = (scroll_viewport.y + scroll_viewport.h - 1) / (ROOM_HEIGHT * 8);
+    int y1 = (scroll_viewport.y + scroll_viewport.h - 1) / (ROOM_HEIGHT * 8);
     if (x0 < 0) x0 = 0;
     if (y0 < 0) y0 = 0;
     if (x1 >= game->world->mapw) x1 = game->world->mapw - 1;
     if (y1 >= game->world->maph) y1 = game->world->maph - 1;
+    if (game->mode != GM_GAMEOVER) {
     ensureCacheForVisible(x0, y0, x1, y1);
     scrollEnsureEnemiesForVisible(x0, y0, x1, y1);
 
@@ -516,6 +598,7 @@ void DoScrolling(void)
             UpdateAnimation(gobj);
         }
     });
+    } // if not game over
 
     // render — map only, no HUD/ship
     SDL_Surface *surface = (SDL_Surface *)game->roomcontainer->surface;
@@ -602,5 +685,12 @@ void DoScrolling(void)
         PutString(surface, 4, 4, buf);
         // keep debug hint above HUD
         PutString(surface, 4, STATUS_YPOS - 12, "ARROWS move  SPACE fire  ESC title");
+    }
+    if (game->mode == GM_GAMEOVER) {
+        // overlay game over text (same strings as flip-screen UpdateLives/UpdateFuel)
+        if (game->fuel == 0)
+            PutString(surface, 8*16, 8*10, "NO FUERZA");
+        else
+            PutString(surface, 8*16, 8*10, "HAS PERDIDO");
     }
 }

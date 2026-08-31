@@ -241,7 +241,26 @@ void Update_Ship(TSHIP *ship)
         case SHIP_TYPE_BFG: DoBFG(ship); break;
         case SHIP_TYPE_LASER: DoLaser(ship); break;
         }
-        // scrolling preview: world-absolute movement, no ChangeScreen, no fuel
+        // attach detection (world-absolute)
+        if (base && base->state == SH_ACTIVE &&
+            base->ai_type != AI_EXPLOSION &&
+            game->player_attached == 0) {
+            if (FacingLeft(ship) || FacingRight(ship)) {
+                int xs = gObj_GetWidth(ship);
+                int ys = gObj_GetHeight(ship);
+                int xb = gObj_GetWidth(base);
+                if ((ship->x + xs / 2 == base->x + xb / 2) &&
+                    (ship->y + ys == base->y)) {
+                    game->player_attached = 1;
+                    PlaySoundEffect(SND_CONTACT);
+                }
+            }
+        }
+        if (game->player_attached == 1 ||
+            UpdateFuel() == 1 ||
+            ship->state == SH_DEAD) {
+            return;
+        }
         if (GKeys[KEY_RIGHT] == 1) {
             if (FacingRight(ship)) {
                 if (gObj_CheckTouch(ship->x + 2, ship->y, ship) == 0) ship->x += 2;
@@ -428,17 +447,45 @@ void Update_Base(TSHIP *base)
         return;
 
     if (game->mode == GM_SCROLLING) {
-        // scrolling preview: base is static unless attached, otherwise follow ship world
         if (game->player_attached == 1 && ship->ai_type != AI_EXPLOSION) {
-            if (GKeys[KEY_RIGHT] == 1 && FacingRight(ship)) {
-                if (gObj_CheckTouch(ship->x + 2, ship->y, ship) == 0 && gObj_CheckTouch(base->x + 2, base->y, base) == 0) {
-                    ship->x += 2; base->x += 2;
-                }
-            } else if (GKeys[KEY_LEFT] == 1 && FacingLeft(ship)) {
-                if (gObj_CheckTouch(ship->x - 2, ship->y, ship) == 0 && gObj_CheckTouch(base->x - 2, base->y, base) == 0) {
-                    ship->x -= 2; base->x -= 2;
+            int playMoveSound = 0;
+            if (GKeys[KEY_RIGHT] == 1) {
+                if (FacingRight(ship)) {
+                    base->cur_frame ^= 1;
+                    playMoveSound = 1;
+                    if (gObj_CheckTouch(ship->x + 2, ship->y, ship) == 0 && gObj_CheckTouch(base->x + 2, base->y, base) == 0) {
+                        ship->x += 2; base->x += 2;
+                    }
+                } else {
+                    if (ship->anim_speed_cnt == 0) { ship->cur_frame -= 1; ship->anim_speed_cnt = ship->anim_speed; }
+                    else ship->anim_speed_cnt -= 1;
                 }
             }
+            if (GKeys[KEY_LEFT] == 1) {
+                if (FacingLeft(ship)) {
+                    base->cur_frame ^= 1;
+                    playMoveSound = 1;
+                    if (gObj_CheckTouch(ship->x - 2, ship->y, ship) == 0 && gObj_CheckTouch(base->x - 2, base->y, base) == 0) {
+                        ship->x -= 2; base->x -= 2;
+                    }
+                } else {
+                    if (ship->anim_speed_cnt == 0) { ship->cur_frame += 1; ship->anim_speed_cnt = ship->anim_speed; }
+                    else ship->anim_speed_cnt -= 1;
+                }
+            }
+            if (playMoveSound) PlaySoundEffect(SND_MOVE);
+            else StopSoundEffect(SND_MOVE);
+            if (GKeys[KEY_UP] == 1) {
+                for (int f = 0; f <= 3; f++) {
+                    if (Scrolling_GetTileAtWorld(base->x + 8 + f*8, base->y + 16) == 245)
+                        goto scroll_attached_done;
+                }
+                if (game->elevator_flag == 1) goto scroll_attached_done;
+                StopSoundEffect(SND_MOVE);
+                game->player_attached = 0;
+                ship->y -= 2;
+            }
+scroll_attached_done:
             base->world_x = base->x; base->world_y = base->y;
             ship->world_x = ship->x; ship->world_y = ship->y;
         }
