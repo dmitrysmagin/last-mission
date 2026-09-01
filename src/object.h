@@ -1,6 +1,11 @@
 #ifndef _ENEMIES_H_
 #define _ENEMIES_H_
 
+#include "engine-interface.h"
+
+/* Check if scrolling engine is active */
+#define IS_SCROLLING_ENGINE() (game && game->engine == &scrolling_engine)
+
 #define SH_DEAD 0
 #define SH_ACTIVE 1
 #define SH_HIDDEN 2

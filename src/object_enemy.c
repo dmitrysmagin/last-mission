@@ -57,7 +57,7 @@ void Update_Kamikaze(TSHIP *gobj)
     TSHIP *ship = gObj_Ship();
 
     if (ship == NULL) {
-        if (game->mode == GM_SCROLLING) {
+        if (IS_SCROLLING_ENGINE()) {
             Update_Random(gobj);
             return;
         }
@@ -140,7 +140,7 @@ void Update_CeilingCannon(TSHIP *gobj)
         j->max_frame = 3;
         gObj_Constructor(j, AI_KAMIKADZE);
         j->parent = gobj;
-        if (game->mode == GM_SCROLLING) {
+        if (IS_SCROLLING_ENGINE()) {
             j->world_x = j->x;
             j->world_y = j->y;
             j->home_room = gobj->home_room;
@@ -157,7 +157,7 @@ void Update_HomingMissile(TSHIP *gobj)
     TSHIP *ship = gObj_Ship();
 
     if (ship == NULL) {
-        if (game->mode == GM_SCROLLING) {
+        if (IS_SCROLLING_ENGINE()) {
             // no ship in scrolling preview — drift randomly
             Update_Random(gobj);
             return;
@@ -195,7 +195,7 @@ void Update_Cannon(TSHIP *gobj)
     TSHIP *ship = gObj_Ship();
 
     if (ship == NULL) {
-        if (game->mode == GM_SCROLLING) {
+        if (IS_SCROLLING_ENGINE()) {
             // idle animation in scrolling preview
             UpdateAnimation(gobj);
             // still allow occasional firing
@@ -383,7 +383,7 @@ void Update_Explosion(TSHIP *gobj)
 
         /* Check if player exploded and restart level */
         if (gobj->restart_level) {
-            if (game->mode == GM_SCROLLING) {
+            if (IS_SCROLLING_ENGINE()) {
                 extern void Scrolling_RestartLevel(void);
                 Scrolling_RestartLevel();
             } else {
@@ -409,7 +409,7 @@ void Update_Bridge(TSHIP *gobj)
 
     // seal or unseal the floor
     for (int f = 0; f <= 4; f++) {
-        if (game->mode == GM_SCROLLING) {
+        if (IS_SCROLLING_ENGINE()) {
             extern void Scrolling_SetTileAtWorld(int wx, int wy, int tile);
             Scrolling_SetTileAtWorld(gobj->x + f * 8, gobj->y, a);
         } else {
@@ -519,7 +519,7 @@ void Update_Elevator(TSHIP *gobj)
     TSHIP *base = ship->base;
     if (base == NULL) return;
 
-    if (game->mode == GM_SCROLLING) {
+    if (IS_SCROLLING_ENGINE()) {
         if (game->player_attached != 1) {
             // if elevator was moving but player detached, stop
             if (game->elevator_flag == 1 && gobj->phase == 1) {

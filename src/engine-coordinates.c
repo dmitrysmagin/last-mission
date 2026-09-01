@@ -45,7 +45,7 @@ int Coords_ObjectGetScreenX(TSHIP *obj, IGameEngine *engine) {
 
     // For scrolling mode, objects store world coordinates
     // For flip-screen, objects store screen coordinates directly
-    if (game->mode == GM_SCROLLING) {
+    if (IS_SCROLLING_ENGINE()) {
         return Coords_WorldToScreenX(obj->x, engine);
     }
     return obj->x;
@@ -54,7 +54,7 @@ int Coords_ObjectGetScreenX(TSHIP *obj, IGameEngine *engine) {
 int Coords_ObjectGetScreenY(TSHIP *obj, IGameEngine *engine) {
     if (!obj) return 0;
 
-    if (game->mode == GM_SCROLLING) {
+    if (IS_SCROLLING_ENGINE()) {
         return Coords_WorldToScreenY(obj->y, engine);
     }
     return obj->y;

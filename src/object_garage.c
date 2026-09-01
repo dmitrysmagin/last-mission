@@ -11,6 +11,7 @@
 #include "sound.h"
 #include "sprites.h"
 #include "engine.h"
+#include "engine-scrolling.h"
 #include "object.h"
 #include "object_enemy.h"
 #include "object_garage.h"
@@ -195,7 +196,7 @@ void Update_Garage(TSHIP *gobj)
         return;
 
     // check if this garage already has a ship parked
-    int parked = (game->mode == GM_SCROLLING) ? gobj->parked_ship : GarageShipIndex(gobj->garage_id);
+    int parked = IS_SCROLLING_ENGINE() ? gobj->parked_ship : GarageShipIndex(gobj->garage_id);
     if (parked != -1 && parked != -2) {
         return;
     }
@@ -209,8 +210,7 @@ void Update_Garage(TSHIP *gobj)
     int ship_y = ship->y;
     int gar_x = gobj->x;
     int gar_y = gobj->y;
-    if (game->mode == GM_SCROLLING) {
-        extern void Scrolling_GetViewport(int *x, int *y);
+    if (IS_SCROLLING_ENGINE()) {
         int vx, vy;
         Scrolling_GetViewport(&vx, &vy);
         ship_x = ship->x - vx;
@@ -232,7 +232,7 @@ void Update_Garage(TSHIP *gobj)
             if (spare->ai_type != AI_SPARE_SHIP)
                 continue;
             // in scrolling mode, only swap with spare in the same room
-            if (game->mode == GM_SCROLLING && spare->home_room != gobj->home_room)
+            if (IS_SCROLLING_ENGINE() && spare->home_room != gobj->home_room)
                 continue;
             break;
         }
@@ -243,7 +243,7 @@ void Update_Garage(TSHIP *gobj)
 
             garage->garage_inactive = 1;
 
-            if (game->mode == GM_SCROLLING) {
+            if (IS_SCROLLING_ENGINE()) {
                 // per-object parked ship — don't touch global garage_data
                 gobj->parked_ship = ship->i;
                 garage->parked_ship = -1;

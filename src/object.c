@@ -323,7 +323,7 @@ void gObj_Explode(TSHIP *gobj)
             exp->i = 1;
             exp->x = gobj->x;
             exp->y = gobj->y;
-            if (game->mode == GM_SCROLLING) {
+            if (IS_SCROLLING_ENGINE()) {
                 exp->world_x = gobj->world_x;
                 exp->world_y = gobj->world_y;
                 // deduce current level's first screen
@@ -442,7 +442,7 @@ void gObj_Explode(TSHIP *gobj)
     if (gobj->i == 6) {
         if (gobj->cur_frame == 0) {
             gobj->x -= 8;
-            if (game->mode == GM_SCROLLING) {
+            if (IS_SCROLLING_ENGINE()) {
                 Scrolling_SetTileAtWorld(gobj->x, gobj->y, 0);
                 Scrolling_MarkTileDestroyed(gobj->x, gobj->y);
                 Scrolling_SetTileAtWorld(gobj->x, gobj->y + 8, 0);
@@ -452,7 +452,7 @@ void gObj_Explode(TSHIP *gobj)
                 SetTileI(game->roomcontainer->tiles, gobj->x >> 3, (gobj->y >> 3) + 1, 0);
             }
         } else {
-            if (game->mode == GM_SCROLLING) {
+            if (IS_SCROLLING_ENGINE()) {
                 Scrolling_SetTileAtWorld(gobj->x + 8, gobj->y, 0);
                 Scrolling_MarkTileDestroyed(gobj->x + 8, gobj->y);
                 Scrolling_SetTileAtWorld(gobj->x + 8, gobj->y + 8, 0);

@@ -265,7 +265,7 @@ void Update_Ship(TSHIP *ship)
     static unsigned char fallflag = 1;
     static int dy;
 
-    if (game->mode == GM_SCROLLING) {
+    if (IS_SCROLLING_ENGINE()) {
         if (--game->ticks_for_damage < 0) game->ticks_for_damage = 0;
         switch (ship->i) {
         case SHIP_TYPE_ROCKET_LAUNCHER: DoRocketLauncher(ship); break;
@@ -478,7 +478,7 @@ void Update_Base(TSHIP *base)
     if (ship == NULL)
         return;
 
-    if (game->mode == GM_SCROLLING) {
+    if (IS_SCROLLING_ENGINE()) {
         if (game->player_attached == 1 && ship->ai_type != AI_EXPLOSION) {
             int playMoveSound = 0;
             if (GKeys[KEY_RIGHT] == 1) {
@@ -666,14 +666,14 @@ void DestroyHiddenAreaAccess(TSHIP *i, int playEffects)
         for (int x = 0; x < i->dx; ++x) {
             int ax = i->x + x;
 
-            if (game->mode == GM_SCROLLING) {
+            if (IS_SCROLLING_ENGINE()) {
                 Scrolling_SetTileAtWorld(ax, ay, 0);
                 Scrolling_MarkTileDestroyed(ax, ay);
             } else
                 SetTileI(game->roomcontainer->tiles, ax >> 3, ay >> 3, 0);
 
             if (playEffects && !(y % 16) && !(x % 16)) {
-                if (game->mode == GM_SCROLLING || ay + 16 < ACTION_SCREEN_HEIGHT)
+                if (IS_SCROLLING_ENGINE() || ay + 16 < ACTION_SCREEN_HEIGHT)
                     CreateWallExplosion(ax, ay);
             }
         }
