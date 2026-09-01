@@ -1,11 +1,10 @@
 #include "engine-collision.h"
 #include "engine.h"
 #include "engine-scrolling.h"
-#include "engine-scroller.h"
 #include "room.h"
+#include "video.h"
 
-// Helper macro to check if scrolling engine is active
-#define IS_SCROLLING() (active_engine == &scrolling_engine)
+#define IS_SCROLLING() (game->engine == &scrolling_engine)
 
 /* Check if gobj1 can destroy gobj2 (or blocks movement) */
 static int gObj_CheckDestruction(TSHIP *gobj1, TSHIP *gobj2)
@@ -90,6 +89,35 @@ int Collision_CheckSolid(int x, int y, TSHIP *gobj) {
     return Collision_CheckTile(x, y, gobj);
 }
 
+int Collision_FlipScreenCheckBounds(int x, int y, int w, int h) {
+    if (x < 0 || y < 0)
+        return 1;
+    if (x + w > SCREEN_WIDTH || y + h > ACTION_SCREEN_HEIGHT)
+        return 1;
+    return 0;
+}
+
+int Collision_ScrollingCheckBounds(int x, int y, int w, int h) {
+    // Scrolling allows movement within room boundaries
+    // Actual bounds checking is done per-object in gObj_CheckTouch
+    (void)x; (void)y; (void)w; (void)h;
+    return 0;
+}
+
+int Collision_CheckBounds(int x, int y, int w, int h, IGameEngine *engine) {
+    if (engine == &scrolling_engine) {
+        return Collision_ScrollingCheckBounds(x, y, w, h);
+    }
+    return Collision_FlipScreenCheckBounds(x, y, w, h);
+}
+
+int Collision_CheckObjectBounds(TSHIP *obj, IGameEngine *engine) {
+    if (!obj) return 0;
+    int w = gObj_GetWidth(obj);
+    int h = gObj_GetHeight(obj);
+    return Collision_CheckBounds(obj->x, obj->y, w, h, engine);
+}
+
 int gObj_CheckTouch(int x, int y, TSHIP *gobj) {
     int xs, ys;
     int result;
@@ -110,9 +138,7 @@ int gObj_CheckTouch(int x, int y, TSHIP *gobj) {
         }
     } else {
         // Flip-screen: check screen bounds
-        if (x < 0 || y < 0)
-            return 1;
-        if (xs > SCREEN_WIDTH || ys > ACTION_SCREEN_HEIGHT)
+        if (Collision_FlipScreenCheckBounds(x, y, xs - x, ys - y))
             return 1;
     }
 
