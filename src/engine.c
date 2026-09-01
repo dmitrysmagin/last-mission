@@ -29,6 +29,8 @@
 #include "room.h"
 #include "editor.h"
 #include "timer.h"
+#include "engine-flipscreen.h"
+#include "engine-scroller.h"
 
 #define GAME_START_SCREEN 1 // Start of the labyrinth.
 
@@ -73,7 +75,13 @@ void PlayMusicInt(int music)
 
 void SetGameMode(int mode)
 {
+    int old_mode = game->mode;
     game->mode = mode;
+
+    // Switch engine when changing between scrolling and non-scrolling modes
+    if ((mode == GM_SCROLLING) != (old_mode == GM_SCROLLING)) {
+        SetEngineMode(mode);
+    }
 
     switch (mode) {
     case GM_SCROLLING:
@@ -108,6 +116,30 @@ void SetGameMode(int mode)
     case GM_SPLASH:
         PlayMusicInt(MUSIC_STOP);
         break;
+    }
+}
+
+void SetEngineMode(int mode)
+{
+    if (game->engine) {
+        if (game->engine->shutdown)
+            game->engine->shutdown(game->engine);
+    }
+
+    switch (mode) {
+    case GM_SCROLLING:
+        game->engine = &scrolling_engine;
+        break;
+    case GM_GAME:
+    case GM_DEMO:
+    default:
+        game->engine = &flipscreen_engine;
+        break;
+    }
+
+    if (game->engine) {
+        if (game->engine->init)
+            game->engine->init(game->engine);
     }
 }
 
@@ -925,10 +957,22 @@ void game_init()
     game->roomcontainer = RoomContainer_Create();
 
     game->world = load_world("data/lastmission.dat");
+
+    // Initialize default engine (flip-screen)
+    game->engine = &flipscreen_engine;
+    if (game->engine->init)
+        game->engine->init(game->engine);
 }
 
 void game_deinit()
 {
+    /* Shutdown engine if active */
+    if (game->engine) {
+        if (game->engine->shutdown)
+            game->engine->shutdown(game->engine);
+        game->engine = NULL;
+    }
+
     /* Free any pre-existing world data */
     if (game->world) {
         free_world(game->world);

@@ -5,6 +5,7 @@
 #include "object.h"
 #include "video.h"
 #include "room.h"
+#include "engine-interface.h"
 
 #define GM_EXIT     (-1)
 #define GM_TITLE    0
@@ -60,9 +61,13 @@ typedef struct TGAMEDATA {
 
     /* For scrolling there will be multiple of rooms */
     ROOMCONTAINER *roomcontainer;
+
+    /* Active engine interface */
+    IGameEngine *engine;
 } TGAMEDATA;
 
 void SetGameMode(int mode);
+void SetEngineMode(int mode);
 void GameLoop();
 void game_init();
 void game_deinit();
