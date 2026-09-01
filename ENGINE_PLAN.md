@@ -19,11 +19,10 @@ All new engine-related files use **dash naming convention** (not underscore):
 - `engine-coordinates.h` / `engine-coordinates.c` - Coordinate system abstraction
 - `engine-coordinates-scrolling.h` / `engine-coordinates-scrolling.c` - Scrolling coordinate helpers
 - `engine-collision.h` / `engine-collision.c` - Collision system abstraction
-- `engine-object.h` - Object pooling extensions
 
 ### Existing Files
 - `engine.c` - Main game logic (refactored)
-- `engine-scrolling.c` - Scrolling implementation (to be replaced)
+- `engine-scrolling.c` - Scrolling implementation (kept as delegate for scroller engine)
 - `engine.h` - Engine headers
 - `room.c` / `room.h` - Room management
 
@@ -36,21 +35,15 @@ All new engine-related files use **dash naming convention** (not underscore):
 ### Architecture
 - `ROOMCONTAINER` in `room.h:13` — `tiles` = `ROOM_WIDTH*ROOM_HEIGHT`, `background` = `320×136`, `surface` = `320×240`.
 - `UnpackRoom(ROOMCONTAINER*, int room)` unpacks tiles, sets `shadow`/`room_id`, bakes background.
-- `TGAMEDATA` in `engine.h:60` holds single `ROOMCONTAINER *roomcontainer` + `WORLD *world`.
+- `TGAMEDATA` in `engine.h` holds `IGameEngine *engine` pointer + single `ROOMCONTAINER *roomcontainer` + `WORLD *world`.
 - Rendering is surface-threaded: `BlitRoom(surface, RC)`, `BlitRoomOutlines(surface, RC)`, `BlitBackground(surface, RC)`, `BlitEnemies(surface)`.
-- Single-room assumptions: `gObj_CheckTouch` uses `game->roomcontainer->tiles` only.
+- `IS_SCROLLING_ENGINE()` macro replaces `GM_SCROLLING` checks in game logic.
 
 ### Code Characteristics
-- **24 GM_SCROLLING checks** scattered throughout `engine.c`, `object.c`, `object_enemy.c`, `object_garage.c`.
-- **Conditional sprawl** in camera updates, object rendering, and collision detection.
-- **Tight coupling** between game logic and rendering implementation.
-- Duplicate object update logic, inconsistent coordinate handling.
-
-### Problem Areas
-- `engine.c:processGameLoop()` - Mixed mode detection and handling
-- `collision.c:checkObjectCollisions()` - Mode-specific collision algorithms
-- `render.c:renderScene()` - Separate rendering paths for each mode
-- Difficulty adding new engine variants, testing complexity due to branching logic
+- **Strategy Pattern** with `IGameEngine` vtable for engine dispatch
+- **Unified coordinate system** via `engine-coordinates.c`
+- **Collision abstraction** via `engine-collision.c` with `gObj_CheckTouch` and `gObj_CheckDestruction`
+- Engine switching via `SetEngineMode()` function
 
 ---
 
@@ -59,185 +52,78 @@ All new engine-related files use **dash naming convention** (not underscore):
 ### 3.1 Core Interface (`engine-interface.h`)
 
 ```c
-typedef struct {
-    void (*init)(void);
-    void (*shutdown)(void);
-    void (*update)(void);
-    void (*render)(SDL_Surface *surface);
-    void (*restart_level)(void);
-    void (*update_respawn_from_screen)(int screen);
-    int (*get_tile_at)(int x, int y);
-    void (*set_tile_at)(int x, int y, int i);
-    void (*get_viewport)(int *x, int *y, int *w, int *h);
-    int (*tile_to_world)(int tile_x, int tile_y);
-    void (*world_to_tile)(int world_x, int world_y, int *tile_x, int *tile_y);
-} IGameEngine;
+typedef struct IGameEngine IGameEngine;
 
-extern IGameEngine *active_engine;
+struct IGameEngine {
+    void (*init)(IGameEngine *engine);
+    void (*shutdown)(IGameEngine *engine);
+    void (*update)(IGameEngine *engine);
+    void (*render)(IGameEngine *engine, SDL_Surface *surface);
+    int (*get_tile)(IGameEngine *engine, int x, int y);
+    void (*set_tile)(IGameEngine *engine, int x, int y, int tile);
+    void (*get_viewport)(IGameEngine *engine, int *x, int *y, int *w, int *h);
+    int (*tile_to_world)(IGameEngine *engine, int tile_x, int tile_y);
+    void *data;
+};
+
+extern IGameEngine flipscreen_engine;
+extern IGameEngine scrolling_engine;
 ```
 
-### 3.2 Engine Selection (`SetGameMode`)
+### 3.2 Engine Selection (`SetEngineMode`)
 
 ```c
-void SetGameMode(int mode) {
-    game->mode = mode;
+void SetEngineMode(int mode) {
+    if (game->engine) {
+        if (game->engine->shutdown)
+            game->engine->shutdown(game->engine);
+    }
+
     switch (mode) {
     case GM_SCROLLING:
-        if (active_engine != &scrolling_engine) {
-            if (active_engine && active_engine->shutdown) active_engine->shutdown();
-            active_engine = &scrolling_engine;
-            if (active_engine->init) active_engine->init();
-        }
+        game->engine = &scrolling_engine;
         break;
     case GM_GAME:
     case GM_DEMO:
-        if (active_engine != &flipscreen_engine) {
-            if (active_engine && active_engine->shutdown) active_engine->shutdown();
-            active_engine = &flipscreen_engine;
-            if (active_engine->init) active_engine->init();
-        }
+    default:
+        game->engine = &flipscreen_engine;
         break;
-    // ...
+    }
+
+    if (game->engine) {
+        if (game->engine->init)
+            game->engine->init(game->engine);
     }
 }
 ```
 
-### 3.3 Game Loop Integration
+### 3.3 Game State Integration
 
 ```c
-void DoGame() {
-    switch(game->mode) {
-    case GM_GAME:
-        // ... existing flip-screen logic ...
-        break;
-    case GM_SCROLLING:
-        if (active_engine && active_engine->update) active_engine->update();
-        if (active_engine && active_engine->render) active_engine->render(game->roomcontainer->surface);
-        break;
-    }
-}
+// engine.h
+typedef struct TGAMEDATA {
+    int mode;
+    // ... other fields ...
+    WORLD *world;
+    ROOMCONTAINER *roomcontainer;
+    IGameEngine *engine;  // Active engine interface
+} TGAMEDATA;
 ```
 
 ### 3.4 Benefits
 
-| Aspect | Current (Conditional) | Proposed (Strategy) |
-|--------|----------------------|---------------------|
-| **Lines of Code** | ~1200 (with duplication) | ~600 (separated) |
+| Aspect | Before (Conditional) | After (Strategy) |
+|--------|---------------------|------------------|
 | **GM_SCROLLING Checks** | 24 scattered | 0 in logic code |
 | **New Engine Addition** | Modify all conditionals | Single new class |
 | **Test Complexity** | High (branch coverage) | Low (isolated tests) |
+| **Code Maintainability** | Tight coupling | Separated concerns |
 
 ---
 
-## 4. Per-Room Data Model
+## 4. Coordinate System Abstraction
 
-### 4.1 ROOMCONTAINER is the cache unit
-
-```c
-typedef struct ROOMCONTAINER {
-    unsigned short *tiles;
-    void *background;
-    void *surface;
-    unsigned int shadow;
-    int room_id;
-    int grid_x, grid_y;
-    int dirty;
-} ROOMCONTAINER;
-```
-
-### 4.2 TGAMEDATA cache
-
-```c
-#define VIEWPORT_W 320
-#define VIEWPORT_H 136
-#define ROOM_PIXEL_W (ROOM_WIDTH*8)   // 320
-#define ROOM_PIXEL_H (ROOM_HEIGHT*8)  // 136
-
-typedef struct VIEWPORT {
-    int x, y;
-    int w, h;
-    int room_x0, room_y0, room_x1, room_y1;
-} VIEWPORT;
-
-typedef struct TGAMEDATA {
-    // ... existing scalars ...
-    WORLD *world;
-    VIEWPORT viewport;
-    ROOMCONTAINER *cache[9];
-    int cache_count;
-} TGAMEDATA;
-```
-
-### 4.3 Tile Access
-
-```c
-ROOMCONTAINER *GetContainerForRoom(int room_id);
-ROOMCONTAINER *GetContainerForWorld(int wx, int wy);
-ROOMCONTAINER *AcquireContainer(int room_id, int grid_x, int grid_y);
-void UpdateRoomCache(VIEWPORT *vp);
-```
-
----
-
-## 5. Camera / Viewport Abstraction
-
-### 5.1 World coordinates
-
-```
-WORLD_W = world->mapw * ROOM_PIXEL_W
-WORLD_H = world->maph * ROOM_PIXEL_H
-ship_world_x = game->mapx*ROOM_PIXEL_W + ship->x
-ship_world_y = game->mapy*ROOM_PIXEL_H + ship->y
-```
-
-Viewport clamped:
-```c
-viewport.x = clamp(ship_world_x - VIEWPORT_W/2, 0, WORLD_W - VIEWPORT_W);
-viewport.y = clamp(ship_world_y - VIEWPORT_H/2, 0, WORLD_H - VIEWPORT_H);
-```
-
-### 5.2 Visible rooms & cache update
-
-```c
-void UpdateRoomCache(VIEWPORT *vp) {
-    int x0 = vp->x / ROOM_PIXEL_W, y0 = vp->y / ROOM_PIXEL_H;
-    int x1 = (vp->x+vp->w-1)/ROOM_PIXEL_W, y1 = (vp->y+vp->h-1)/ROOM_PIXEL_H;
-    vp->room_x0=x0; vp->room_y0=y0; vp->room_x1=x1; vp->room_y1=y1;
-    for (y=y0..y1) for (x=x0..x1) {
-        int room_id = world->map[y*mapw+x]; if (!room_id) continue;
-        RC = GetContainerForRoom(room_id);
-        if (!RC || RC->dirty) { RC = AcquireContainer(room_id,x,y); RoomContainer_Unpack(RC, room_id); }
-    }
-}
-```
-
-### 5.3 Scroll Modes
-
-- **Flip-Screen**: Camera snaps to room boundaries. `viewport.x = game->mapx*ROOM_PIXEL_W`.
-- **Smooth Scrolling**: Camera moves in pixel increments, clamped to world bounds. Enemies use world-absolute positions.
-
-### 5.4 Rendering Pipeline
-
-For each `rc` in visible rect:
-```c
-int dst_x = rc->grid_x*ROOM_PIXEL_W - viewport.x;
-int dst_y = rc->grid_y*ROOM_PIXEL_H - viewport.y;
-SDL_Rect dst = {dst_x, dst_y, ROOM_PIXEL_W, ROOM_PIXEL_H};
-SDL_BlitSurface(rc->background, NULL, surface, &dst);
-BlitRoomWithOffset(surface, rc, dst_x, dst_y);
-```
-
-Enemy rendering:
-```c
-for (en = Ships) if (en->state==ACTIVE && rectIntersect(en->world_x, en->world_y, en->w, en->h, viewport))
-    PutSpriteI(surface, en->world_x - viewport.x, en->world_y - viewport.y, ...)
-```
-
----
-
-## 6. Coordinate System Abstraction
-
-### 6.1 Coordinate Systems
+### 4.1 Coordinate Systems
 
 | System | Description | Range |
 |--------|-------------|-------|
@@ -245,49 +131,47 @@ for (en = Ships) if (en->state==ACTIVE && rectIntersect(en->world_x, en->world_y
 | **Screen** | Relative to camera viewport | 0 to SCREEN_WIDTH, SCREEN_HEIGHT |
 | **Room** | 16x16 tile rooms (flip-screen only) | 0-15 rooms in each dimension |
 
-### 6.2 Conversion Matrix
-
-| From\To | World | Screen | Room |
-|---------|-------|--------|------|
-| World   | - | `worldToScreen()` | `worldToRoom()` |
-| Screen  | `screenToWorld()` | - | `screenToRoom()` |
-| Room    | `roomToWorld()` | `roomToScreen()` | - |
-
-### 6.3 Coordinate Conversion Helpers
+### 4.2 Conversion Functions
 
 ```c
 // engine-coordinates.h
-int worldToScreenX(int worldX, IGameEngine* engine);
-int worldToScreenY(int worldY, IGameEngine* engine);
-int screenToWorldX(int screenX, IGameEngine* engine);
-int screenToWorldY(int screenY, IGameEngine* engine);
-int object_getScreenX(Object* obj, IGameEngine* engine);
-int object_getScreenY(Object* obj, IGameEngine* engine);
+int Coords_WorldToScreenX(int worldX, IGameEngine *engine);
+int Coords_WorldToScreenY(int worldY, IGameEngine *engine);
+int Coords_ScreenToWorldX(int screenX, IGameEngine *engine);
+int Coords_ScreenToWorldY(int screenY, IGameEngine *engine);
+int Coords_ObjectGetScreenX(TSHIP *obj, IGameEngine *engine);
+int Coords_ObjectGetScreenY(TSHIP *obj, IGameEngine *engine);
+int Coords_ObjectInViewport(TSHIP *obj, IGameEngine *engine);
+```
+
+### 4.3 Helper Macro
+
+```c
+// object.h
+#define IS_SCROLLING_ENGINE() (game && game->engine == &scrolling_engine)
 ```
 
 ---
 
-## 7. Collision System
+## 5. Collision System
 
-### 7.1 Collision Interface
+### 5.1 Collision Interface
 
 ```c
-typedef struct {
-    int (*check_tile_collision)(int x, int y, TSHIP *gobj);
-    int (*check_object_collision)(int x1, int y1, TSHIP *gobj1, int x2, int y2, TSHIP *gobj2);
-    int (*check_solid_collision)(int x, int y, TSHIP *gobj);
-    int (*get_tile_flags)(int tile);
-    void (*mark_tile_destroyed)(int wx, int wy);
-    int (*is_tile_destroyed)(int wx, int wy);
-} ICollisionSystem;
+// engine-collision.h
+int Collision_CheckTile(int x, int y, TSHIP *gobj);
+int Collision_CheckOverlap(int x1, int y1, TSHIP *gobj1, int x2, int y2, TSHIP *gobj2);
+int Collision_CheckSolid(int x, int y, TSHIP *gobj);
+int Collision_CheckBounds(int x, int y, int w, int h, IGameEngine *engine);
+int Collision_CheckObjectBounds(TSHIP *obj, IGameEngine *engine);
 ```
 
-### 7.2 Implementation
+### 5.2 Implementation
 
 - **Flip-Screen**: Check against fixed 16x16 room boundaries, simplified collision grid.
 - **Scrolling**: Continuous world boundaries, check against map edges, partial room overlaps handled.
 
-### 7.3 Object Collision
+### 5.3 Object Collision
 
 `gObj_CheckTouch` checks:
 1. Bounds (screen bounds for flip, room rect for scrolling)
@@ -296,41 +180,7 @@ typedef struct {
 
 ---
 
-## 8. Enemy Management
-
-### 8.1 Per-Room Enemy Lists
-
-```c
-typedef struct {
-    int count;
-    TSHIP **enemies;
-} RoomEnemies;
-```
-
-- Populate during `InitEnemies(screen)`: each enemy carries `roomIdx` for spatial queries.
-
-### 8.2 Activation
-
-Each frame after `UpdateRoomCache`:
-- Set `en->active = rectIntersect(en->world_x, en->world_y, ..., viewport)`
-- Only `active` enemies get `gObj_Update` for movement/AI.
-
-### 8.3 Restriction to Native Room
-
-Clamp `world_x/y` to `home_rect` for ground enemies. Allows viewport to peek into neighbor without enemies leaking across rooms.
-
-### 8.4 AI Differences
-
-| Feature | Flip-Screen | Scroller |
-|---------|-------------|----------|
-| Detection Range | Per-room | Line-of-sight |
-| Tracking | Simple | Predictive |
-| Pathfinding | Room grid | Continuous |
-| State Persistence | Room-local | Global |
-
----
-
-## 9. Migration Path
+## 6. Migration Path
 
 ### Phase 1: Interface Definition ✓
 - [x] Create `engine-interface.h` with `IGameEngine` typedef
@@ -338,8 +188,9 @@ Clamp `world_x/y` to `home_rect` for ground enemies. Allows viewport to peek int
 - [x] Create `engine-scroller.c` with scrolling implementation
 - [x] Create `engine-coordinates.h/.c` for coordinate abstraction
 - [x] Create `engine-collision.h/.c` for collision abstraction
-- [x] Add `active_engine` pointer to `TGAMEDATA`
-- [x] Replace 24 `GM_SCROLLING` checks with `IS_SCROLLING()` macro
+- [x] Add `IGameEngine *engine` field to `TGAMEDATA`
+- [x] Implement `SetEngineMode()` function
+- [x] Replace 24 `GM_SCROLLING` checks with `IS_SCROLLING_ENGINE()` macro
 
 ### Phase 2: Data Model
 - [ ] Add `VIEWPORT`, `ROOM_PIXEL_*` to `engine.h`/`room.h`
@@ -358,14 +209,74 @@ Clamp `world_x/y` to `home_rect` for ground enemies. Allows viewport to peek int
 - [ ] Add viewport update (smooth vs snap) in `Update_Ship`/`ChangeScreen`
 
 ### Phase 5: Cleanup
-- [ ] Remove old `engine-scrolling.c`
-- [ ] Remove remaining `GM_SCROLLING` checks
+- [ ] Remove old `engine-scrolling.c` (currently kept as delegate)
 - [ ] Update editor to use viewport/cache APIs
 - [ ] Test both modes with existing levels
 
 ---
 
-## 10. Risks
+## 7. Scrolling Engine Implementation Details
+
+### 7.1 Per-Room Data Model
+
+`ROOMCONTAINER` is the cache unit:
+```c
+typedef struct ROOMCONTAINER {
+    unsigned short *tiles;
+    void *background;
+    void *surface;
+    unsigned int shadow;
+    int room_id;
+    int grid_x, grid_y;
+    int dirty;
+} ROOMCONTAINER;
+```
+
+### 7.2 Viewport & Camera
+
+```c
+#define VIEWPORT_W 320
+#define VIEWPORT_H 136
+#define ROOM_PIXEL_W (ROOM_WIDTH*8)   // 320
+#define ROOM_PIXEL_H (ROOM_HEIGHT*8)  // 136
+
+typedef struct VIEWPORT {
+    int x, y;
+    int w, h;
+    int room_x0, room_y0, room_x1, room_y1;
+} VIEWPORT;
+```
+
+Viewport clamped:
+```c
+viewport.x = clamp(ship_world_x - VIEWPORT_W/2, 0, WORLD_W - VIEWPORT_W);
+viewport.y = clamp(ship_world_y - VIEWPORT_H/2, 0, WORLD_H - VIEWPORT_H);
+```
+
+### 7.3 Enemy Management
+
+- Enemies use world-absolute positions (`world_x`, `world_y`)
+- `home_room`, `home_gx`, `home_gy` track native room
+- `scroll_active` flag for viewport activation
+- Clamped to `home_rect` for ground enemies
+
+### 7.4 Cache Update
+
+```c
+void UpdateRoomCache(VIEWPORT *vp) {
+    int x0 = vp->x / ROOM_PIXEL_W, y0 = vp->y / ROOM_PIXEL_H;
+    int x1 = (vp->x+vp->w-1)/ROOM_PIXEL_W, y1 = (vp->y+vp->h-1)/ROOM_PIXEL_H;
+    for (y=y0..y1) for (x=x0..x1) {
+        int room_id = world->map[y*mapw+x]; if (!room_id) continue;
+        RC = GetContainerForRoom(room_id);
+        if (!RC || RC->dirty) { RC = AcquireContainer(room_id,x,y); RoomContainer_Unpack(RC, room_id); }
+    }
+}
+```
+
+---
+
+## 8. Risks
 
 - **Tile cache thrash**: 4 rooms is minimal, fast diagonal may unpack every frame. Mitigate with 9 + LRU.
 - **Collision across rooms**: Must not use single `roomcontainer->tiles`; add world→container lookup.
@@ -376,4 +287,5 @@ Clamp `world_x/y` to `home_rect` for ground enemies. Allows viewport to peek int
 
 ---
 
-*Document version: 2.0 — Combined from SCROLLING_PLAN, ENGINE_REFACTOR, ENGINE_PLAN*
+*Document version: 3.0 — Merged from SCROLLING_PLAN.md and ENGINE_REFACTOR.md*
+*Last updated: All Phase 1 tasks completed*
