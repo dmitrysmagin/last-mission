@@ -1,38 +1,33 @@
 #ifndef _ENGINE_COORDINATES_H_
 #define _ENGINE_COORDINATES_H_
 
-#include "room.h"
+#include "engine-interface.h"
+#include "object.h"
 
-typedef struct {
-    // Get tile at room-local coordinates
-    int (*get_tile)(ROOMCONTAINER *rc, int x, int y);
-    
-    // Set tile at room-local coordinates
-    void (*set_tile)(ROOMCONTAINER *rc, int x, int y, int i);
-    
-    // Convert room-local tile coords to world tile index
-    int (*tile_to_world)(int room_x, int room_y, int gx, int gy);
-    
-    // Convert world tile index to room-local coords
-    void (*world_to_tile)(int world_idx, int *gx, int *gy, int *room_x, int *room_y);
-    
-    // Get world pixel coordinates for a tile
-    void (*tile_to_world_pixel)(int gx, int gy, int room_x, int room_y, int *wx, int *wy);
-    
-    // Get room container for world pixel coordinates
-    ROOMCONTAINER *(*get_container_for_world)(int wx, int wy);
-    
-    // Get tile at world pixel coordinates
-    int (*get_tile_at_world)(int wx, int wy);
-    
-    // Set tile at world pixel coordinates
-    void (*set_tile_at_world)(int wx, int wy, int i);
-    
-    // Get viewport bounds in world pixels
-    void (*get_viewport)(int *x, int *y, int *w, int *h);
-} ICoordinateSystem;
+// World to Screen conversion
+// For flip-screen: world coords are room-local, screen coords are same
+// For scrolling: subtract camera offset from world coords
+int Coords_WorldToScreenX(int worldX, IGameEngine *engine);
+int Coords_WorldToScreenY(int worldY, IGameEngine *engine);
 
-int Coords_GetTile(ROOMCONTAINER *rc, int x, int y);
-void Coords_SetTile(ROOMCONTAINER *rc, int x, int y, int i);
+// Screen to World conversion
+int Coords_ScreenToWorldX(int screenX, IGameEngine *engine);
+int Coords_ScreenToWorldY(int screenY, IGameEngine *engine);
+
+// Object coordinate helpers
+// Get screen X position for rendering (converts from world coords if needed)
+int Coords_ObjectGetScreenX(TSHIP *obj, IGameEngine *engine);
+int Coords_ObjectGetScreenY(TSHIP *obj, IGameEngine *engine);
+
+// Check if object is within viewport bounds
+int Coords_ObjectInViewport(TSHIP *obj, IGameEngine *engine);
+
+// Room boundary helpers
+int Coords_GetRoomWidth(void);
+int Coords_GetRoomHeight(void);
+
+// Tile coordinate helpers
+int Coords_WorldToTileX(int worldX);
+int Coords_WorldToTileY(int worldY);
 
 #endif /* _ENGINE_COORDINATES_H_ */
