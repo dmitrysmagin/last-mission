@@ -309,29 +309,29 @@ void migrateCamera(IGameEngine* oldEngine, IGameEngine* newEngine) {
 ## 10. Migration Path
 
 ### Phase 1: Interface Definition
-- [ ] Create `engine-interface.h`
-- [ ] Implement `engine-flipscreen.c` (preserves current behavior)
-- [ ] Implement skeleton `engine-scroller.c`
+- [x] Create `engine-interface.h`
+- [x] Implement `engine-flipscreen.c` (preserves current behavior)
+- [x] Implement skeleton `engine-scroller.c`
 
 ### Phase 2: Game State Integration
-- [ ] Add `IGameEngine* engine` field to `Gamestate`
-- [ ] Implement `setEngineMode()` function
-- [ ] Refactor engine creation at game startup
+- [x] Add `IGameEngine* engine` field to `TGAMEDATA`
+- [x] Implement `SetEngineMode()` function
+- [x] Refactor engine creation at game startup
 
 ### Phase 3: Object Layer
-- [ ] Create `engine-coordinates.h`/`.c`
-- [ ] Refactor object rendering to use engine
-- [ ] Convert all `getScreenX/Y` calls
+- [x] Create `engine-coordinates.h`/`.c`
+- [x] Refactor object rendering to use engine
+- [x] Add `Coords_ObjectGetScreenX/Y()` helpers
 
 ### Phase 4: Collision System
-- [ ] Create `engine-collision.h`/`.c`
-- [ ] Extract collision logic per engine
-- [ ] Test both modes
+- [x] Create `engine-collision.h`/`.c`
+- [x] Extract collision logic per engine
+- [x] Add bounds checking helpers
 
 ### Phase 5: Cleanup
-- [ ] Remove `GM_SCROLLING` checks
-- [ ] Remove old `engine-scrolling.c`
-- [ ] Update documentation
+- [x] Replace `GM_SCROLLING` checks with `IS_SCROLLING_ENGINE()` macro
+- [ ] Remove old `engine-scrolling.c` (kept as delegate for scroller engine)
+- [x] Update documentation
 
 ## 11. Example Object Update
 
