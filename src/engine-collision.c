@@ -3,41 +3,60 @@
 #include "engine-scrolling.h"
 #include "room.h"
 #include "video.h"
+#include "object.h"
 
 #define IS_SCROLLING() (game->engine == &scrolling_engine)
 
 /* Check if gobj1 can destroy gobj2 (or blocks movement) */
 static int gObj_CheckDestruction(TSHIP *gobj1, TSHIP *gobj2)
 {
+    // 0 - any obj, 1 - player, 2 - weapon
     int obj1_type = (gobj1->flags & (GOBJ_PLAYER|GOBJ_WEAPON)) >> 5;
     int obj2_type = (gobj2->flags & (GOBJ_PLAYER|GOBJ_WEAPON)) >> 5;
 
+    /* don't interact with the same objects */
     if (obj1_type == obj2_type)
         goto _exit_proc;
 
+    /* don't interact if it's your weapon */
     if (gobj2->flags & GOBJ_WEAPON && gobj1 == gobj2->parent)
         return 0;
 
     if (gobj1->flags & GOBJ_WEAPON && gobj2 == gobj1->parent)
         return 0;
 
+    /* hack for garage */
     if(gobj2->ai_type == AI_GARAGE)
         goto _exit_proc;
 
     if (gobj1->ai_type == AI_BONUS) {
-        if (gobj2->ai_type != AI_BASE && gobj2->ai_type != AI_SHIP)
-            return 0;
-        gobj2->regenerate_bonus = 1;
-        gobj2->bonus_type = gobj1->bonus_type;
-        return 1;
+        /* Bonus hit by a bullet. Swap bonus. */
+        if (obj2_type == 2) {
+            gobj1->regenerate_bonus = 1;
+        }
+        gObj_Explode(gobj1);
+        goto _exit_proc;
+    } else if (gobj2->ai_type == AI_BONUS) {
+        /* Bonus hit by a bullet. Swap bonus. */
+        if (obj1_type == 2) {
+            gobj2->regenerate_bonus = 1;
+        }
+        gObj_Explode(gobj2);
+        goto _exit_proc;
     }
 
-    if (gobj2->flags & GOBJ_DESTROY)
-        return 1;
+    if (gobj1->flags & GOBJ_HURTS || gobj2->flags & GOBJ_HURTS) {
+            if (gobj1->ai_type != AI_BFG_SHOT)
+                gObj_Explode(gobj1);
+
+            if (gobj2->ai_type != AI_BFG_SHOT)
+                gObj_Explode(gobj2);
+    }
 
 _exit_proc:
-    if (!(gobj1->flags & GOBJ_HURTS) || !(gobj2->flags & GOBJ_HURTS))
-        return 0;
+    /* hack for laser */
+    if (gobj1->ai_type == AI_LASER)
+        return 1;
 
     if (!(gobj1->flags & GOBJ_SOLID) || !(gobj2->flags & GOBJ_SOLID))
         return 0;
@@ -145,7 +164,7 @@ int gObj_CheckTouch(int x, int y, TSHIP *gobj) {
     // Check object overlap
     GOBJ_ITERATE(en, {
         if (en == gobj) continue;
-        if (Collision_CheckOverlap(x, y, gobj, en->x, en->y, en)) {
+        if (gObj_CheckOverlap(x, y, gobj, en)) {
             if (!gObj_CheckDestruction(gobj, en)) continue;
             return 1;
         }
